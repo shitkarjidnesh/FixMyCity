@@ -49,8 +49,9 @@ function App() {
 
   return (
     <>
-    </Navbar>
-    <div className="max-w-md mx-auto mt-10 p-6 bg-white shadow-md rounded-lg">
+    <Navbar/>
+    <div className="pt-8">
+    <div className="pt-8 max-w-md mx-auto mt-9 p-6 bg-white shadow-md rounded-lg">
       <h2 className="text-2xl font-bold mb-6 text-center">User Input Form</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -98,7 +99,7 @@ function App() {
         </p>
       )}
     </div>
-    </>
+    </div></>
   );
 }
 
