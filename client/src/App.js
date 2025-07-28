@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Navbar from "./components/navbar";
 
 function App() {
   const [formData, setFormData] = useState({
@@ -47,6 +48,8 @@ function App() {
   };
 
   return (
+    <>
+    </Navbar>
     <div className="max-w-md mx-auto mt-10 p-6 bg-white shadow-md rounded-lg">
       <h2 className="text-2xl font-bold mb-6 text-center">User Input Form</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -95,6 +98,7 @@ function App() {
         </p>
       )}
     </div>
+    </>
   );
 }
 
