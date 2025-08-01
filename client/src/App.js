@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import ImageUpload from "./ImageUpload";
 
 function App() {
   const [formData, setFormData] = useState({
@@ -94,6 +95,10 @@ function App() {
           {status}
         </p>
       )}
+
+
+
+      <ImageUpload />
     </div>
   );
 }
