@@ -1,12 +1,13 @@
-import React, { useState } from "react";
-import Navbar from "./components/navbar";
+// import React, { useState } from "react";
+// import Navbar from "./components/navbar";
+import ImageUpload from "./components/ImageUpload";
 
 function App() {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    message: "",
-  });  
+  // const [formData, setFormData] = useState({
+  //   name: "",
+  //   email: "",
+  //   message: "",
+  // });  
 
 
 
@@ -15,41 +16,41 @@ function App() {
 
 
 
-  const [status, setStatus] = useState(null);
+  // const [status, setStatus] = useState(null);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
+  // const handleChange = (e) => {
+  //   const { name, value } = e.target;
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     [name]: value,
+  //   }));
+  // };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await fetch("http://localhost:5000/api/users", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-      const data = await res.json();
-      if (data.success) {
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   try {
+  //     const res = await fetch("http://localhost:5000/api/users", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify(formData),
+  //     });
+  //     const data = await res.json();
+  //     if (data.success) {
         
-        setFormData({ name: "", email: "", message: "" });
-      } else {
-        setStatus(`Error: ${data.error}`);
-      }
-    } catch (err) {
-      setStatus(`Error: ${err.message}`);
-    }
-  };
+  //       setFormData({ name: "", email: "", message: "" });
+  //     } else {
+  //       setStatus(`Error: ${data.error}`);
+  //     }
+  //   } catch (err) {
+  //     setStatus(`Error: ${err.message}`);
+  //   }
+  // };
 
   return (
     <>
-    <Navbar/>
+    {/* <Navbar/>
     <div className="pt-8">
     <div className="pt-8 max-w-md mx-auto mt-9 p-6 bg-white shadow-md rounded-lg">
       <h2 className="text-2xl font-bold mb-6 text-center">User Input Form</h2>
@@ -99,7 +100,9 @@ function App() {
         </p>
       )}
     </div>
-    </div></>
+    </div></> */}
+    <ImageUpload/>
+    </>
   );
 }
 
