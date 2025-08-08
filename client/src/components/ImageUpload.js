@@ -19,7 +19,7 @@ const ImageUpload = () => {
         (pos) => {
           setCoords({
             lat: pos.coords.latitude,
-            lng: pos.coords.longitude,
+            lng: pos.coords.longitude
           });
         },
         (err) => console.error("GPS error:", err),
@@ -30,17 +30,10 @@ const ImageUpload = () => {
     }
   };
 
-  // Capture photo and draw coordinates on it
+  // Capture photo from video
   const capturePhoto = () => {
     const ctx = canvasRef.current.getContext("2d");
     ctx.drawImage(videoRef.current, 0, 0, 400, 300);
-
-    // Draw coordinates text on the image
-    ctx.fillStyle = "white";
-    ctx.font = "16px Arial";
-    ctx.fillText(`Lat: ${coords.lat || "N/A"}`, 10, 280);
-    ctx.fillText(`Lng: ${coords.lng || "N/A"}`, 200, 280);
-
     const dataUrl = canvasRef.current.toDataURL("image/jpeg");
     setPreviewUrl(dataUrl);
     setPhotoTaken(true);
@@ -55,14 +48,9 @@ const ImageUpload = () => {
       formData.append("latitude", coords.lat);
       formData.append("longitude", coords.lng);
 
-      const res = await axios.post(
-        "http://localhost:5000/api/upload",
-        formData
-      );
+      const res = await axios.post("http://localhost:5000/api/upload", formData);
       console.log("✅ Uploaded to Cloudinary:", res.data.imageUrl);
-      console.log(
-        `✅ MongoDB record created with GPS: ${coords.lat}, ${coords.lng}`
-      );
+      console.log(`✅ MongoDB record created with GPS: ${coords.lat}, ${coords.lng}`);
 
       setUploadedUrl(res.data.imageUrl);
       alert("Photo uploaded successfully!");
@@ -77,9 +65,8 @@ const ImageUpload = () => {
         Capture Live Photo with GPS
       </h2>
 
-      {/* Camera Container */}
       {!photoTaken && (
-        <div className="border border-gray-400 rounded p-2 bg-black flex flex-col items-center">
+        <>
           <video ref={videoRef} autoPlay width="400" height="300"></video>
           <div className="mt-2 flex gap-2">
             <button
@@ -95,23 +82,14 @@ const ImageUpload = () => {
               Capture Photo
             </button>
           </div>
-        </div>
+        </>
       )}
 
-      <canvas
-        ref={canvasRef}
-        width="400"
-        height="300"
-        style={{ display: "none" }}
-      ></canvas>
+      <canvas ref={canvasRef} width="400" height="300" style={{ display: "none" }}></canvas>
 
       {previewUrl && (
         <div className="mt-4">
-          <img
-            src={previewUrl}
-            alt="Captured"
-            className="w-full rounded border"
-          />
+          <img src={previewUrl} alt="Captured" className="w-full rounded border" />
           <p>Latitude: {coords.lat}</p>
           <p>Longitude: {coords.lng}</p>
           <button
@@ -125,14 +103,8 @@ const ImageUpload = () => {
 
       {uploadedUrl && (
         <div className="mt-6">
-          <p className="text-green-600 font-medium mb-2">
-            ✅ Uploaded Successfully
-          </p>
-          <img
-            src={uploadedUrl}
-            alt="Uploaded"
-            className="w-full rounded border"
-          />
+          <p className="text-green-600 font-medium mb-2">✅ Uploaded Successfully</p>
+          <img src={uploadedUrl} alt="Uploaded" className="w-full rounded border" />
         </div>
       )}
     </div>
