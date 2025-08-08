@@ -9,7 +9,7 @@ node_modules/
 logs
 
 # Env files
-*.env
+
 
 # OS
 .DS_Store

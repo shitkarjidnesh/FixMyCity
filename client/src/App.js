@@ -1,6 +1,11 @@
+<<<<<<< HEAD
 // import React, { useState } from "react";
 // import Navbar from "./components/navbar";
 import ImageUpload from "./components/ImageUpload";
+=======
+import React, { useState } from "react";
+import ImageUpload from "./ImageUpload";
+>>>>>>> 71852fce1f5fe8795d9838a320e8bbc9c6ee51ef
 
 function App() {
   // const [formData, setFormData] = useState({
@@ -99,6 +104,10 @@ function App() {
           {status}
         </p>
       )}
+
+
+
+      <ImageUpload />
     </div>
     </div></> */}
     <ImageUpload/>

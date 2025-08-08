@@ -8,7 +8,10 @@
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.11.0",
+<<<<<<< HEAD
     "lucide-react": "^0.532.0",
+=======
+>>>>>>> 71852fce1f5fe8795d9838a320e8bbc9c6ee51ef
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-scripts": "5.0.1",
