@@ -74,5 +74,6 @@ mongoose.connection.on("error", console.error.bind(console, "MongoDB error:"));
 mongoose.connection.once("open", () => console.log("✅ Connected to MongoDB"));
 
 app.use("/api", uploadRoute);
+app.use("/api/auth", authRoutes);
 
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
