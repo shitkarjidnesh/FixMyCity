@@ -56,8 +56,11 @@ const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+// const cors = require("cors");
+// app.use(cors({ origin: "http://localhost:3000" }));
 
 const uploadRoute = require("./routes/uploadRoute");
+const authRoutes = require("./routes/auth");
 
 const app = express();
 const PORT = process.env.PORT || 5000;

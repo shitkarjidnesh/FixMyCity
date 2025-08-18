@@ -1,8 +1,8 @@
-// import React, { useState } from "react";
-// import Navbar from "./components/navbar";
-import ImageUpload from "./components/ImageUpload";
-
 import React, { useState } from "react";
+import Login from "./components/Login";
+import Register from "./components/Register";
+// import Navbar from "./components/navbar";
+// import ImageUpload from "./components/ImageUpload";
 
 function App() {
   // const [formData, setFormData] = useState({
@@ -107,7 +107,9 @@ function App() {
       <ImageUpload />
     </div>
     </div></> */}
-    <ImageUpload/>
+    {/* <ImageUpload/> */}
+    <Login/>
+    <Register/>
     </>
   );
 }
