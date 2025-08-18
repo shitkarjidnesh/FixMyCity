@@ -10,7 +10,7 @@ const ImageUpload = () => {
     const file = e.target.files[0];
     setImage(file);
     setPreviewUrl(URL.createObjectURL(file));
-  };
+  };   
 
   const handleUpload = async () => {
     if (!image) return alert('Please select an image.');
@@ -27,21 +27,43 @@ const ImageUpload = () => {
   };
 
   return (
-    <div className="container" style={{ maxWidth: 500, margin: 'auto', padding: 20 }}>
-      <h2>Upload Complaint Image</h2>
-      <input type="file" onChange={handleImageChange} accept="image/*" />
-      <br /><br />
-      {previewUrl && <img src={previewUrl} alt="Preview" style={{ width: '100%' }} />}
-      <br /><br />
-      <button onClick={handleUpload}>Upload</button>
-      <br /><br />
-      {uploadedUrl && (
-        <>
-          <p>✅ Uploaded Successfully</p>
-          <img src={uploadedUrl} alt="Uploaded" style={{ width: '100%' }} />
-        </>
-      )}
+   <div className="max-w-md mx-auto p-5 bg-white rounded shadow">
+  <h2 className="text-xl font-semibold mb-4 text-center">Upload Complaint Image</h2>
+
+  <input
+    type="file"
+    onChange={handleImageChange}
+    accept="image/*"
+    className="mb-4 w-full border border-gray-300 p-2 rounded"
+  />
+
+  {previewUrl && (
+    <img
+      src={previewUrl}
+      alt="Preview"
+      className="w-full mb-4 rounded border"
+    />
+  )}
+
+  <button
+    onClick={handleUpload}
+    className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
+  >
+    Upload
+  </button>
+
+  {uploadedUrl && (
+    <div className="mt-6">
+      <p className="text-green-600 font-medium mb-2">✅ Uploaded Successfully</p>
+      <img
+        src={uploadedUrl}
+        alt="Uploaded"
+        className="w-full rounded border"
+      />
     </div>
+  )}
+</div>
+
   );
 };
 
