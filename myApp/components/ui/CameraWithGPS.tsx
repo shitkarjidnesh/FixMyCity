@@ -7,7 +7,7 @@ import {
   StyleSheet,
   Linking,
 } from "react-native";
-import { Camera, CameraType } from "expo-camera"; // ✅ correct import
+import { Camera } from "expo-camera";
 import * as Location from "expo-location";
 import moment from "moment";
 
@@ -16,7 +16,7 @@ export default function CameraWithGPS() {
   const [locationPermission, setLocationPermission] = useState(null);
   const [photoUri, setPhotoUri] = useState(null);
   const [meta, setMeta] = useState(null);
-  const cameraRef = useRef<Camera | null>(null);
+  const cameraRef = useRef(null);
 
   useEffect(() => {
     requestPermissions();
@@ -81,11 +81,7 @@ export default function CameraWithGPS() {
   return (
     <View style={styles.container}>
       {!photoUri ? (
-        <Camera
-          style={styles.camera}
-          ref={cameraRef}
-          type CameraType = "back" // ✅ specify type
-        />
+        <Camera style={styles.camera} ref={cameraRef} />
       ) : (
         <Image source={{ uri: photoUri }} style={styles.preview} />
       )}
