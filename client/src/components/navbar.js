@@ -1,60 +1,77 @@
-import { useState } from "react";
-import { Menu, X } from "lucide-react"; // Optional: install `lucide-react`
+// Navbar.js
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
+import { Link } from "react-router-dom";
 
-const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  const navLinks = [
-    { name: "Home", href: "/" },
-    { name: "About", href: "/about" },
-    { name: "Services", href: "/services" },
-    { name: "Contact", href: "/contact" },
-  ];
+export default function Navbar() {
+  const { auth, logout } = useContext(AuthContext);
 
   return (
-    <nav className="bg-white border-b border-gray-200 shadow-sm fixed w-full ">
-      <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between">
-        <div className="text-xl font-bold text-blue-600">FixMyCity</div>
+    <nav className="flex justify-between items-center px-6 py-3 bg-gray-900 text-white">
+      {/* Brand */}
+      <Link to="/home" className="text-lg font-bold text-blue-400">
+        FixMyCity
+      </Link>
 
-        <div className="hidden md:flex space-x-6">
-          {navLinks.map((link) => (
-            <a
-              key={link.name}
-              href={link.href}
-              className="text-gray-700 hover:text-blue-600 transition"
+      {/* Links */}
+      <div className="flex items-center gap-6">
+        {/* Always visible */}
+        <Link to="/home" className="hover:text-blue-400">
+          Home
+        </Link>
+
+        {/* Role-based */}
+        {auth.role === "user" && (
+          <>
+            <Link to="/report" className="hover:text-blue-400">
+              Report Issue
+            </Link>
+            <Link to="/my-complaints" className="hover:text-blue-400">
+              My Complaints
+            </Link>
+          </>
+        )}
+
+        {auth.role === "worker" && (
+          <>
+            <Link to="/tasks" className="hover:text-blue-400">
+              My Tasks
+            </Link>
+            <Link to="/upload-proof" className="hover:text-blue-400">
+              Upload Proof
+            </Link>
+          </>
+        )}
+
+        {/* Shared between user + worker */}
+        {(auth.role === "user" || auth.role === "worker") && (
+          <Link to="/help" className="hover:text-blue-400">
+            Help
+          </Link>
+        )}
+
+        {/* Auth controls */}
+        {auth.token ? (
+          <>
+            <span className="text-gray-300">Hi, {auth.name}</span>
+            <button
+              onClick={logout}
+              className="bg-red-500 px-3 py-1 rounded-md hover:bg-red-600"
             >
-              {link.name}
-            </a>
-          ))}
-        </div>
-
-        <div className="md:hidden">
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="text-gray-700 focus:outline-none"
-          >
-            {isOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-        </div>
+              Logout
+            </button>
+          </>
+        ) : (
+          <>
+            <Link to="/login" className="hover:text-blue-400">
+              Login
+            </Link>
+            <Link to="/register" className="hover:text-blue-400">
+              Register
+            </Link>
+          </>
+        )}
       </div>
-
-      {/* Mobile Menu */}
-      {isOpen && (
-        <div className="md:hidden bg-white px-4 pb-4 space-y-2">
-          {navLinks.map((link) => (
-            <a
-              key={link.name}
-              href={link.href}
-              className="block text-gray-700 hover:text-blue-600"
-              onClick={() => setIsOpen(false)}
-            >
-              {link.name}
-            </a>
-          ))}
-        </div>
-      )}
     </nav>
   );
-};
-
-export default Navbar;
+}
