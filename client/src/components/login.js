@@ -23,23 +23,32 @@ export default function Login() {
         form
       );
 
-      // Ensure backend returns { token, role, name }
+      // Save token and userId in localStorage
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("userId", res.data.userId);
+
+      console.log("Token:", localStorage.getItem("token"));
+    //  console.log("UserId:", localStorage.getItem("userId"));
+
+      // Update auth context
       login({
         token: res.data.token,
         role: res.data.role,
         name: res.data.name,
+     //   userId: res.data.userId, // optional for context
       });
 
-      // Redirect after login
-      navigate("/home");
+      navigate("/");
     } catch (err) {
       setError(err.response?.data?.msg || "Login failed");
     }
   };
 
+
+
   return (
     <>
-      <Navbar />
+     <Navbar />
       <div className="flex justify-center items-center h-screen bg-gray-100">
         <div className="bg-white p-8 rounded-2xl shadow-md w-96">
           <h2 className="text-2xl font-bold text-center mb-6">Login</h2>

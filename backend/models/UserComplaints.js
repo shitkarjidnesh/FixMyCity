@@ -1,12 +1,12 @@
 const mongoose = require("mongoose");
 
-const UserSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true },
-  message: { type: String },
+const UserComplaintSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  type: { type: String, required: true },
+  description: { type: String, required: true },
+  address: { type: String, required: true },
   imageUrl: { type: String },
-  latitude: { type: Number },
-  longitude: { type: Number },
+  dateTime: { type: Date, default: Date.now },
 });
 
-module.exports = mongoose.model("UserComplaints", UserSchema);
+module.exports = mongoose.model("UserComplaints", UserComplaintSchema);

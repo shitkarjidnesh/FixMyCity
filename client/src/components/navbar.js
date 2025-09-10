@@ -16,7 +16,7 @@ export default function Navbar() {
       {/* Links */}
       <div className="flex items-center gap-6">
         {/* Always visible */}
-        <Link to="/home" className="hover:text-blue-400">
+        <Link to="/" className="hover:text-blue-400">
           Home
         </Link>
 
@@ -26,7 +26,7 @@ export default function Navbar() {
             <Link to="/report" className="hover:text-blue-400">
               Report Issue
             </Link>
-            <Link to="/my-complaints" className="hover:text-blue-400">
+            <Link to="/mycomplaints" className="hover:text-blue-400">
               My Complaints
             </Link>
           </>

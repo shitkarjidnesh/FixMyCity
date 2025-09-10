@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
+import Navbar from "./navbar";
 import axios from "axios";
 
 export default function Register() {
@@ -31,6 +32,9 @@ export default function Register() {
   };
 
   return (
+
+    <>
+     <Navbar />
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
       <div className="bg-white p-8 rounded-2xl shadow-md w-96">
         <h2 className="text-2xl font-bold text-center mb-6">Register</h2>
@@ -92,5 +96,6 @@ export default function Register() {
         </form>
       </div>
     </div>
+    </>
   );
 }

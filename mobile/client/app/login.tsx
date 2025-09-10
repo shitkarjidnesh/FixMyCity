@@ -1,57 +1,3 @@
-// import { useState } from "react";
-// import { View, Text, TextInput, Button, TouchableOpacity } from "react-native";
-// import { useRouter } from "expo-router";
-// import AsyncStorage from "@react-native-async-storage/async-storage";
-// import axios from "axios";
-
-// // for Android Emulator -> use 10.0.2.2
-// // for iOS Simulator -> use localhost
-// // for real device -> use your LAN IP (e.g., 192.168.x.x)
-
-// const API_URL = "http://10.0.2.2:5000/api/auth";
-
-// export default function Login() {
-//   const [email, setEmail] = useState("");
-//   const [password, setPassword] = useState("");
-//   const router = useRouter();
-
-//   const handleLogin = async () => {
-//     if (email && password) {
-//       await AsyncStorage.setItem("token", "dummy-auth-token");
-//       router.replace("/home");
-//     }
-//   };
-
-//   return (
-//     <View className="flex-1 justify-center px-6 bg-gray-100">
-//       <Text className="text-2xl font-bold mb-6 text-center">Login</Text>
-//       <TextInput
-//         placeholder="Email"
-//         value={email}
-//         onChangeText={setEmail}
-//         className="border p-2 mb-3 rounded"
-//       />
-//       <TextInput
-//         placeholder="Password"
-//         secureTextEntry
-//         value={password}
-//         onChangeText={setPassword}
-//         className="border p-2 mb-3 rounded"
-//       />
-//       <Button title="Login" onPress={handleLogin} />
-//       <TouchableOpacity onPress={() => router.push("/register")}>
-//         <Text className="mt-4 text-blue-600 text-center">
-//           New user? Register here
-//         </Text>
-//       </TouchableOpacity>
-//     </View>
-//   );
-// }
-
-
-
-
-
 import { useState } from "react";
 import {
   View,
@@ -60,6 +6,11 @@ import {
   Button,
   TouchableOpacity,
   Alert,
+  StyleSheet,
+  SafeAreaView,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
 } from "react-native";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -87,7 +38,7 @@ export default function Login() {
 
       if (res.data.token) {
         await AsyncStorage.setItem("token", res.data.token);
-        router.replace("/home"); // Navigate to home screen
+        router.replace("/home");
       } else {
         Alert.alert("Login Failed", "Invalid response from server");
       }
@@ -100,40 +51,85 @@ export default function Login() {
   };
 
   return (
-    <View className="flex-1 justify-center px-6 bg-gray-100">
-     <TopNav></TopNav>
-      <Text className="text-2xl font-bold mb-6 text-center">Login</Text>
+    <SafeAreaView style={styles.safeArea}>
+      {/* Top Navbar */}
+      <TopNav />
 
-      <TextInput
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-        keyboardType="email-address"
-        className="border p-2 mb-3 rounded bg-white"
-      />
+      {/* Content Area */}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={styles.flex}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          keyboardShouldPersistTaps="handled"
+        >
+          <Text style={styles.title}>Login</Text>
 
-      <TextInput
-        placeholder="Password"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-        className="border p-2 mb-3 rounded bg-white"
-      />
+          <TextInput
+            placeholder="Email"
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            style={styles.input}
+          />
 
-      <Button title="Login" onPress={handleLogin} />
+          <TextInput
+            placeholder="Password"
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+            style={styles.input}
+          />
 
-      <TouchableOpacity onPress={() => router.push("/register")}>
-        <Text className="mt-4 text-blue-600 text-center">
-          New user? Register here
-        </Text>
-      </TouchableOpacity>
-      <BottomNav></BottomNav>
-    </View>
+          <Button title="Login" onPress={handleLogin} />
+
+          <TouchableOpacity onPress={() => router.push("/register")}>
+            <Text style={styles.link}>New user? Register here</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </KeyboardAvoidingView>
+
+      {/* Bottom Navbar */}
+      <BottomNav />
+    </SafeAreaView>
   );
 }
 
-
-
-
-
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#f3f4f6", // gray-100
+  },
+  flex: {
+    flex: 1,
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: "center",
+    paddingHorizontal: 24,
+    paddingBottom: 80, // space above BottomNav
+    
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 24,
+    textAlign: "center",
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    padding: 12,
+    marginBottom: 16,
+    borderRadius: 8,
+    backgroundColor: "#fff",
+  },
+  link: {
+    marginTop: 16,
+    textAlign: "center",
+    color: "#2563eb", // blue-600
+    fontWeight: "500",
+  },
+});

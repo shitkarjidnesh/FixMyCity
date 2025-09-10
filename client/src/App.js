@@ -7,6 +7,7 @@ import "./index.css";
 import {  Routes, Route } from "react-router-dom";
 
 import { AuthContext } from "./context/AuthContext";
+import Report from "./components/Report";
 
 
 function App() {
@@ -18,9 +19,10 @@ const { user } = useContext(AuthContext);
       {user && <Navbar />}
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route path="/home" element={<Home />} />
+        <Route path="/" element={<Home />} />
 
         <Route path="/register" element={<Register />} />
+        <Route  path="/Report" element={<Report/>}/>
       </Routes>
     </>
   );

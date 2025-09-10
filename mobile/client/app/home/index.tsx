@@ -10,6 +10,6 @@ export default function Home() {
         <Text className="text-2xl font-bold">FixMyCity Home</Text>
       </View>
       <BottomNav />
-    </View>
+    </View> 
   );
 }
