@@ -1,6 +1,6 @@
 // import { BiCurrentLocation } from "react-icons/bi"; 
 import { useEffect } from "react";
-import Navbar from "./navbar";
+
 import { Link } from "react-router-dom";
 
 export default function HomePage() {
@@ -10,7 +10,7 @@ export default function HomePage() {
 
   return (
     <>
-      <Navbar />
+      
       <div className="min-h-screen bg-gray-50 font-sans">
         {/* Hero Section */}
         <section className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-20 px-6 text-center">
@@ -93,12 +93,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Footer */}
-        <footer className="bg-indigo-700 text-white py-6 text-center">
-          <p className="text-sm">
-            © 2025 Civic Complaint Portal | Academic Demonstration Project
-          </p>
-        </footer>
+
       </div>
     </>
   );

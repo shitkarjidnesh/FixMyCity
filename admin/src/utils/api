@@ -1,0 +1,33 @@
+import axios from "axios";
+
+const api = axios.create({
+  baseURL: "http://localhost:5000/api",
+});
+
+api.interceptors.request.use(
+  (config) => {
+    // 1. Get the auth data string from localStorage
+    const authDataString = localStorage.getItem("auth");
+
+    if (authDataString) {
+      // 2. Parse the JSON string back into an object
+      const authData = JSON.parse(authDataString);
+
+      // 3. Check if the object and its token property exist
+      if (authData && authData.token) {
+        // THE FIX & DEBUG STEP: Log the token to the console
+        console.log("Attaching token:", authData.token);
+
+        // 4. Add the token to the header in the correct format
+        config.headers["Authorization"] = `Bearer ${authData.token}`;
+      }
+    }
+
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+export default api;

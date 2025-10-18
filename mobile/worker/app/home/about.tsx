@@ -1,14 +1,12 @@
 import { View, Text, StyleSheet, ScrollView } from "react-native";
-import BottomNav from "../components/BottomNav";
+import BottomNav from "@/components/BottomNav";
 import TopNav from "@/components/TopNav";
-
 
 export default function About() {
   return (
     <View style={styles.container}>
       <TopNav></TopNav>
       <ScrollView contentContainerStyle={styles.content}>
-        
         <Text style={styles.title}>About FixMyCity</Text>
         <Text style={styles.paragraph}>
           FixMyCity is a community-driven civic issue reporting platform.

@@ -1,0 +1,82 @@
+@startuml
+title Public Grievance Reporting System - Admin Use Case Diagram
+left to right direction
+' skinparam linetype ortho
+
+actor Admin
+
+rectangle "Public Grievance System" {
+    (Login)
+    (Approve Resolution)
+    (Assign Complaint)
+    (Manage Users)
+    (Generate Reports)
+    
+
+Admin --> (Login)
+Admin --> (Approve Resolution)
+Admin --> (Assign Complaint)
+Admin --> (Manage Users)
+Admin --> (Generate Reports)
+
+@enduml
+
+
+
+@startuml
+title Public Grievance Reporting System - Worker Use Case Diagram
+left to right direction
+' skinparam linetype ortho
+
+actor Worker
+
+rectangle "Public Grievance System" {
+    (Login)
+    (Resolve Complaint)
+    (Update Complaint Status)
+    (Add Notes to Complaint)
+    (Request Additional Info)
+    (View Assigned Complaints)
+}
+
+Worker --> (Login)
+Worker --> (Resolve Complaint)
+Worker --> (Update Complaint Status)
+Worker --> (Add Notes to Complaint)
+Worker --> (Request Additional Info)
+Worker --> (View Assigned Complaints)
+
+@enduml
+
+
+@startuml
+title Public Grievance Reporting System - User Use Case Diagram
+left to right direction
+actor User
+
+rectangle "Public Grievance System" {
+    (Register)
+    (Login)
+    (Forgot Password / Reset Password)
+    (Edit Profile)
+    (Submit Complaint)
+    (Upload Multiple Images)
+    (View Complaint Status)
+    (View Complaint History)
+    (Filter Complaints)
+    (Comment / Feedback on Resolution)
+}
+
+' User associations
+User --> (Register)
+User --> (Login)
+User --> (Forgot Password / Reset Password)
+User --> (Edit Profile)
+User --> (Submit Complaint)
+User --> (Upload Multiple Images)
+User --> (View Complaint Status)
+User --> (View Complaint History)
+User --> (Filter Complaints)
+User --> (Comment / Feedback on Resolution)
+
+@enduml

@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TextInput,
-  Button,
   TouchableOpacity,
   Alert,
   StyleSheet,
@@ -14,10 +13,10 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+// Import axios and the isAxiosError type guard
 import axios from "axios";
-
-import BottomNav from "../components/BottomNav";
-import TopNav from "../components/TopNav";
+import TopNav from "@/components/TopNav";
+import BottomNav from "@/components/BottomNav";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -30,40 +29,50 @@ export default function Login() {
       return;
     }
 
+  const   role = "user";
+
     try {
-      const res = await axios.post("http://10.0.2.2:5000/api/auth/login", {
+      const res = await axios.post("http://192.168.68.44:5000/api/auth/login", {
         email,
         password,
-      });
+        role,
+        
+            });
 
-      if (res.data.token) {
-        await AsyncStorage.setItem("token", res.data.token);
-        router.replace("/home");
+      await AsyncStorage.setItem("userData", JSON.stringify(res.data));
+      router.replace("/home");
+    } catch (error) {
+      // Check if the error is an Axios error
+      if (axios.isAxiosError(error)) {
+        // Now TypeScript knows `error` is an AxiosError,
+        // so you can safely access `error.response`
+        Alert.alert(
+          "Login Error",
+          error.response?.data?.msg || "An error occurred during login."
+        );
       } else {
-        Alert.alert("Login Failed", "Invalid response from server");
+        // Handle cases where the error is not from Axios
+        Alert.alert("Login Error", "An unexpected error occurred.");
+        console.error("Unexpected error:", error);
       }
-    } catch (error: any) {
-      Alert.alert(
-        "Login Error",
-        error.response?.data?.msg || "Something went wrong"
-      );
     }
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* Top Navbar */}
       <TopNav />
 
-      {/* Content Area */}
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
-        style={styles.flex}
-      >
+        style={styles.flex}>
         <ScrollView
           contentContainerStyle={styles.scrollContainer}
-          keyboardShouldPersistTaps="handled"
-        >
+          keyboardShouldPersistTaps="handled">
+          <Text style={styles.infoText}>
+            Welcome To FixMyCity! Please log in to access your account and
+            report issues.
+          </Text>
+
           <Text style={styles.title}>Login</Text>
 
           <TextInput
@@ -83,7 +92,9 @@ export default function Login() {
             style={styles.input}
           />
 
-          <Button title="Login" onPress={handleLogin} />
+          <TouchableOpacity style={styles.button} onPress={handleLogin}>
+            <Text style={styles.buttonText}>Login</Text>
+          </TouchableOpacity>
 
           <TouchableOpacity onPress={() => router.push("/register")}>
             <Text style={styles.link}>New user? Register here</Text>
@@ -91,26 +102,26 @@ export default function Login() {
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* Bottom Navbar */}
       <BottomNav />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: "#f3f4f6", // gray-100
-  },
-  flex: {
-    flex: 1,
-  },
+  safeArea: { flex: 1, backgroundColor: "#f3f4f6" },
+  flex: { flex: 1 },
   scrollContainer: {
     flexGrow: 1,
     justifyContent: "center",
     paddingHorizontal: 24,
-    paddingBottom: 80, // space above BottomNav
-    
+    paddingBottom: 100,
+  },
+  infoText: {
+    fontSize: 24,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 20,
+    color: "blue",
   },
   title: {
     fontSize: 24,
@@ -129,7 +140,16 @@ const styles = StyleSheet.create({
   link: {
     marginTop: 16,
     textAlign: "center",
-    color: "#2563eb", // blue-600
+    color: "#2563eb",
     fontWeight: "500",
+    fontSize: 16,
   },
+  button: {
+    backgroundColor: "#2563eb",
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  buttonText: { color: "#fff", fontSize: 18, fontWeight: "600" },
 });

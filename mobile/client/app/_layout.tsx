@@ -4,7 +4,6 @@
 //   return <Stack />;
 // }
 
-
 import { Stack } from "expo-router";
 import { NavigationContainer } from "@react-navigation/native";
 

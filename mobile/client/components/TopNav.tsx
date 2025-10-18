@@ -1,156 +1,206 @@
+import React, { useState } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
-  Animated,
   StyleSheet,
   SafeAreaView,
   Platform,
   StatusBar,
-  Dimensions,
 } from "react-native";
-import { useState, useRef } from "react";
-import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import {
+  ExternalPathString,
+  RelativePathString,
+  UnknownInputParams,
+  useRouter,
+} from "expo-router";
 
 export default function TopNav() {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
-  const slideAnim = useRef(new Animated.Value(-250)).current; // drawer width
+  const [menuVisible, setMenuVisible] = useState(false);
 
   const toggleMenu = () => {
-    if (open) {
-      Animated.timing(slideAnim, {
-        toValue: -250,
-        duration: 300,
-        useNativeDriver: true,
-      }).start(() => setOpen(false));
-    } else {
-      setOpen(true);
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }).start();
+    setMenuVisible(!menuVisible);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem("token");
+      router.replace("/login");
+    } catch (error) {
+      console.error("Logout Error:", error);
     }
   };
 
+  const handleNavigate = (
+    e:
+      | string
+      | { pathname: RelativePathString; params?: UnknownInputParams }
+      | { pathname: ExternalPathString; params?: UnknownInputParams }
+      | { pathname: `/about`; params?: UnknownInputParams }
+      | { pathname: `/`; params?: UnknownInputParams }
+      | { pathname: `/login`; params?: UnknownInputParams }
+      | { pathname: `/register`; params?: UnknownInputParams }
+      | { pathname: `/home/community`; params?: UnknownInputParams }
+      | { pathname: `/_sitemap`; params?: UnknownInputParams }
+      | { pathname: `/home/camera`; params?: UnknownInputParams }
+      | { pathname: `/home/complaint`; params?: UnknownInputParams }
+      | { pathname: `/home/cummunity`; params?: UnknownInputParams }
+      | { pathname: `/home/help`; params?: UnknownInputParams }
+      | { pathname: `/home`; params?: UnknownInputParams }
+      | { pathname: `/home/profile`; params?: UnknownInputParams }
+      | { pathname: `/home/setting`; params?: UnknownInputParams }
+      | { pathname: `/home/reportProblem`; params?: UnknownInputParams }
+      | { pathname: `/home/displaycomplaints`; params?: UnknownInputParams },
+  ) => {
+    setMenuVisible(false);
+    router.push(e);
+  };
+
   return (
-    <SafeAreaView
-      style={{
-        paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
-        backgroundColor: "#2563eb",
-        zIndex: 500,
-      }}
-    >
-      {/* Top Bar */}
-      <View style={styles.topBar}>
-        <Text style={styles.title}>FixMyCity</Text>
-        <TouchableOpacity style={styles.menuButton} onPress={toggleMenu}>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.headerText}>Public Grievance System</Text>
+        <TouchableOpacity onPress={toggleMenu} style={styles.menuButton}>
           <Text style={styles.menuIcon}>☰</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Drawer + Backdrop overlay */}
-      {open && (
+      {menuVisible && (
         <>
-          {/* Backdrop covers entire screen */}
+          {/* Overlay for click outside */}
           <TouchableOpacity
-            style={styles.backdrop}
+            style={styles.overlay}
             activeOpacity={1}
-            onPress={toggleMenu}
+            onPress={() => setMenuVisible(false)}
           />
 
-          {/* Drawer slides in */}
-          <Animated.View
-            style={[styles.drawer, { transform: [{ translateX: slideAnim }] }]}
-          >
+          <View style={styles.menuContainer}>
             <TouchableOpacity
               style={styles.menuItem}
-              onPress={() => {
-                toggleMenu();
-                router.push("/home/profile");
-              }}
-            >
+              onPress={() => handleNavigate("/")}>
+              <Text style={styles.menuText}>Home</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => handleNavigate("/home/profile")}>
               <Text style={styles.menuText}>Profile</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.menuItem}
-              onPress={() => {
-                toggleMenu();
-                router.push("/home/settings");
-              }}
-            >
-              <Text style={styles.menuText}>Settings</Text>
+              onPress={() => handleNavigate("/home/help")}>
+              <Text style={styles.menuText}>Help</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.menuItem}
-              onPress={() => {
-                toggleMenu();
-                router.push("/home/help");
-              }}
-            >
-              <Text style={styles.menuText}>Help</Text>
+              onPress={() => handleNavigate("/home/reportProblem")}>
+              <Text style={styles.menuText}>Report a Problem</Text>
             </TouchableOpacity>
-          </Animated.View>
+
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => handleNavigate("/home/camera")}>
+              <Text style={styles.menuText}>camera</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => handleNavigate("/home/displaycomplaints")}>
+              <Text style={styles.menuText}>my complaints</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => handleNavigate("/home/about")}>
+              <Text style={styles.menuText}>About</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => handleNavigate("/home/setting")}>
+              <Text style={styles.menuText}>setting</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => handleNavigate("/home/community")}>
+              <Text style={styles.menuText}>Community</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.menuItem,
+                { borderTopWidth: 1, borderTopColor: "#ddd" },
+              ]}
+              onPress={handleLogout}>
+              <Text style={[styles.menuText, { color: "red" }]}>Logout</Text>
+            </TouchableOpacity>
+          </View>
         </>
       )}
     </SafeAreaView>
   );
 }
 
-const { height } = Dimensions.get("window");
-
 const styles = StyleSheet.create({
-  topBar: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 16,
-    backgroundColor: "#2563eb",
-    elevation: 8,
+  container: {
+    backgroundColor: "#fff",
   },
-  title: {
-    color: "white",
-    fontSize: 20,
+  header: {
+    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight  : 10,
+    paddingHorizontal: 20,
+    paddingBottom: 10,
+    backgroundColor: "#007AFF",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    zIndex: 100,
+  },
+  headerText: {
+    color: "#fff",
+    fontSize: 22,
     fontWeight: "bold",
   },
   menuButton: {
     padding: 8,
   },
   menuIcon: {
-    color: "white",
-    fontSize: 26,
+    fontSize: 28,
+    color: "#fff",
   },
-  drawer: {
+  overlay: {
     position: "absolute",
     top: 0,
-    bottom: 0,
-    width: 250,
-
-    paddingTop: 77,
-    zIndex: 200,
-    elevation: 6,
-  },
-  menuText: {
-    fontSize: 18,
-    color: "white",
-  },
-  backdrop: {
-    position: "absolute",
-    top: 0,
-    bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: "rgba(0,0,0,0.4)",
-    zIndex: 100,
-    height: height, // ensures full screen coverage
-    width: 250,
+    bottom: 0,
+    backgroundColor: "transparent",
+    zIndex: 10,
+  },
+  menuContainer: {
+    position: "absolute",
+    top: Platform.OS === "android" ? StatusBar.currentHeight + 70 : 10,
+    right: 10,
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 8,
+    paddingVertical: 10,
+    width: 180,
+    zIndex: 20,
   },
   menuItem: {
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "black",
+    paddingVertical: 12,
+    paddingHorizontal: 15,
+  },
+  menuText: {
+    fontSize: 16,
+    color: "#333",
   },
 });

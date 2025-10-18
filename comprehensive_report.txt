@@ -1,0 +1,160 @@
+
+# Project Specification Document
+
+## 1. Project Overview
+
+### Problem Statement and Main Goal
+The project, internally named "FixMyCity," is a comprehensive complaint management system designed to bridge the gap between citizens and municipal authorities or service providers. The primary goal is to provide a streamlined, transparent, and efficient process for reporting local issues (e.g., potholes, broken streetlights, waste management problems), tracking their resolution, and managing the entire lifecycle of a complaint. The system aims to empower citizens, improve accountability for service providers, and provide administrators with a powerful tool for monitoring and managing civic issues.
+
+### Target Users and Stakeholders
+- **Citizens (Users):** General public who want to report issues in their locality. They can submit complaints with details, images, and location, and track the status of their reports.
+- **Workers/Field Staff:** Municipal or service company employees responsible for resolving the reported issues. They need to view assigned tasks, update statuses, and communicate progress.
+- **Administrators:** System managers who oversee the entire process. They have access to all complaints, user management, analytics, and can assign tasks and manage system settings.
+
+## 2. System Architecture
+
+The project is a full-stack monorepo with a clear separation of concerns between the frontend clients and the backend server.
+
+### Technology Stack
+- **Backend:**
+  - **Framework:** Node.js with Express.js
+  - **Database:** MongoDB with Mongoose ODM
+  - **Authentication:** JSON Web Tokens (JWT)
+  - **Image Storage:** Cloudinary for cloud-based image uploads.
+  - **Middleware:** `cors` for cross-origin requests, `helmet` for security headers, `morgan` for logging, `body-parser` for request parsing, `multer` for handling file uploads.
+- **Frontend (Web - Client):**
+  - **Framework:** React.js (`react-scripts`, Create React App)
+  - **Routing:** `react-router-dom`
+  - **Styling:** Tailwind CSS, with some plain CSS.
+  - **HTTP Client:** `axios`
+- **Frontend (Web - Admin):**
+  - **Framework:** React.js (`react-scripts`, Create React App)
+  - **Routing:** `react-router-dom`
+  - **State Management:** React Context API (`AuthContext`)
+- **Mobile (Client & Worker):**
+  - **Framework:** React Native with Expo
+  - **Routing:** `expo-router` (file-system based routing)
+  - **UI Components:** Native components, `@expo/vector-icons`
+  - **HTTP Client:** `axios`
+
+### High-Level Component/Module Breakdown
+The project is structured as a monorepo with five main components:
+1.  **`backend`:** The central Node.js/Express API server that handles all business logic, database interactions, and authentication.
+2.  **`client`:** A React-based web application for end-users (citizens) to register, log in, file complaints, and view their complaint history.
+3.  **`admin`:** A separate React-based web application for administrators to manage users and complaints.
+4.  **`mobile/client`:** A React Native (Expo) mobile app for end-users, mirroring the functionality of the web client.
+5.  **`mobile/worker`:** A React Native (Expo) mobile app for workers to manage assigned complaints.
+
+### Data Flow
+1.  **User Interaction:** A user (citizen, worker, or admin) interacts with one of the frontend applications (web or mobile).
+2.  **HTTP Request:** The frontend client sends an HTTP request (e.g., for login, submitting a form) to the backend Express API. `axios` is used for these requests.
+3.  **Authentication:** For protected routes, the `auth` middleware on the backend verifies the JWT sent in the request headers. The middleware also checks for user roles (`user`, `worker`, `admin`) to enforce authorization.
+4.  **Business Logic:** The corresponding route handler in the backend processes the request. This may involve:
+    - Validating input data.
+    - Interacting with the MongoDB database via Mongoose models (`User`, `UserComplaints`).
+    - Performing operations like creating, reading, updating, or deleting data.
+    - Uploading images to Cloudinary.
+5.  **HTTP Response:** The backend sends a JSON response back to the frontend client, indicating success or failure, along with any requested data.
+6.  **UI Update:** The frontend client receives the response and updates the UI accordingly (e.g., displays the new complaint, shows an error message, navigates to a new page).
+
+## 3. Functional Modules
+
+### Implemented Features
+- **User Authentication (Register & Login):**
+  - **Workflow:** Users can register with a name, email, and password. The backend hashes the password (`bcryptjs`) and stores the user in the `User` collection with a specified `role` (defaults to "user"). Users can log in with their email and password. Upon successful login, the backend returns a JWT, user role, name, email, and ID.
+  - **Role-Based Access:** The login process can differentiate between `user`, `worker`, and `admin` roles, ensuring users access the correct application.
+- **Complaint Submission:**
+  - **Workflow:** Authenticated users can create a new complaint by providing a type, description, and address. They can optionally upload an image.
+  - **Dependencies:** This feature uses `multer` for in-memory file handling and streams the image to `Cloudinary`. The complaint details and the Cloudinary image URL are then saved to the `UserComplaints` collection in MongoDB.
+- **Complaint Management (User):**
+  - **Workflow:** Users can view a list of their own submitted complaints (`/my-complaints`). They can also view the details of a specific complaint and delete it.
+  - **Dependencies:** Relies on the `/api/complaints` endpoints, which are protected by the `auth` middleware to ensure users can only access their own data.
+- **Admin Panel:**
+  - **Workflow:** Administrators have a separate dashboard (`/admin`) where they can:
+    - View all complaints from all users.
+    - Update the status of any complaint.
+    - View a list of all users in the system.
+    - Delete users (which also deletes all associated complaints).
+  - **Dependencies:** All admin routes (`/api/admin/*`) are protected by the `auth` middleware, which specifically requires the `admin` role.
+- **Multi-Platform Support:**
+  - The core functionality is accessible via a standard web browser (for users and admins) and dedicated mobile apps for users and workers.
+
+### Incomplete or Placeholder Modules
+- **Worker Mobile App (`mobile/worker`):** The file structure is created, but the core functionality (viewing assigned tasks, updating status) appears to be a placeholder. The `_layout.tsx` is minimal, and there are no other screens defined in the `app` directory.
+- **Mobile Client (`mobile/client`):** While the basic navigation structure is present (`_layout.tsx`, `login`, `register`, `home`), the actual implementation of complaint submission and viewing within the mobile app is likely in early stages. Key screens like `camera.tsx` and `complaint.tsx` exist but their completeness is not verified.
+- **Dashboard Page (`admin/src/pages/DashboardPage.js`):** This page likely serves as the main container for admin functionality, but the internal components for displaying and managing complaints and users (`ComplaintsListPage.js`, `UsersListPage.js`) are the actual implementation hubs.
+- **Profile Page (`client/src/pages/ProfilePage.js`):** The route exists, but the functionality for a user to update their profile information (e.g., name, password) is not apparent from the backend routes.
+
+## 4. Non-Functional Aspects
+
+### Security
+- **Authentication:** Implemented using JWT. A token is generated on login and must be sent with subsequent requests for protected resources.
+- **Authorization:** The system implements role-based access control (RBAC). The `auth.js` middleware checks for a valid token and can be configured to require a specific role (e.g., `auth('admin')`), effectively protecting routes based on user roles.
+- **Input Validation:** Basic checks are in place (e.g., checking if a user already exists on registration). However, more robust validation on the backend for all incoming data could be an area for improvement.
+- **Password Security:** Passwords are not stored in plaintext; they are hashed using `bcryptjs`.
+- **API Security:** `helmet` is used to set various HTTP headers, protecting against common web vulnerabilities like XSS and clickjacking.
+
+### UI/UX Design Approach
+- **Web (Client):** Utilizes **Tailwind CSS**, indicating a utility-first approach to styling for a custom, modern design. It features a standard layout with a Navbar, main content area, and a Footer.
+- **Web (Admin):** Uses standard React with plain CSS (`App.css`, `index.css`). The UI is likely more functional and less stylized than the main client application.
+- **Mobile:** Built with **React Native and Expo**, suggesting a goal of a native look and feel for both iOS and Android. The use of `expo-router` allows for a clean, file-based navigation structure.
+
+### Scalability and Performance
+- **Backend:** The Node.js backend is asynchronous and non-blocking, which is good for I/O-bound operations. However, as it runs on a single thread, it could become a bottleneck under heavy CPU load. For scaling, it would need to be run in a cluster (e.g., using PM2 or a container orchestrator like Kubernetes).
+- **Database:** MongoDB is horizontally scalable, which is a significant advantage for future growth. The use of `autoIndex: true` is convenient for development but should be disabled in production, with indexes being created manually for better performance.
+- **Image Handling:** Offloading image storage to Cloudinary is an excellent choice for scalability, as it separates static asset handling from the main application server.
+
+## 5. Project Progress Status
+
+### What is Already Implemented and Working
+- **Core Backend API:** The Express server is functional with endpoints for user registration, login, and full CRUD (Create, Read, Update, Delete) operations for complaints.
+- **Role-Based Authentication:** The JWT-based authentication and role-checking system is in place and functional.
+- **Web Client (User):** The React web app for users is substantially developed. Users can register, log in, submit complaints (with image uploads), and view their complaint history.
+- **Admin Web Client:** The React web app for admins is also well-developed, with functionality to view all users and complaints and to manage them.
+
+### What is Partially Developed
+- **Mobile Client App (`mobile/client`):** The project is set up with Expo and React Native, and basic navigation is in place. However, the feature screens (`complaint.tsx`, `camera.tsx`) are likely not fully integrated with the backend yet.
+- **User Profile Management:** A profile page exists in the client app, but the backend API lacks an endpoint for users to update their information.
+
+### What is Missing or Yet to be Built
+- **Worker Mobile App (`mobile/worker`):** This is the most significant missing piece. The project is scaffolded, but it lacks any real functionality. The entire workflow for a worker (e.g., getting assigned complaints, viewing details, updating status, navigating to the location) needs to be designed and built.
+- **Complaint Assignment Logic:** There is no logic on the backend for assigning complaints to workers.
+- **Notifications:** There is no system for notifying users of status updates or for notifying workers of new assignments (e.g., via push notifications or email).
+- **Advanced Filtering and Searching:** The admin and user dashboards have basic lists, but they lack advanced features like searching for complaints or filtering by status, date, or type.
+- **Testing:** There are placeholder test files (`App.test.js`), but no meaningful unit, integration, or end-to-end tests appear to be written.
+- **Deployment Configuration:** There are no Dockerfiles, CI/CD configuration files, or other deployment scripts.
+
+## 6. Next Steps & Recommendations
+
+### Logical Milestones
+1.  **Milestone 1: Complete the Worker Mobile App.**
+    - Design the UI/UX for the worker app.
+    - Implement backend endpoints for assigning complaints and for workers to update statuses.
+    - Build the app screens for viewing assigned jobs, job details (with map/location), and updating progress.
+2.  **Milestone 2: Enhance Core Functionality.**
+    - Implement the user profile update feature (frontend and backend).
+    - Add a notification system (push notifications for mobile, email for web).
+    - Implement advanced search and filtering on the admin and user dashboards.
+3.  **Milestone 3: Refine and Test.**
+    - Write comprehensive unit and integration tests for the backend API.
+    - Write component and end-to-end tests for the frontend applications.
+    - Conduct thorough user acceptance testing (UAT) for all applications.
+4.  **Milestone 4: Prepare for Deployment.**
+    - Create Dockerfiles for containerizing the backend and frontend applications.
+    - Set up a CI/CD pipeline (e.g., using GitHub Actions) to automate testing and builds.
+    - Prepare production environment configurations and deployment scripts.
+
+### Improvement Recommendations
+- **Architecture & Backend:**
+  - **Configuration Management:** Move hardcoded values (like the `cors` origin) into environment variables using `dotenv`.
+  - **Input Validation:** Implement a dedicated validation library (like `joi` or `express-validator`) on the backend to create a robust validation layer for all incoming API requests.
+  - **Error Handling:** The global error handler is very basic. Enhance it to provide more specific error messages and status codes based on the error type.
+- **Database:**
+  - **Schema Refinement:** Add a `status` field to the `UserComplaintSchema` with an `enum` of possible values (e.g., `['submitted', 'in_progress', 'resolved', 'rejected']`) and a default value of `'submitted'`.
+  - **Indexing:** Before moving to production, analyze query patterns and create appropriate indexes in MongoDB to ensure fast query performance. Disable `autoIndex`.
+- **UI/UX:**
+  - **Consistency:** The admin panel uses plain CSS while the client app uses Tailwind. Consider unifying the styling approach for easier maintenance, perhaps by creating a shared component library.
+  - **User Feedback:** Enhance user feedback mechanisms. For example, show loading spinners during API calls and use toasts or snackbars to provide clear success or error messages.
+- **Testing:**
+  - **Strategy:** Define a clear testing strategy. Start with unit tests for critical backend logic (authentication, complaint creation) and frontend components. Then, add integration tests for API endpoints.
+  - **Frameworks:** Use `jest` and `supertest` for the backend. For the frontend, use `react-testing-library` for component testing and a framework like `Cypress` or `Playwright` for end-to-end testing.

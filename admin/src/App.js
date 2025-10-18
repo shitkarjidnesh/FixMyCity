@@ -1,24 +1,34 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useContext } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { AuthContext } from "./context/AuthContext";
+
+import AdminLoginPage from "./pages/AdminLoginPage";
+import DashboardPage from "./pages/DashboardPage";
+
+function PrivateRoute({ children }) {
+  const { auth, loading } = useContext(AuthContext);
+
+  // Wait until localStorage finishes loading
+  if (loading) {
+    return <div className="text-center mt-10">Loading...</div>;
+  }
+
+  // Redirect if not logged in
+  if (!auth?.token) {
+    return <Navigate to="/login" />;
+  }
+
+  return children;
+}
 
 function App() {
+  const { auth } = useContext(AuthContext);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Routes>
+      <Route path="/login" element={<AdminLoginPage />} />
+      <Route path="/*" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
+    </Routes>
   );
 }
 

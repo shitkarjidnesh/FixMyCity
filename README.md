@@ -1,82 +1,65 @@
-# MERN Project Setup
+# FixMyCity - Full-Stack Complaint Management System
 
-This project is structured into three parts:
+This is a monorepo for a full-stack complaint management system. It includes a React web client, a React admin dashboard, and a Node.js/Express.js backend.
 
-- **client/** – React frontend using Tailwind CSS
-- **EXPRESS/** – Express.js backend with environment configuration
-- **mongo/** – (Optional) Local MongoDB-related setup (if applicable)
+## Running the Project
 
----
+### Prerequisites
 
-## 🛠️ Installation Instructions
+- Node.js
+- npm
+- MongoDB
+- A Cloudinary account
 
-### 1. Clone the Repository
-```bash
-git clone https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
-cd YOUR_REPO_NAME
-```
+### Backend Setup
 
-### 2. Install Frontend (React with Tailwind CSS)
-```bash
-cd client
-npm install
-```
+1.  Navigate to the `backend` directory:
+    ```sh
+    cd backend
+    ```
+2.  Install dependencies:
+    ```sh
+    npm install
+    ```
+3.  Create a `.env` file and add the following environment variables (use `.env.example` as a template):
+    ```
+    MONGO_URI=<your_mongodb_connection_string>
+    JWT_SECRET=<your_jwt_secret>
+    CLOUDINARY_CLOUD_NAME=<your_cloudinary_cloud_name>
+    CLOUDINARY_API_KEY=<your_cloudinary_api_key>
+    CLOUDINARY_API_SECRET=<your_cloudinary_api_secret>
+    ```
+4.  Start the backend server:
+    ```sh
+    npm start
+    ```
 
-> Installs:
-> - React
-> - React DOM
-> - Tailwind CSS and PostCSS
-> - Additional frontend dependencies as defined in `client/package.json`
+### Frontend (Client) Setup
 
----
+1.  Navigate to the `client` directory:
+    ```sh
+    cd client
+    ```
+2.  Install dependencies:
+    ```sh
+    npm install
+    ```
+3.  Start the client development server:
+    ```sh
+    npm start
+    ```
 
-### 3. Install Backend (Express)
-```bash
-cd ../EXPRESS
-npm install
-```
+### Frontend (Admin) Setup
 
-> Installs:
-> - Express
-> - CORS
-> - dotenv
-> - Any backend dependencies as listed in `EXPRESS/package.json`
-
-Ensure you have a `.env` file with required environment variables like:
-```dotenv
-PORT=5000
-MONGO_URI=mongodb://localhost:27017/your-db-name
-```
-
----
-
-### 4. (Optional) Mongo Setup
-If using the `mongo/` folder separately for scripts/tools, install its dependencies:
-```bash
-cd ../mongo
-npm install
-```
-
----
-
-## ▶️ Running the Project
-
-### Start Backend
-```bash
-cd EXPRESS
-node index.js
-```
-
-### Start Frontend
-```bash
-cd ../client
-npm start
-```
-
----
-
-## 📦 Notes
-
-- Do **not** commit `node_modules/`
-- `.env` file should be excluded using `.gitignore`
-- All required modules are defined in each `package.json`; just run `npm install` in respective folders
+1.  Navigate to the `admin` directory:
+    ```sh
+    cd admin
+    ```
+2.  Install dependencies:
+    ```sh
+    npm install
+    ```
+3.  Start the admin development server:
+    ```sh
+    npm start
+    ```

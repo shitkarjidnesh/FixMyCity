@@ -1,0 +1,95 @@
+Perfect! You can save this **clean setup process** as a “ready-to-go” **React Native Expo deep-check and reset guide** for any future project. Here's a full **step-by-step reusable guide** you can keep:
+
+---
+
+### 🔹 1. Backup Current Project (Optional)
+
+```bash
+cp -r "C:\Users\Jidnesh\Desktop\Projects\New folder\mobile\client" "C:\Users\Jidnesh\Desktop\Projects\New folder\mobile\client_backup"
+```
+
+---
+
+### 🔹 2. Replace `package.json` with clean version
+
+* Use the minimal `package.json` I gave earlier.
+* Save it in the project root (`client/package.json`).
+
+---
+
+### 🔹 3. Remove old dependencies and lock files
+
+```bash
+rm -rf node_modules package-lock.json
+```
+
+---
+
+### 🔹 4. Install dependencies safely
+
+```bash
+npm install --legacy-peer-deps
+```
+
+---
+
+### 🔹 5. Clear Expo cache and start project
+
+```bash
+expo start -c
+```
+
+---
+
+### 🔹 6. Optional: Deep scan dependencies used in project
+
+If you want to **check which dependencies are actually used**:
+
+1. Install depcheck globally:
+
+```bash
+npm install -g depcheck
+```
+
+2. Run depcheck **from your project folder**:
+
+```bash
+depcheck .
+```
+
+* This scans **only the folder you are in**.
+* It lists:
+
+  * `dependencies` being used
+  * `devDependencies` being used
+  * `missing` (used but not installed)
+  * `unused` (installed but not used)
+
+---
+
+### 🔹 7. Fix any missing dependencies
+
+* For any **missing dependencies** reported by depcheck:
+
+```bash
+npm install <package-name> --save
+```
+
+* For devDependencies:
+
+```bash
+npm install <package-name> --save-dev
+```
+
+---
+
+### 🔹 8. Optional: Save this as reusable script
+
+Create a file like `resetProject.sh` (Linux/macOS) or `resetProject.bat` (Windows) with the above commands, so next time you can run it in **one go**.
+
+---
+
+If you want, I can **write this exact reusable Windows batch file** (`resetProject.bat`) for your React Native Expo projects.
+It will handle **clean install, depcheck, cache clear** in one command.
+
+Do you want me to make that?

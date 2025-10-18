@@ -18,28 +18,62 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Register() {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
   const router = useRouter();
 
   const handleRegister = async () => {
-    if (!email || !password) {
-      Alert.alert("Error", "Please enter email and password");
+    // Validate required fields
+    if (
+      !name ||
+      !email ||
+      !phone ||
+      !address ||
+      !password ||
+      !confirmPassword
+    ) {
+      Alert.alert("Error", "Please fill all fields");
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      Alert.alert("Error", "Please enter a valid email address");
+      return;
+    }
+
+    // Validate phone number (simple check, 10 digits)
+    const phoneRegex = /^\d{10}$/;
+    if (!phoneRegex.test(phone)) {
+      Alert.alert("Error", "Please enter a valid 10-digit phone number");
+      return;
+    }
+
+    // Check password match
+    if (password !== confirmPassword) {
+      Alert.alert("Error", "Passwords do not match");
       return;
     }
 
     try {
       const res = await axios.post("http://10.0.2.2:5000/api/auth/register", {
+        name,
         email,
+        phone,
+        address,
         password,
       });
 
       if (res.data.msg?.toLowerCase().includes("success")) {
-        // optionally store token if backend sends one
         if (res.data.token) {
           await AsyncStorage.setItem("token", res.data.token);
         }
-
         Alert.alert("Success", res.data.msg);
         router.replace("/login");
       } else {
@@ -52,23 +86,25 @@ export default function Register() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* Top Navbar */}
       <TopNav />
 
-      {/* Content Area */}
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
-        style={styles.flex}
-      >
+        style={styles.flex}>
         <ScrollView
           contentContainerStyle={styles.scrollContainer}
-          keyboardShouldPersistTaps="handled"
-        >
+          keyboardShouldPersistTaps="handled">
           <Text style={styles.title}>Create Account</Text>
 
-          {/* Email Input */}
           <TextInput
-            placeholder="Email"
+            placeholder="Full Name"
+            value={name}
+            onChangeText={setName}
+            style={styles.input}
+          />
+
+          <TextInput
+            placeholder="Email Address"
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
@@ -76,7 +112,21 @@ export default function Register() {
             style={styles.input}
           />
 
-          {/* Password Input */}
+          <TextInput
+            placeholder="Phone Number"
+            value={phone}
+            onChangeText={setPhone}
+            keyboardType="phone-pad"
+            style={styles.input}
+          />
+
+          <TextInput
+            placeholder="Address"
+            value={address}
+            onChangeText={setAddress}
+            style={styles.input}
+          />
+
           <TextInput
             placeholder="Password"
             secureTextEntry
@@ -85,19 +135,24 @@ export default function Register() {
             style={styles.input}
           />
 
-          {/* Register Button */}
-          <TouchableOpacity onPress={handleRegister} style={styles.button}>
+          <TextInput
+            placeholder="Confirm Password"
+            secureTextEntry
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            style={styles.input}
+          />
+
+          <TouchableOpacity style={styles.button} onPress={handleRegister}>
             <Text style={styles.buttonText}>Register</Text>
           </TouchableOpacity>
 
-          {/* Back to Login Link */}
           <TouchableOpacity onPress={() => router.push("/login")}>
             <Text style={styles.link}>Already have an account? Login</Text>
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* Bottom Navbar */}
       <BottomNav />
     </SafeAreaView>
   );
@@ -145,10 +200,9 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   link: {
-    marginTop: 8,
-    fontSize: 16,
-    color: "#2563eb",
+    marginTop: 16,
     textAlign: "center",
+    color: "#2563eb",
     fontWeight: "500",
   },
 });

@@ -10,7 +10,6 @@
 //   );
 // }
 
-
 import { useEffect } from "react";
 import { View, Text, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
@@ -28,9 +27,7 @@ export default function Splash() {
   }, []);
 
   return (
-    <View className="flex-1 justify-center items-center bg-white">
-      <Text className="text-3xl font-bold">Welcome to FixMyCity</Text>
-      <ActivityIndicator size="large" color="blue" className="mt-4" />
+    <View >
     </View>
   );
 }
