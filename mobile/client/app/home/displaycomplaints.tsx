@@ -9,13 +9,19 @@ import {
   Modal,
   Alert,
   Image,
+  Dimensions,
 } from "react-native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import MapView, { Marker } from "react-native-maps";
 import TopNav from "@/components/TopNav";
 import BottomNav from "@/components/BottomNav";
+import AuthGuard from "@/components/AuthGuard";
+import { router } from "expo-router";
+import jwtDecode from "jwt-decode";
 
 const BASE_URL = "http://192.168.68.44:5000";
+const { width } = Dimensions.get("window");
 
 interface Complaint {
   id: string;
@@ -48,55 +54,72 @@ const DisplayComplaints: React.FC = () => {
   );
 
   useEffect(() => {
-    const loadUser = async () => {
+    (async () => {
       try {
-        const storedUserData = await AsyncStorage.getItem("userData");
-        if (storedUserData) {
-          const parsedData: User = JSON.parse(storedUserData);
-          setUserData(parsedData);
+        const userData = await AsyncStorage.getItem("userData");
+        if (!userData) {
+          Alert.alert("Unauthorized", "Please login to continue.");
+          router.replace("/login");
+          return;
         }
-      } catch (error) {
-        console.error("Failed to load user data", error);
-        Alert.alert("Error", "Could not load your user details.");
-      }
-    };
-    loadUser();
-  }, []);
+        const parsedData = JSON.parse(userData);
+        const token = parsedData.token;
+        if (!token) {
+          Alert.alert("Unauthorized", "Please login to continue.");
+          router.replace("/login");
+          return;
+        }
+        const decoded: any = jwtDecode(token);
+        const now = Date.now() / 1000;
+        if (decoded.exp < now) {
+          Alert.alert("Session Expired", "Please login again.");
+          await AsyncStorage.removeItem("userData");
+          router.replace("/login");
+          return;
+        }
 
-  useEffect(() => {
-    if (!userData) return;
+        setUserData(parsedData);
 
-    const fetchComplaints = async () => {
-      try {
         const response = await axios.get(`${BASE_URL}/api/complaints`, {
-          headers: { Authorization: `Bearer ${userData.token}` },
+          headers: { Authorization: `Bearer ${parsedData.token}` },
         });
 
-        const data: Complaint[] = response.data.data.map((c: any) => ({
-          id: c._id,
-          type: c.type?.name || "Unknown",
-          subType: c.subtypeName || "N/A",
-          description: c.description,
-          address: c.address,
-          status: c.status,
-          dateTime: new Date(c.createdAt).toLocaleString(),
-          imageUrls: c.imageUrls || [],
-          latitude: c.latitude || null,
-          longitude: c.longitude || null,
-        }));
+        const data: Complaint[] = response.data.data.map((c: any) => {
+          let latitude = null;
+          let longitude = null;
+          if (
+            c.location?.coordinates &&
+            Array.isArray(c.location.coordinates)
+          ) {
+            longitude = c.location.coordinates[0];
+            latitude = c.location.coordinates[1];
+          }
+
+          return {
+            id: c._id,
+            type: c.type?.name || "Unknown",
+            subType: c.subtypeName || "N/A",
+            description: c.description || "",
+            address: c.address || "",
+            status: c.status || "Pending",
+            dateTime: new Date(c.createdAt).toLocaleString(),
+            imageUrls: c.imageUrls || [],
+            latitude,
+            longitude,
+          };
+        });
 
         setComplaints(data);
         setFilteredComplaints(data);
       } catch (err) {
-        console.error("Failed to fetch complaints:", err);
-        Alert.alert("Error", "Failed to fetch complaints from server.");
+        console.error("AuthGuard/Complaint error:", err);
+        await AsyncStorage.removeItem("userData");
+        router.replace("/login");
       } finally {
         setLoading(false);
       }
-    };
-
-    fetchComplaints();
-  }, [userData]);
+    })();
+  }, []);
 
   const handleFilterChange = (status: string) => {
     setFilter(status);
@@ -108,9 +131,8 @@ const DisplayComplaints: React.FC = () => {
     return <ActivityIndicator size="large" style={{ marginTop: 50 }} />;
 
   return (
-    <>
+    <AuthGuard>
       <TopNav />
-
       <View style={styles.container}>
         <Text style={styles.heading}>Your Submitted Complaints</Text>
 
@@ -158,11 +180,28 @@ const DisplayComplaints: React.FC = () => {
                   <Text style={styles.label}>Address:</Text> {c.address}
                 </Text>
 
+                {/* Map Preview */}
                 {c.latitude && c.longitude && (
-                  <Text style={styles.detailLine}>
-                    <Text style={styles.label}>Coordinates:</Text> {c.latitude},{" "}
-                    {c.longitude}
-                  </Text>
+                  <View style={styles.mapContainer}>
+                    <MapView
+                      style={{ flex: 1 }}
+                      initialRegion={{
+                        latitude: c.latitude,
+                        longitude: c.longitude,
+                        latitudeDelta: 0.005,
+                        longitudeDelta: 0.005,
+                      }}
+                      pointerEvents="none">
+                      <Marker
+                        coordinate={{
+                          latitude: c.latitude,
+                          longitude: c.longitude,
+                        }}
+                        title={c.type}
+                        description={c.address}
+                      />
+                    </MapView>
+                  </View>
                 )}
 
                 <Text style={styles.detailLine}>
@@ -211,6 +250,7 @@ const DisplayComplaints: React.FC = () => {
           )}
         </ScrollView>
 
+        {/* Modal Detail */}
         <Modal
           visible={selectedComplaint !== null}
           transparent={true}
@@ -237,14 +277,31 @@ const DisplayComplaints: React.FC = () => {
                     <Text style={styles.label}>Address:</Text>{" "}
                     {selectedComplaint.address}
                   </Text>
+
+                  {/* Full Map */}
                   {selectedComplaint.latitude &&
                     selectedComplaint.longitude && (
-                      <Text style={styles.modalText}>
-                        <Text style={styles.label}>Coordinates:</Text>{" "}
-                        {selectedComplaint.latitude},{" "}
-                        {selectedComplaint.longitude}
-                      </Text>
+                      <View style={styles.modalMapContainer}>
+                        <MapView
+                          style={{ flex: 1 }}
+                          initialRegion={{
+                            latitude: selectedComplaint.latitude,
+                            longitude: selectedComplaint.longitude,
+                            latitudeDelta: 0.005,
+                            longitudeDelta: 0.005,
+                          }}>
+                          <Marker
+                            coordinate={{
+                              latitude: selectedComplaint.latitude,
+                              longitude: selectedComplaint.longitude,
+                            }}
+                            title={selectedComplaint.type}
+                            description={selectedComplaint.address}
+                          />
+                        </MapView>
+                      </View>
                     )}
+
                   <Text style={styles.modalText}>
                     <Text style={styles.label}>Complaint ID:</Text>{" "}
                     {selectedComplaint.id}
@@ -268,6 +325,7 @@ const DisplayComplaints: React.FC = () => {
                     <Text style={styles.label}>Date:</Text>{" "}
                     {selectedComplaint.dateTime}
                   </Text>
+
                   {selectedComplaint.imageUrls &&
                     selectedComplaint.imageUrls.length > 0 && (
                       <ScrollView horizontal style={{ marginTop: 10 }}>
@@ -286,6 +344,7 @@ const DisplayComplaints: React.FC = () => {
                         ))}
                       </ScrollView>
                     )}
+
                   <TouchableOpacity
                     style={styles.closeButton}
                     onPress={() => setSelectedComplaint(null)}>
@@ -297,9 +356,8 @@ const DisplayComplaints: React.FC = () => {
           </View>
         </Modal>
       </View>
-
       <BottomNav />
-    </>
+    </AuthGuard>
   );
 };
 
@@ -340,6 +398,18 @@ const styles = StyleSheet.create({
   description: { fontSize: 14, marginBottom: 4, color: "#555" },
   detailLine: { fontSize: 13, marginBottom: 4, color: "#666" },
   label: { fontWeight: "bold", color: "#333" },
+  mapContainer: {
+    height: 150,
+    borderRadius: 8,
+    overflow: "hidden",
+    marginTop: 8,
+  },
+  modalMapContainer: {
+    height: 250,
+    borderRadius: 8,
+    overflow: "hidden",
+    marginTop: 12,
+  },
   modalBackground: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",

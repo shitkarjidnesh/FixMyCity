@@ -67,21 +67,21 @@ router.post("/", upload.array("photos", 5), async (req, res) => {
 // GET /api/admin/complaints
 router.get("/", async (req, res) => {
   try {
-    const complaints = await UserComplaints.find()
-      .sort({ createdAt: -1 })
-      .populate("userId", "name email")
-      .populate("type", "name subComplaints");
-
     const normalizedComplaints = complaints.map((c) => {
-      // Map subtype index to actual sub-complaint name
       let subtypeName = "N/A";
       if (c.subtype !== undefined && c.type?.subComplaints) {
         const index = parseInt(c.subtype, 10);
         subtypeName = c.type.subComplaints[index] || "N/A";
       }
 
-      // Normalize images to array
       const imageUrls = c.imageUrls || (c.imageUrl ? [c.imageUrl] : []);
+
+      let latitude = null;
+      let longitude = null;
+      if (c.location && Array.isArray(c.location.coordinates)) {
+        longitude = c.location.coordinates[0];
+        latitude = c.location.coordinates[1];
+      }
 
       return {
         _id: c._id,
@@ -93,8 +93,8 @@ router.get("/", async (req, res) => {
         createdAt: c.createdAt,
         updatedAt: c.updatedAt,
         userId: c.userId || { name: "N/A", email: "N/A" },
-        latitude: c.latitude || null,
-        longitude: c.longitude || null,
+        latitude,
+        longitude,
         imageUrls,
       };
     });

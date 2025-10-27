@@ -4,6 +4,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const { verifyToken } = require("../middleware/verifyToken");
+const { verifyOTP } = require("../otp/otpController");
 const router = express.Router();
 
 // ===================== REGISTER =====================
@@ -119,6 +120,53 @@ router.put("/profile", verifyToken, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ msg: "Server error" });
+  }
+});
+
+router.post("/verify-reset-otp", async (req, res) => {
+  const { email, otp, password, confirmPassword } = req.body;
+
+  if (!email || !otp || !password || !confirmPassword) {
+    return res
+      .status(400)
+      .json({ success: false, message: "All fields are required" });
+  }
+
+  if (password !== confirmPassword) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Passwords do not match" });
+  }
+
+  try {
+    // 1. Verify OTP
+    const valid = verifyOTP(email, otp);
+    if (!valid) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid or expired OTP" });
+    }
+
+    // 2. Find user
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    // 3. Hash new password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // 4. Update user's password
+    user.password = hashedPassword;
+    await user.save();
+
+    res.json({ success: true, message: "Password reset successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 });
 

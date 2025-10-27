@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -13,15 +13,46 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-// Import axios and the isAxiosError type guard
 import axios from "axios";
 import TopNav from "@/components/TopNav";
 import BottomNav from "@/components/BottomNav";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [forgotMode, setForgotMode] = useState(false);
+
+  // Forgot password states
+  const [otp, setOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [timer, setTimer] = useState(300);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
   const router = useRouter();
+
+  useEffect(() => {
+    let interval: NodeJS.Timer;
+    if (forgotMode && otpSent && timer > 0) {
+      interval = setInterval(() => setTimer((t) => t - 1), 1000);
+    } else if (forgotMode && otpSent && timer <= 0) {
+      Alert.alert("OTP expired", "Please request a new OTP");
+      setOtpSent(false);
+      setOtp("");
+      setTimer(300);
+    }
+    return () => clearInterval(interval);
+  }, [forgotMode, otpSent, timer]);
+
+  const formatTime = (t: number) => {
+    const m = Math.floor(t / 60)
+      .toString()
+      .padStart(2, "0");
+    const s = (t % 60).toString().padStart(2, "0");
+    return `${m}:${s}`;
+  };
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -29,39 +60,100 @@ export default function Login() {
       return;
     }
 
-  const   role = "user";
-
+    const role = "user";
     try {
       const res = await axios.post("http://192.168.68.44:5000/api/auth/login", {
         email,
         password,
         role,
-        
-            });
-
+      });
       await AsyncStorage.setItem("userData", JSON.stringify(res.data));
       router.replace("/home");
-    } catch (error) {
-      // Check if the error is an Axios error
+    } catch (error: any) {
       if (axios.isAxiosError(error)) {
-        // Now TypeScript knows `error` is an AxiosError,
-        // so you can safely access `error.response`
         Alert.alert(
           "Login Error",
           error.response?.data?.msg || "An error occurred during login."
         );
       } else {
-        // Handle cases where the error is not from Axios
         Alert.alert("Login Error", "An unexpected error occurred.");
-        console.error("Unexpected error:", error);
+        console.error(error);
       }
+    }
+  };
+
+  // Forgot password functions
+  const requestOtp = async () => {
+    if (!email) {
+      Alert.alert("Error", "Enter your email first");
+      return;
+    }
+    try {
+      const res = await axios.post(
+        "http://192.168.68.44:5000/api/otp/request-otp",
+        { email }
+      );
+      if (res.data.success) {
+        Alert.alert("OTP Sent", "Check your email for the OTP");
+        setOtpSent(true);
+        setTimer(300);
+      } else {
+        Alert.alert("Error", res.data.message || "Failed to send OTP");
+      }
+    } catch (err: any) {
+      console.error(err);
+      Alert.alert("Error", "Failed to request OTP");
+    }
+  };
+
+  const verifyOtpAndReset = async () => {
+    if (!otp || !newPassword || !confirmPassword) {
+      Alert.alert("Error", "Fill all fields");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      Alert.alert("Error", "Passwords do not match");
+      return;
+    }
+    try {
+      const res = await axios.post(
+        "http://192.168.68.44:5000/api/auth/verify-reset-otp",
+        {
+          email,
+          otp,
+          password: newPassword,
+          confirmPassword,
+        }
+      );
+      if (res.data.success) {
+        Alert.alert("Success", "Password reset successfully");
+        setForgotMode(false);
+        setOtp("");
+        setOtpSent(false);
+        setNewPassword("");
+        setConfirmPassword("");
+        setPassword("");
+      } else {
+        Alert.alert("Error", res.data.message || "OTP verification failed");
+        setOtp("");
+        setOtpSent(false);
+        setTimer(300);
+      }
+    } catch (err: any) {
+      console.error(err);
+      Alert.alert(
+        "Error",
+        err.response?.data?.message || "Verification failed"
+      );
+      setOtp("");
+      setOtpSent(false);
+      setTimer(300);
     }
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <TopNav />
-
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={styles.flex}>
@@ -69,39 +161,113 @@ export default function Login() {
           contentContainerStyle={styles.scrollContainer}
           keyboardShouldPersistTaps="handled">
           <Text style={styles.infoText}>
-            Welcome To FixMyCity! Please log in to access your account and
-            report issues.
+            Welcome To FixMyCity!{" "}
+            {forgotMode
+              ? "Reset your password."
+              : "Please log in to access your account."}
           </Text>
 
-          <Text style={styles.title}>Login</Text>
+          <Text style={styles.title}>
+            {forgotMode ? "Forgot Password" : "Login"}
+          </Text>
 
           <TextInput
             placeholder="Email"
             value={email}
             onChangeText={setEmail}
-            autoCapitalize="none"
             keyboardType="email-address"
+            autoCapitalize="none"
             style={styles.input}
           />
 
-          <TextInput
-            placeholder="Password"
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-            style={styles.input}
-          />
+          {forgotMode ? (
+            <>
+              {!otpSent ? (
+                <TouchableOpacity style={styles.button} onPress={requestOtp}>
+                  <Text style={styles.buttonText}>Send OTP</Text>
+                </TouchableOpacity>
+              ) : (
+                <>
+                  <TextInput
+                    placeholder={`Enter OTP (${formatTime(timer)})`}
+                    value={otp}
+                    onChangeText={setOtp}
+                    keyboardType="numeric"
+                    style={styles.input}
+                  />
+                  <View style={styles.passwordWrapper}>
+                    <TextInput
+                      placeholder="New Password"
+                      secureTextEntry={!showPassword}
+                      value={newPassword}
+                      onChangeText={setNewPassword}
+                      style={styles.passwordInput}
+                    />
+                    <TouchableOpacity
+                      style={styles.eyeIcon}
+                      onPress={() => setShowPassword(!showPassword)}>
+                      <Ionicons
+                        name={showPassword ? "eye" : "eye-off"}
+                        size={22}
+                        color="#666"
+                      />
+                    </TouchableOpacity>
+                  </View>
+                  <TextInput
+                    placeholder="Confirm Password"
+                    secureTextEntry={!showPassword}
+                    value={confirmPassword}
+                    onChangeText={setConfirmPassword}
+                    style={styles.input}
+                  />
+                  <TouchableOpacity
+                    style={styles.button}
+                    onPress={verifyOtpAndReset}>
+                    <Text style={styles.buttonText}>Reset Password</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+            </>
+          ) : (
+            <>
+              <View style={styles.passwordWrapper}>
+                <TextInput
+                  placeholder="Password"
+                  secureTextEntry={!showPassword}
+                  value={password}
+                  onChangeText={setPassword}
+                  style={styles.passwordInput}
+                />
+                <TouchableOpacity
+                  style={styles.eyeIcon}
+                  onPress={() => setShowPassword(!showPassword)}>
+                  <Ionicons
+                    name={showPassword ? "eye" : "eye-off"}
+                    size={22}
+                    color="#666"
+                  />
+                </TouchableOpacity>
+              </View>
 
-          <TouchableOpacity style={styles.button} onPress={handleLogin}>
-            <Text style={styles.buttonText}>Login</Text>
+              <TouchableOpacity style={styles.button} onPress={handleLogin}>
+                <Text style={styles.buttonText}>Login</Text>
+              </TouchableOpacity>
+            </>
+          )}
+
+          <TouchableOpacity onPress={() => setForgotMode(!forgotMode)}>
+            <Text style={styles.link}>
+              {forgotMode ? "Back to Login" : "Forgot Password?"}
+            </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={() => router.push("/register")}>
-            <Text style={styles.link}>New user? Register here</Text>
-          </TouchableOpacity>
+          {!forgotMode && (
+            <TouchableOpacity onPress={() => router.push("/register")}>
+              <Text style={styles.link}>New user? Register here</Text>
+            </TouchableOpacity>
+          )}
         </ScrollView>
       </KeyboardAvoidingView>
-
       <BottomNav />
     </SafeAreaView>
   );
@@ -117,7 +283,7 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
   infoText: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: "bold",
     textAlign: "center",
     marginBottom: 20,
@@ -152,4 +318,19 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   buttonText: { color: "#fff", fontSize: 18, fontWeight: "600" },
+  passwordWrapper: { position: "relative", marginBottom: 16 },
+  passwordInput: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    padding: 12,
+    paddingRight: 40,
+    backgroundColor: "#fff",
+  },
+  eyeIcon: {
+    position: "absolute",
+    right: 12,
+    top: "50%",
+    transform: [{ translateY: -11 }],
+  },
 });

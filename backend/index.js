@@ -13,6 +13,7 @@ const complaintsRoute = require("./routes/complaints");
 const authRoutes = require("./routes/auth");
 const adminRoutes = require("./routes/admin");
 const complaintTypesRoutes = require("./routes/complaintTypes");
+const otpRoutes = require("./routes/otp");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -22,7 +23,7 @@ const PORT = process.env.PORT || 5000;
 // -----------------------------
 app.use(
   cors({
-    origin:"*",
+    origin: "*",
     // origin: [
     //   "http://localhost:3000",
     //   "http://localhost:3001",
@@ -62,7 +63,8 @@ app.get("/", (req, res) => res.send("FixMyCity API Running 🚀"));
 app.use("/api/complaints", complaintsRoute);
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
-app.use("/api/complaint-types",complaintTypesRoutes );
+app.use("/api/complaint-types", complaintTypesRoutes);
+app.use("/api/otp", otpRoutes);
 
 // -----------------------------
 // Global Error Handler
@@ -76,7 +78,6 @@ app.use((err, req, res, next) => {
 // Start Server
 // -----------------------------
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
-
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on http://0.0.0.0:${PORT}`);

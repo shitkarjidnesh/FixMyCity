@@ -19,6 +19,7 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import BottomNav from "@/components/BottomNav";
 import TopNav from "@/components/TopNav";
+import AuthGuard from "@/components/AuthGuard";
 
 type Photo = {
   uri: string;
@@ -51,7 +52,7 @@ type User = {
 
 const BASE_URL = "http://192.168.68.44:5000";
 
-export default function ReportProblem(): JSX.Element {
+export default function ReportProblem() {
   const [userData, setUserData] = useState<User | null>(null);
 
   // Form fields
@@ -263,201 +264,203 @@ export default function ReportProblem(): JSX.Element {
   };
 
   return (
-    <View style={{ flex: 1 }}>
-      <TopNav />
-      <ScrollView
-        style={{ flex: 1, backgroundColor: "#f9f9f9" }}
-        contentContainerStyle={{ padding: 16, paddingBottom: 100 }}>
-        <Text style={styles.heading}>Submit Complaint</Text>
+    <AuthGuard>
+      <View style={{ flex: 1 }}>
+        <TopNav />
+        <ScrollView
+          style={{ flex: 1, backgroundColor: "#f9f9f9" }}
+          contentContainerStyle={{ padding: 16, paddingBottom: 100 }}>
+          <Text style={styles.heading}>Submit Complaint</Text>
 
-        {/* User Info */}
-        <View style={styles.fieldBox}>
-          <Text style={styles.label}>Name</Text>
-          <TextInput
-            style={styles.input}
-            value={name}
-            onChangeText={setName}
-            placeholder="Your name"
-          />
-        </View>
-        <View style={styles.fieldBox}>
-          <Text style={styles.label}>Email</Text>
-          <TextInput
-            style={styles.input}
-            value={email}
-            onChangeText={setEmail}
-            placeholder="you@example.com"
-            keyboardType="email-address"
-          />
-        </View>
-        <View style={styles.fieldBox}>
-          <Text style={styles.label}>Address</Text>
-          <TextInput
-            style={styles.input}
-            value={address}
-            onChangeText={setAddress}
-            placeholder="Address / landmark"
-          />
-        </View>
+          {/* User Info */}
+          <View style={styles.fieldBox}>
+            <Text style={styles.label}>Name</Text>
+            <TextInput
+              style={styles.input}
+              value={name}
+              onChangeText={setName}
+              placeholder="Your name"
+            />
+          </View>
+          <View style={styles.fieldBox}>
+            <Text style={styles.label}>Email</Text>
+            <TextInput
+              style={styles.input}
+              value={email}
+              onChangeText={setEmail}
+              placeholder="you@example.com"
+              keyboardType="email-address"
+            />
+          </View>
+          <View style={styles.fieldBox}>
+            <Text style={styles.label}>Address</Text>
+            <TextInput
+              style={styles.input}
+              value={address}
+              onChangeText={setAddress}
+              placeholder="Address / landmark"
+            />
+          </View>
 
-        {/* Main Type */}
-        <View style={styles.fieldBox}>
-          <Text style={styles.label}>Main Complaint Type</Text>
-          {loadingTypes ? (
-            <ActivityIndicator />
-          ) : (
-            <View style={styles.pickerWrap}>
-              <Picker
-                selectedValue={selectedMainType}
-                onValueChange={(val) => setSelectedMainType(String(val))}>
-                <Picker.Item label="Select main type..." value="" />
-                {complaintTypes.map((t) => (
-                  <Picker.Item key={t.id} label={t.name} value={t.id} />
-                ))}
-              </Picker>
-            </View>
-          )}
-        </View>
-
-        {/* Sub Type */}
-        <View style={styles.fieldBox}>
-          <Text style={styles.label}>Sub Type</Text>
-          {subLoading ? (
-            <ActivityIndicator />
-          ) : (
-            <View style={styles.pickerWrap}>
-              <Picker
-                selectedValue={selectedSubType}
-                onValueChange={(val) => setSelectedSubType(String(val))}
-                enabled={subTypes.length > 0}>
-                <Picker.Item
-                  label={
-                    subTypes.length
-                      ? "Select subtype..."
-                      : "Select main type first"
-                  }
-                  value=""
-                />
-                {subTypes.map((s) => (
-                  <Picker.Item key={s.id} label={s.name} value={s.id} />
-                ))}
-              </Picker>
-            </View>
-          )}
-        </View>
-
-        {/* Description */}
-        <View style={styles.fieldBox}>
-          <Text style={styles.label}>Description</Text>
-          <TextInput
-            style={[styles.input, { height: 100, textAlignVertical: "top" }]}
-            multiline
-            value={description}
-            onChangeText={setDescription}
-            placeholder="Describe the issue..."
-          />
-        </View>
-
-        {/* Location */}
-        <TouchableOpacity style={styles.locationBtn} onPress={getLocation}>
-          {loadingLocation ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.btnText}>
-              {locationState
-                ? `📍 ${locationState.latitude.toFixed(4)}, ${locationState.longitude.toFixed(4)}`
-                : "Get Current Location"}
-            </Text>
-          )}
-        </TouchableOpacity>
-
-        {/* Camera */}
-        <TouchableOpacity
-          style={styles.cameraBtn}
-          onPress={async () => {
-            if (!permission?.granted) await requestPermission();
-            setIsCameraReady(false);
-            setCameraVisible(true);
-          }}>
-          <Text style={styles.btnText}>📸 Take Complaint Photo</Text>
-        </TouchableOpacity>
-
-        {/* Photos preview */}
-        <View style={styles.previewContainer}>
-          {photos.map((p, i) => (
-            <View key={i} style={styles.thumbWrap}>
-              <Image source={{ uri: p.uri }} style={styles.previewImg} />
-              <TouchableOpacity
-                style={styles.removeBtn}
-                onPress={() => removePhoto(i)}>
-                <Text style={{ color: "white", fontWeight: "bold" }}>X</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
-        </View>
-
-        {/* Submit */}
-        <TouchableOpacity
-          style={[styles.submitBtn, submitting && { opacity: 0.6 }]}
-          onPress={handleSubmit}
-          disabled={submitting}>
-          <Text style={styles.btnText}>
-            {submitting ? "Submitting..." : "Submit Complaint"}
-          </Text>
-        </TouchableOpacity>
-
-        {/* Camera Modal */}
-        <Modal visible={cameraVisible} animationType="slide">
-          <View style={{ flex: 1 }}>
-            {permission?.granted ? (
-              <>
-                <CameraView
-                  style={{ flex: 1 }}
-                  ref={cameraRef}
-                  facing={cameraFacing}
-                  onCameraReady={() => setIsCameraReady(true)}
-                />
-                {photos.length > 0 && (
-                  <View style={styles.thumbnailContainer}>
-                    <Image
-                      source={{ uri: photos[photos.length - 1].uri }}
-                      style={styles.thumbnail}
-                    />
-                  </View>
-                )}
-                <View style={styles.cameraControlsRow}>
-                  <TouchableOpacity
-                    style={styles.sideBtn}
-                    onPress={() => setCameraVisible(false)}>
-                    <Text style={styles.controlText}>Close</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.shutterButton}
-                    onPress={takePhoto}
-                    disabled={!isCameraReady}
-                  />
-                  <TouchableOpacity
-                    style={styles.sideBtn}
-                    onPress={toggleCameraFacing}>
-                    <Text style={styles.controlText}>Flip</Text>
-                  </TouchableOpacity>
-                </View>
-              </>
+          {/* Main Type */}
+          <View style={styles.fieldBox}>
+            <Text style={styles.label}>Main Complaint Type</Text>
+            {loadingTypes ? (
+              <ActivityIndicator />
             ) : (
-              <View style={styles.centered}>
-                <Text>No camera permission</Text>
-                <TouchableOpacity
-                  style={styles.closeCameraBtn}
-                  onPress={() => setCameraVisible(false)}>
-                  <Text style={styles.btnText}>Close</Text>
-                </TouchableOpacity>
+              <View style={styles.pickerWrap}>
+                <Picker
+                  selectedValue={selectedMainType}
+                  onValueChange={(val) => setSelectedMainType(String(val))}>
+                  <Picker.Item label="Select main type..." value="" />
+                  {complaintTypes.map((t) => (
+                    <Picker.Item key={t.id} label={t.name} value={t.id} />
+                  ))}
+                </Picker>
               </View>
             )}
           </View>
-        </Modal>
-      </ScrollView>
-      <BottomNav />
-    </View>
+
+          {/* Sub Type */}
+          <View style={styles.fieldBox}>
+            <Text style={styles.label}>Sub Type</Text>
+            {subLoading ? (
+              <ActivityIndicator />
+            ) : (
+              <View style={styles.pickerWrap}>
+                <Picker
+                  selectedValue={selectedSubType}
+                  onValueChange={(val) => setSelectedSubType(String(val))}
+                  enabled={subTypes.length > 0}>
+                  <Picker.Item
+                    label={
+                      subTypes.length
+                        ? "Select subtype..."
+                        : "Select main type first"
+                    }
+                    value=""
+                  />
+                  {subTypes.map((s) => (
+                    <Picker.Item key={s.id} label={s.name} value={s.id} />
+                  ))}
+                </Picker>
+              </View>
+            )}
+          </View>
+
+          {/* Description */}
+          <View style={styles.fieldBox}>
+            <Text style={styles.label}>Description</Text>
+            <TextInput
+              style={[styles.input, { height: 100, textAlignVertical: "top" }]}
+              multiline
+              value={description}
+              onChangeText={setDescription}
+              placeholder="Describe the issue..."
+            />
+          </View>
+
+          {/* Location */}
+          <TouchableOpacity style={styles.locationBtn} onPress={getLocation}>
+            {loadingLocation ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.btnText}>
+                {locationState
+                  ? `📍 ${locationState.latitude.toFixed(4)}, ${locationState.longitude.toFixed(4)}`
+                  : "Get Current Location"}
+              </Text>
+            )}
+          </TouchableOpacity>
+
+          {/* Camera */}
+          <TouchableOpacity
+            style={styles.cameraBtn}
+            onPress={async () => {
+              if (!permission?.granted) await requestPermission();
+              setIsCameraReady(false);
+              setCameraVisible(true);
+            }}>
+            <Text style={styles.btnText}>📸 Take Complaint Photo</Text>
+          </TouchableOpacity>
+
+          {/* Photos preview */}
+          <View style={styles.previewContainer}>
+            {photos.map((p, i) => (
+              <View key={i} style={styles.thumbWrap}>
+                <Image source={{ uri: p.uri }} style={styles.previewImg} />
+                <TouchableOpacity
+                  style={styles.removeBtn}
+                  onPress={() => removePhoto(i)}>
+                  <Text style={{ color: "white", fontWeight: "bold" }}>X</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
+
+          {/* Submit */}
+          <TouchableOpacity
+            style={[styles.submitBtn, submitting && { opacity: 0.6 }]}
+            onPress={handleSubmit}
+            disabled={submitting}>
+            <Text style={styles.btnText}>
+              {submitting ? "Submitting..." : "Submit Complaint"}
+            </Text>
+          </TouchableOpacity>
+
+          {/* Camera Modal */}
+          <Modal visible={cameraVisible} animationType="slide">
+            <View style={{ flex: 1 }}>
+              {permission?.granted ? (
+                <>
+                  <CameraView
+                    style={{ flex: 1 }}
+                    ref={cameraRef}
+                    facing={cameraFacing}
+                    onCameraReady={() => setIsCameraReady(true)}
+                  />
+                  {photos.length > 0 && (
+                    <View style={styles.thumbnailContainer}>
+                      <Image
+                        source={{ uri: photos[photos.length - 1].uri }}
+                        style={styles.thumbnail}
+                      />
+                    </View>
+                  )}
+                  <View style={styles.cameraControlsRow}>
+                    <TouchableOpacity
+                      style={styles.sideBtn}
+                      onPress={() => setCameraVisible(false)}>
+                      <Text style={styles.controlText}>Close</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.shutterButton}
+                      onPress={takePhoto}
+                      disabled={!isCameraReady}
+                    />
+                    <TouchableOpacity
+                      style={styles.sideBtn}
+                      onPress={toggleCameraFacing}>
+                      <Text style={styles.controlText}>Flip</Text>
+                    </TouchableOpacity>
+                  </View>
+                </>
+              ) : (
+                <View style={styles.centered}>
+                  <Text>No camera permission</Text>
+                  <TouchableOpacity
+                    style={styles.closeCameraBtn}
+                    onPress={() => setCameraVisible(false)}>
+                    <Text style={styles.btnText}>Close</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+          </Modal>
+        </ScrollView>
+        <BottomNav />
+      </View>
+    </AuthGuard>
   );
 }
 
