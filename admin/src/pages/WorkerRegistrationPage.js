@@ -1,207 +1,346 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios"; // Using axios directly
+import { useState, useEffect } from "react";
+import axios from "axios";
+import toast, { Toaster } from "react-hot-toast";
 
-// ====================================================================
-// Reusable Component: Toast Notification
-// A small, self-dismissing notification for success or error messages.
-// ====================================================================
-const Toast = ({ message, type, onClose }) => {
-  useEffect(() => {
-    // Automatically close the toast after 4 seconds
-    const timer = setTimeout(() => {
-      onClose();
-    }, 4000);
-
-    return () => clearTimeout(timer); // Cleanup timer
-  }, [onClose]);
-
-  const baseStyle =
-    "fixed top-5 right-5 p-4 rounded-lg shadow-xl text-white font-semibold transition-transform transform";
-  const typeStyle = type === "success" ? "bg-green-500" : "bg-red-500";
-
-  return <div className={`${baseStyle} ${typeStyle}`}>{message}</div>;
-};
-
-// ====================================================================
-// Main AddWorker Component
-// ====================================================================
 export default function AddWorker() {
-  const initialFormState = {
+  const [form, setForm] = useState({
     name: "",
+    middleName: "",
+    surname: "",
     email: "",
     phone: "",
-    address: "",
-    department: "",
-    employeeId: "",
-    username: "",
     password: "",
-  };
+    dob: "",
+    gender: "",
+    employeeId: "",
+    experience: "",
+    department: "",
+    blockOrRegion: "",
+    address: {
+      houseNo: "",
+      street: "",
+      landmark: "",
+      area: "",
+      city: "",
+      district: "",
+      state: "",
+      pincode: "",
+    },
+  });
 
-  const [formData, setFormData] = useState(initialFormState);
+  const [profilePhoto, setProfilePhoto] = useState(null);
+  const [idProof, setIdProof] = useState(null);
   const [departments, setDepartments] = useState([]);
-  const [message, setMessage] = useState("");
-  const [messageType, setMessageType] = useState("success");
   const [loading, setLoading] = useState(false);
 
+  // ✅ Fetch Departments
   useEffect(() => {
     const fetchDepartments = async () => {
       try {
         const token = localStorage.getItem("admintoken");
-        if (!token) throw new Error("Admin token not found.");
+        if (!token) throw new Error("Unauthorized access");
 
         const res = await axios.get(
           "http://localhost:5000/api/admin/departments",
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        setDepartments(res.data);
+
+        setDepartments(res.data || []);
       } catch (err) {
         console.error("Error loading departments:", err);
-        setMessage("Could not load departments.");
-        setMessageType("error");
+        toast.error("⚠️ Could not load departments.");
       }
     };
     fetchDepartments();
   }, []);
 
+  // ✅ Handlers
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleAddressChange = (e) => {
+    setForm({
+      ...form,
+      address: { ...form.address, [e.target.name]: e.target.value },
+    });
+  };
+
+  const handleFileChange = (e) => {
+    const { name, files } = e.target;
+    if (name === "profilePhoto") setProfilePhoto(files[0]);
+    if (name === "idProof") setIdProof(files[0]);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setMessage("");
 
     try {
+      // ✅ Age validation
+      const today = new Date();
+      const birthDate = new Date(form.dob);
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const m = today.getMonth() - birthDate.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
+      if (age < 18) {
+        toast.error("⚠️ Worker must be at least 18 years old.");
+        setLoading(false);
+        return;
+      }
+
       const token = localStorage.getItem("admintoken");
-      if (!token) throw new Error("Admin token not found.");
+      if (!token) throw new Error("Unauthorized access");
 
-      const headers = {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      };
+      // ✅ Prepare FormData
+      const formData = new FormData();
+      Object.entries(form).forEach(([key, value]) => {
+        if (key === "address") {
+          Object.entries(value).forEach(([k, v]) =>
+            formData.append(`address[${k}]`, v)
+          );
+        } else {
+          formData.append(key, value);
+        }
+      });
 
+      if (profilePhoto) formData.append("profilePhoto", profilePhoto);
+      if (idProof) formData.append("idProof", idProof);
+
+      // ✅ API call
       const res = await axios.post(
         "http://localhost:5000/api/admin/addWorker",
         formData,
-        { headers }
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
       );
 
-      setMessage(res.data.message || "Worker added successfully!");
-      setMessageType("success");
-      setFormData(initialFormState); // Reset form
+      toast.success(res.data?.message || "✅ Worker added successfully!");
+      setForm({
+        name: "",
+        middleName: "",
+        surname: "",
+        email: "",
+        phone: "",
+        password: "",
+        dob: "",
+        gender: "",
+        employeeId: "",
+        experience: "",
+        department: "",
+        blockOrRegion: "",
+        address: {
+          houseNo: "",
+          street: "",
+          landmark: "",
+          area: "",
+          city: "",
+          district: "",
+          state: "",
+          pincode: "",
+        },
+      });
+      setProfilePhoto(null);
+      setIdProof(null);
     } catch (err) {
-      console.error(err);
-      setMessage(err.response?.data?.message || "Error adding worker.");
-      setMessageType("error");
+      toast.error(
+        err.response?.data?.message || "❌ Failed to add worker. Try again."
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      {message && (
-        <Toast
-          message={message}
-          type={messageType}
-          onClose={() => setMessage("")}
-        />
-      )}
-
-      <div className="max-w-4xl w-full bg-white p-8 rounded-xl shadow-lg">
-        <h2 className="text-3xl font-bold text-gray-800 text-center mb-8">
-          Add New Worker
-        </h2>
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center py-8">
+      <Toaster position="top-center" reverseOrder={false} />
+      <div className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-3xl">
+        <h1 className="text-2xl font-bold text-center mb-6 text-gray-800">
+          Worker Registration
+        </h1>
 
         <form
           onSubmit={handleSubmit}
-          className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <input
-            type="text"
-            name="name"
-            placeholder="Full Name"
-            value={formData.name}
-            onChange={handleChange}
-            required
-            className="col-span-2 md:col-span-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <input
-            type="email"
-            name="email"
-            placeholder="Email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-            className="col-span-2 md:col-span-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <input
-            type="text"
-            name="phone"
-            placeholder="Phone Number"
-            value={formData.phone}
-            onChange={handleChange}
-            required
-            className="col-span-2 md:col-span-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <input
-            type="text"
-            name="address"
-            placeholder="Address"
-            value={formData.address}
-            onChange={handleChange}
-            required
-            className="col-span-2 md:col-span-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <select
-            name="department"
-            value={formData.department}
-            onChange={handleChange}
-            required
-            className="col-span-2 md:col-span-1 p-3 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <option value="">Select Department</option>
-            {departments.map((dept) => (
-              <option key={dept._id} value={dept.name}>
-                {" "}
-                {/* Send ID as value */}
-                {dept.name}
-              </option>
-            ))}
-          </select>
-          <input
-            type="text"
-            name="employeeId"
-            placeholder="Employee ID"
-            value={formData.employeeId}
-            onChange={handleChange}
-            required
-            className="col-span-2 md:col-span-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <input
-            type="text"
-            name="username"
-            placeholder="Username"
-            value={formData.username}
-            onChange={handleChange}
-            required
-            className="col-span-2 md:col-span-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-            className="col-span-2 md:col-span-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+          className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Basic Info */}
+          {[
+            { name: "name", label: "First Name", req: true },
+            { name: "middleName", label: "Middle Name" },
+            { name: "surname", label: "Surname", req: true },
+            { name: "email", label: "Email", type: "email", req: true },
+            {
+              name: "phone",
+              label: "Phone Number",
+              type: "tel",
+              pattern: "[0-9]{10}",
+              req: true,
+            },
+            {
+              name: "password",
+              label: "Password",
+              type: "password",
+              req: true,
+            },
+            { name: "dob", label: "Date of Birth", type: "date", req: true },
+          ].map((f) => (
+            <div key={f.name}>
+              <label className="block text-gray-700 mb-1">{f.label}</label>
+              <input
+                name={f.name}
+                type={f.type || "text"}
+                pattern={f.pattern}
+                value={form[f.name]}
+                onChange={handleChange}
+                placeholder={`Enter ${f.label.toLowerCase()}`}
+                required={f.req}
+                className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          ))}
 
-          <div className="col-span-2 flex justify-end">
+          <div>
+            <label className="block text-gray-700 mb-1">Gender</label>
+            <select
+              name="gender"
+              value={form.gender}
+              onChange={handleChange}
+              required
+              className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500">
+              <option value="">Select gender</option>
+              <option>Male</option>
+              <option>Female</option>
+              <option>Other</option>
+            </select>
+          </div>
+
+          {/* Work Info */}
+          <div>
+            <label className="block text-gray-700 mb-1">Employee ID</label>
+            <input
+              name="employeeId"
+              value={form.employeeId}
+              onChange={handleChange}
+              placeholder="Enter employee ID"
+              required
+              className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-gray-700 mb-1">Department</label>
+            <select
+              name="department"
+              value={form.department}
+              onChange={handleChange}
+              required
+              className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500">
+              <option value="">Select department</option>
+              {departments.map((dept) => (
+                <option key={dept._id} value={dept._id}>
+                  {dept.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-gray-700 mb-1">
+              Experience (Years)
+            </label>
+            <input
+              name="experience"
+              type="number"
+              min="0"
+              value={form.experience}
+              onChange={handleChange}
+              placeholder="e.g., 3"
+              className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-gray-700 mb-1">Block / Region</label>
+            <input
+              name="blockOrRegion"
+              value={form.blockOrRegion}
+              onChange={handleChange}
+              placeholder="Enter assigned region"
+              required
+              className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          {/* File Uploads */}
+          <div>
+            <label className="block text-gray-700 mb-1">Profile Photo</label>
+            <input
+              type="file"
+              name="profilePhoto"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="w-full border rounded-md px-3 py-2"
+            />
+          </div>
+
+          <div>
+            <label className="block text-gray-700 mb-1">ID Proof</label>
+            <input
+              type="file"
+              name="idProof"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="w-full border rounded-md px-3 py-2"
+            />
+          </div>
+
+          {/* Address */}
+          <div className="md:col-span-2 border-t pt-4">
+            <h2 className="font-semibold text-lg mb-2 text-gray-800">
+              Address Details
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {[
+                "houseNo",
+                "street",
+                "landmark",
+                "area",
+                "city",
+                "district",
+                "state",
+                "pincode",
+              ].map((field) => (
+                <input
+                  key={field}
+                  name={field}
+                  placeholder={field
+                    .replace(/([A-Z])/g, " $1")
+                    .replace(/^./, (s) => s.toUpperCase())}
+                  value={form.address[field]}
+                  onChange={handleAddressChange}
+                  required={["area", "city", "state", "pincode"].includes(
+                    field
+                  )}
+                  className="border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Submit */}
+          <div className="md:col-span-2 mt-4">
             <button
               type="submit"
               disabled={loading}
-              className="w-full md:w-auto bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-              {loading ? "Adding Worker..." : "Add Worker"}
+              className={`w-full text-white py-2 rounded-md transition duration-200 ${
+                loading
+                  ? "bg-blue-400 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700"
+              }`}>
+              {loading ? "Registering Worker..." : "Register Worker"}
             </button>
           </div>
         </form>

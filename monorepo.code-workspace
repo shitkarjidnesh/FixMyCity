@@ -1,0 +1,30 @@
+{
+  "folders": [
+    {
+      "path": "backend"
+    },
+    {
+      "path": "admin"
+    },
+    {
+      "path": "client"
+    },
+    {
+      "path": "mobile/client"
+    },
+    {
+      "path": "mobile/worker"
+    }
+  ],
+  "settings": {
+    "files.exclude": {
+      "**/.git": true,
+      "**/.DS_Store": true,
+      "**/node_modules": false
+    },
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true,
+    "editor.wordWrap": "on",
+    "terminal.integrated.defaultProfile.windows": "Command Prompt"
+  }
+}

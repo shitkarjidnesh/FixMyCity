@@ -12,6 +12,10 @@ import AddAdmin from "./AdminRegisterPage";
 import AddWorker from "./WorkerRegistrationPage";
 import { AuthContext } from "../context/AuthContext";
 import WorkerDashboard from "./WorkerDashboard";
+import AdminProfile from "./AdminProfile";
+import AdminList from "./AdminList";
+import AdminDetails from "./AdminDetails";
+import WorkerDetails from "./WorkerDetails";
 
 const Sidebar = () => {
   const location = useLocation();
@@ -24,6 +28,9 @@ const Sidebar = () => {
     { to: "/addAdmin", text: "Add Admin" },
     { to: "/addWorker", text: "Add Worker" },
     { to: "/showWorker", text: "Worker" },
+    { to: "/profile", text: "Profile" },
+    { to: "/showadmins", text: "Admins" },
+    //{ to: "/showadmin", text: "Admin" },
   ];
 
   const handleLogout = () => {
@@ -85,6 +92,10 @@ const DashboardPage = () => {
           <Route path="/addAdmin" element={<AddAdmin />} />
           <Route path="/addWorker" element={<AddWorker />} />
           <Route path="/showWorker" element={<WorkerDashboard />} />
+          <Route path="/profile" element={<AdminProfile />} />
+          <Route path="/showadmins" element={<AdminList />} />
+          <Route path="/showadmin" element={<AdminDetails />} />
+          <Route path="/workerdetails" element={<WorkerDetails />} />
         </Routes>
       </main>
     </div>

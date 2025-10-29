@@ -5,6 +5,7 @@ const cloudinary = require("../config/cloudinary");
 const { Readable } = require("stream");
 const UserComplaints = require("../models/UserComplaints");
 const auth = require("../middleware/auth");
+const UserActivity = require("../models/UserActivity");
 
 router.use(auth());
 
@@ -53,6 +54,19 @@ router.post("/", upload.array("photos", 5), async (req, res) => {
 
     await complaint.save();
 
+    // Log activity
+    try {
+      await UserActivity.create({
+        userId: req.user.id,
+        action: "CREATE_COMPLAINT",
+        targetType: "Complaint",
+        targetId: complaint._id,
+        details: { type: mainTypeId, subTypeId, images: imageUrls.length },
+      });
+    } catch (logErr) {
+      console.error("UserActivity log error:", logErr.message);
+    }
+
     res.status(201).json({
       success: true,
       data: complaint,
@@ -64,9 +78,17 @@ router.post("/", upload.array("photos", 5), async (req, res) => {
   }
 });
 // GET /api/complaints - fetch only logged-in user's complaints
-// GET /api/admin/complaints
 router.get("/", async (req, res) => {
   try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ success: false, error: "Unauthorized" });
+    }
+
+    const complaints = await UserComplaints.find({ userId })
+      .sort({ createdAt: -1 })
+      .populate("type", "name subComplaints");
+
     const normalizedComplaints = complaints.map((c) => {
       let subtypeName = "N/A";
       if (c.subtype !== undefined && c.type?.subComplaints) {
@@ -92,7 +114,7 @@ router.get("/", async (req, res) => {
         status: c.status || "Pending",
         createdAt: c.createdAt,
         updatedAt: c.updatedAt,
-        userId: c.userId || { name: "N/A", email: "N/A" },
+        userId: c.userId,
         latitude,
         longitude,
         imageUrls,

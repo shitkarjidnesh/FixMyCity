@@ -3,53 +3,65 @@ const bcrypt = require("bcryptjs");
 
 const WorkerSchema = new mongoose.Schema(
   {
-    // Basic Info
-    name: { type: String, required: true },
+    name: { type: String, required: true }, // First name
+    middleName: { type: String }, // Optional middle name
+    surname: { type: String, required: true }, // Last name / family name
+
     email: { type: String, required: true, unique: true },
     phone: { type: String, required: true },
-    address: { type: String, required: true },
-    gender: { type: String },
+    gender: { type: String, enum: ["Male", "Female", "Other"] },
     dob: { type: Date },
 
-    // Employment Info
+    address: {
+      houseNo: { type: String },
+      street: { type: String },
+      landmark: { type: String },
+      area: { type: String, required: true },
+      city: { type: String, required: true },
+      district: { type: String },
+      state: { type: String, required: true },
+      pincode: { type: String, required: true },
+    },
+
     employeeId: { type: String, required: true, unique: true },
     department: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Department",
       required: true,
-      enum: [
-        "Electrician",
-        "Plumber",
-        "Road Maintenance",
-        "Sanitation",
-        "Street Light Repair",
-        "Garbage Collection",
-        "Drainage Maintenance",
-        "Painter",
-      ],
     },
-    experience: { type: Number },
-    availability: { type: String },
 
-    // Login Info
-    username: { type: String, required: true, unique: true },
+    experience: { type: Number, default: 0 },
+    availability: {
+      type: String,
+      enum: ["Available", "Busy", "On Leave"],
+      default: "Available",
+    },
+
+    blockOrRegion: { type: String, required: true },
     password: { type: String, required: true },
 
-    // Files
     profilePhoto: { type: String },
     idProof: { type: String },
 
-    // Admin Log
+    status: {
+      type: String,
+      enum: ["active", "suspended", "removed"],
+      default: "active",
+    },
+
+    lastLogin: { type: Date },
+
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Admin",
       required: true,
     },
-    dateAdded: { type: Date, default: Date.now },
+    updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: "Admin" },
   },
   { timestamps: true }
 );
 
-// Hash password before saving
+// Password hashing middleware
 WorkerSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
   const salt = await bcrypt.genSalt(10);

@@ -13,6 +13,8 @@ const complaintsRoute = require("./routes/complaints");
 const authRoutes = require("./routes/auth");
 const adminRoutes = require("./routes/admin");
 const complaintTypesRoutes = require("./routes/complaintTypes");
+const workerAuthRoutes = require("./routes/workerAuth");
+const workerRoutes = require("./routes/worker");
 const otpRoutes = require("./routes/otp");
 
 const app = express();
@@ -65,6 +67,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/complaint-types", complaintTypesRoutes);
 app.use("/api/otp", otpRoutes);
+app.use("/api/worker/auth", workerAuthRoutes);
+app.use("/api/worker", workerRoutes);
 
 // -----------------------------
 // Global Error Handler
@@ -78,7 +82,3 @@ app.use((err, req, res, next) => {
 // Start Server
 // -----------------------------
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
-
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running on http://0.0.0.0:${PORT}`);
-});
