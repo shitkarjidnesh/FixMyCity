@@ -55,10 +55,16 @@ const BASE_URL = "http://192.168.68.44:5000";
 export default function ReportProblem() {
   const [userData, setUserData] = useState<User | null>(null);
 
-  // Form fields
+  // Basic info
   const [name, setName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
-  const [address, setAddress] = useState<string>("");
+
+  // Structured address fields
+  const [street, setStreet] = useState<string>("");
+  const [landmark, setLandmark] = useState<string>("");
+  const [area, setArea] = useState<string>("");
+  const [city, setCity] = useState<string>("");
+  const [district, setDistrict] = useState<string>("");
 
   const [complaintTypes, setComplaintTypes] = useState<ComplaintType[]>([]);
   const [selectedMainType, setSelectedMainType] = useState<string>("");
@@ -120,7 +126,7 @@ export default function ReportProblem() {
     };
   }, []);
 
-  // Fetch subtypes when main type changes
+  // Fetch subtypes
   useEffect(() => {
     if (!selectedMainType) {
       setSubTypes([]);
@@ -208,8 +214,12 @@ export default function ReportProblem() {
 
   // Submit complaint
   const handleSubmit = async () => {
-    if (!name || !email || !address)
-      return Alert.alert("Validation", "Fill name, email, and address.");
+    if (!name || !email)
+      return Alert.alert("Validation", "Fill name and email.");
+    if (!street && !landmark && !area)
+      return Alert.alert("Validation", "Enter address details.");
+    if (!area || !city)
+      return Alert.alert("Validation", "Area and City are required.");
     if (!selectedMainType || !selectedSubType)
       return Alert.alert("Validation", "Select main and sub complaint types.");
     if (!description) return Alert.alert("Validation", "Enter description.");
@@ -222,7 +232,14 @@ export default function ReportProblem() {
       const form = new FormData();
       form.append("name", name);
       form.append("email", email);
-      form.append("address", address);
+
+      // Address structure
+      form.append("street", street);
+      form.append("landmark", landmark);
+      form.append("area", area);
+      form.append("city", city);
+      form.append("district", district);
+
       form.append("mainTypeId", selectedMainType);
       form.append("subTypeId", selectedSubType);
       form.append("description", description);
@@ -254,7 +271,11 @@ export default function ReportProblem() {
       setSubTypes([]);
       setSelectedSubType("");
       setLocationState(null);
-      setAddress("");
+      setStreet("");
+      setLandmark("");
+      setArea("");
+      setCity("");
+      setDistrict("");
     } catch (err) {
       console.warn("submit error:", err);
       Alert.alert("Network", "Failed to submit complaint.");
@@ -272,7 +293,7 @@ export default function ReportProblem() {
           contentContainerStyle={{ padding: 16, paddingBottom: 100 }}>
           <Text style={styles.heading}>Submit Complaint</Text>
 
-          {/* User Info */}
+          {/* Basic Info */}
           <View style={styles.fieldBox}>
             <Text style={styles.label}>Name</Text>
             <TextInput
@@ -292,15 +313,56 @@ export default function ReportProblem() {
               keyboardType="email-address"
             />
           </View>
+
+          {/* Structured Address Fields */}
           <View style={styles.fieldBox}>
-            <Text style={styles.label}>Address</Text>
+            <Text style={styles.label}>Street / Road</Text>
             <TextInput
               style={styles.input}
-              value={address}
-              onChangeText={setAddress}
-              placeholder="Address / landmark"
+              value={street}
+              onChangeText={setStreet}
+              placeholder="e.g. MG Road"
             />
           </View>
+          <View style={styles.fieldBox}>
+            <Text style={styles.label}>Landmark</Text>
+            <TextInput
+              style={styles.input}
+              value={landmark}
+              onChangeText={setLandmark}
+              placeholder="Near temple / mall / park"
+            />
+          </View>
+          <View style={styles.fieldBox}>
+            <Text style={styles.label}>Area *</Text>
+            <TextInput
+              style={styles.input}
+              value={area}
+              onChangeText={setArea}
+              placeholder="e.g. Andheri East"
+            />
+          </View>
+          <View style={styles.fieldBox}>
+            <Text style={styles.label}>City *</Text>
+            <TextInput
+              style={styles.input}
+              value={city}
+              onChangeText={setCity}
+              placeholder="e.g. Mumbai"
+            />
+          </View>
+          <View style={styles.fieldBox}>
+            <Text style={styles.label}>District</Text>
+            <TextInput
+              style={styles.input}
+              value={district}
+              onChangeText={setDistrict}
+              placeholder="e.g. Mumbai Suburban"
+            />
+          </View>
+
+          {/* Existing complaint type, photo, submit logic continues below... */}
+          {/* ... (same as your current code after address section) */}
 
           {/* Main Type */}
           <View style={styles.fieldBox}>

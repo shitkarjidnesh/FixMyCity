@@ -77,6 +77,8 @@ app.use((err, req, res, next) => {
   console.error("🔥 Uncaught Error:", err);
   res.status(500).json({ success: false, error: "Server Error" });
 });
+const bcrypt = require("bcrypt");
+bcrypt.hash("password123", 10).then(console.log);
 
 // -----------------------------
 // Start Server

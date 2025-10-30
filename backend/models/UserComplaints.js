@@ -2,36 +2,33 @@ const mongoose = require("mongoose");
 
 const UserComplaintSchema = new mongoose.Schema(
   {
-    // Who submitted
+    // Reporter reference
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
 
-    // Complaint type (e.g., "Road Damage", "Garbage Issue")
+    // Complaint category
     type: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "ComplaintType",
       required: true,
     },
-
-    subtype: { type: String }, // optional: "Pothole", "Open Manhole"
+    subtype: { type: String },
 
     description: { type: String, required: true },
 
-    // Structured Address (helps match nearby users or complaints)
+    // Flexible structured address
     address: {
-      street: { type: String }, // Road name or locality
-      landmark: { type: String }, // Optional: near temple, mall, etc.
-      area: { type: String, required: true }, // e.g. Andheri East, Dadar West
-      city: { type: String, required: true }, // Mumbai, Pune, Nagpur
-      district: { type: String }, // Especially useful in rural areas
-      state: { type: String, required: true }, // Maharashtra, Gujarat, etc.
-      pincode: { type: String, required: true }, // 6-digit postal code
+      street: { type: String },
+      landmark: { type: String },
+      area: { type: String, required: true },
+      city: { type: String, required: true },
+      district: { type: String },
     },
 
-    // Geo-location for map features
+    // Geo-location
     location: {
       type: {
         type: String,
@@ -44,10 +41,10 @@ const UserComplaintSchema = new mongoose.Schema(
       },
     },
 
-    // Images for complaint evidence
+    // Evidence media
     imageUrls: { type: [String], default: [] },
 
-    // Complaint handling flow
+    // Assignment and handling
     assignedTo: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Worker",
@@ -57,7 +54,7 @@ const UserComplaintSchema = new mongoose.Schema(
       ref: "Admin",
     },
 
-    // Status flow tracking
+    // Complaint status
     status: {
       type: String,
       enum: ["Pending", "Assigned", "In Progress", "Resolved", "Rejected"],
@@ -70,6 +67,7 @@ const UserComplaintSchema = new mongoose.Schema(
       default: "Medium",
     },
 
+    // Resolution info
     resolutionDetails: {
       resolvedBy: { type: mongoose.Schema.Types.ObjectId, ref: "Worker" },
       resolvedAt: { type: Date },
@@ -77,7 +75,7 @@ const UserComplaintSchema = new mongoose.Schema(
       resolutionPhotos: { type: [String], default: [] },
     },
 
-    // Log who updated the complaint last
+    // Audit tracking
     lastUpdatedBy: {
       type: mongoose.Schema.Types.ObjectId,
       refPath: "lastUpdatedRole",
@@ -90,7 +88,7 @@ const UserComplaintSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Geo index for location queries
+// Spatial index for geo queries
 UserComplaintSchema.index({ location: "2dsphere" });
 
 module.exports = mongoose.model("UserComplaint", UserComplaintSchema);

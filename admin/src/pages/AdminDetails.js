@@ -389,13 +389,13 @@ export default function AdminDetails() {
                     label="Government Employee ID"
                     value={admin.governmentEmployeeId}
                   />
-                  <ProfileField
+                  {/* <ProfileField
                     icon={Shield}
                     label="ID Proof"
                     value={`${admin.idProof?.type || "N/A"} (${
                       admin.idProof?.number || "N/A"
                     })`}
-                  />
+                  /> */}
                 </>
               )}
             </div>

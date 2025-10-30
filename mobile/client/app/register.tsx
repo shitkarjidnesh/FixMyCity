@@ -12,16 +12,28 @@ import {
   Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { Ionicons } from "@expo/vector-icons";
 import TopNav from "@/components/TopNav";
 import BottomNav from "@/components/BottomNav";
 import axios from "axios";
-import { Ionicons } from "@expo/vector-icons"; // For eye icon
+import { Picker } from "@react-native-picker/picker";
 
 export default function Register() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [address, setAddress] = useState("");
+  const [houseNo, setHouseNo] = useState("");
+  const [street, setStreet] = useState("");
+  const [landmark, setLandmark] = useState("");
+  const [area, setArea] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+  const [pincode, setPincode] = useState("");
+  const [gender, setGender] = useState("");
+  const [dob, setDob] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -33,7 +45,7 @@ export default function Register() {
 
   const router = useRouter();
 
-  // OTP timer
+  // Timer countdown
   useEffect(() => {
     let interval: NodeJS.Timer;
     if (otpSent && timer > 0) {
@@ -55,17 +67,52 @@ export default function Register() {
     return `${m}:${s}`;
   };
 
+  // Validate DOB (minimum age 13)
+  const validateDob = (selectedDate: Date) => {
+    const today = new Date();
+    const age = today.getFullYear() - selectedDate.getFullYear();
+    const monthDiff = today.getMonth() - selectedDate.getMonth();
+    if (
+      age < 13 ||
+      (age === 13 && monthDiff < 0) ||
+      (age === 13 &&
+        monthDiff === 0 &&
+        today.getDate() < selectedDate.getDate())
+    ) {
+      Alert.alert(
+        "Invalid DOB",
+        "You must be at least 13 years old to register."
+      );
+      return false;
+    }
+    return true;
+  };
+
+  const onChangeDob = (event: any, selectedDate?: Date) => {
+    setShowDatePicker(false);
+    if (selectedDate && validateDob(selectedDate)) {
+      setDob(selectedDate);
+    }
+  };
+
+  const formattedDob = dob.toISOString().split("T")[0]; // yyyy-mm-dd
+
   // Request OTP
   const requestOtp = async () => {
     if (
       !name ||
       !email ||
       !phone ||
-      !address ||
+      !area ||
+      !city ||
+      !state ||
+      !pincode ||
+      !gender ||
+      !dob ||
       !password ||
       !confirmPassword
     ) {
-      Alert.alert("Error", "Please fill all fields before requesting OTP");
+      Alert.alert("Error", "Please fill all required fields");
       return;
     }
     if (password !== confirmPassword) {
@@ -83,13 +130,12 @@ export default function Register() {
       } else {
         Alert.alert("Error", res.data.message || "Failed to send OTP");
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
       Alert.alert("Error", "Failed to request OTP");
     }
   };
 
-  // Verify OTP & register
   const verifyOtpAndRegister = async () => {
     if (!otp) {
       Alert.alert("Error", "Enter OTP");
@@ -99,38 +145,31 @@ export default function Register() {
       const res = await axios.post("http://10.0.2.2:5000/api/otp/verify-otp", {
         name,
         email,
-        phoneNo: phone,
-        address,
+        phone,
         password,
         otp,
+        gender,
+        dob: formattedDob,
+        address: {
+          houseNo,
+          street,
+          landmark,
+          area,
+          city,
+          state,
+          pincode,
+        },
       });
+
       if (res.data.success) {
-        Alert.alert("Success", res.data.message || "Registration complete");
-        setName("");
-        setEmail("");
-        setPhone("");
-        setAddress("");
-        setPassword("");
-        setConfirmPassword("");
-        setOtp("");
-        setOtpSent(false);
-        setTimer(300);
+        Alert.alert("Success", "Registration complete");
         router.replace("/login");
       } else {
-        Alert.alert("OTP Error", res.data.message || "OTP invalid or expired");
-        setOtp("");
-        setOtpSent(false);
-        setTimer(300);
+        Alert.alert("Error", res.data.message || "OTP invalid or expired");
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
-      Alert.alert(
-        "Error",
-        err.response?.data?.message || "Verification failed"
-      );
-      setOtp("");
-      setOtpSent(false);
-      setTimer(300);
+      Alert.alert("Error", "Registration failed");
     }
   };
 
@@ -140,9 +179,7 @@ export default function Register() {
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={styles.flex}>
-        <ScrollView
-          contentContainerStyle={styles.scrollContainer}
-          keyboardShouldPersistTaps="handled">
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
           <Text style={styles.title}>Create Account</Text>
 
           <TextInput
@@ -156,7 +193,6 @@ export default function Register() {
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
-            autoCapitalize="none"
             style={styles.input}
           />
           <TextInput
@@ -166,13 +202,83 @@ export default function Register() {
             keyboardType="phone-pad"
             style={styles.input}
           />
+
+          <Text style={styles.sectionLabel}>Address</Text>
           <TextInput
-            placeholder="Address"
-            value={address}
-            onChangeText={setAddress}
+            placeholder="House No"
+            value={houseNo}
+            onChangeText={setHouseNo}
+            style={styles.input}
+          />
+          <TextInput
+            placeholder="Street"
+            value={street}
+            onChangeText={setStreet}
+            style={styles.input}
+          />
+          <TextInput
+            placeholder="Landmark"
+            value={landmark}
+            onChangeText={setLandmark}
+            style={styles.input}
+          />
+          <TextInput
+            placeholder="Area *"
+            value={area}
+            onChangeText={setArea}
+            style={styles.input}
+          />
+          <TextInput
+            placeholder="City *"
+            value={city}
+            onChangeText={setCity}
+            style={styles.input}
+          />
+          <TextInput
+            placeholder="State *"
+            value={state}
+            onChangeText={setState}
+            style={styles.input}
+          />
+          <TextInput
+            placeholder="Pincode *"
+            value={pincode}
+            onChangeText={setPincode}
+            keyboardType="numeric"
             style={styles.input}
           />
 
+          <View style={styles.pickerContainer}>
+            <Text style={styles.label}>Gender *</Text>
+            <View style={styles.pickerWrapper}>
+              <Picker
+                selectedValue={gender}
+                onValueChange={(itemValue) => setGender(itemValue)}>
+                <Picker.Item label="Select Gender" value="" />
+                <Picker.Item label="Male" value="male" />
+                <Picker.Item label="Female" value="female" />
+                <Picker.Item label="Other" value="other" />
+              </Picker>
+            </View>
+          </View>
+
+          <TouchableOpacity
+            onPress={() => setShowDatePicker(true)}
+            style={styles.dateButton}>
+            <Text style={styles.dateText}>DOB: {formattedDob}</Text>
+          </TouchableOpacity>
+
+          {showDatePicker && (
+            <DateTimePicker
+              value={dob}
+              mode="date"
+              display={Platform.OS === "ios" ? "spinner" : "default"}
+              maximumDate={new Date()}
+              onChange={onChangeDob}
+            />
+          )}
+
+          {/* Password Fields */}
           <View style={styles.passwordWrapper}>
             <TextInput
               placeholder="Password"
@@ -258,6 +364,11 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#333",
   },
+  sectionLabel: {
+    fontWeight: "600",
+    color: "#444",
+    marginBottom: 8,
+  },
   input: {
     borderWidth: 1,
     borderColor: "#ccc",
@@ -266,10 +377,34 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: "#fff",
   },
-  passwordContainer: {
-    flexDirection: "row",
-    alignItems: "center",
+  dateButton: {
+    backgroundColor: "#fff",
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
     marginBottom: 16,
+  },
+  dateText: {
+    color: "#333",
+  },
+  passwordWrapper: {
+    position: "relative",
+    marginBottom: 16,
+  },
+  passwordInput: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    padding: 12,
+    paddingRight: 40,
+    backgroundColor: "#fff",
+  },
+  eyeIcon: {
+    position: "absolute",
+    right: 12,
+    top: "50%",
+    transform: [{ translateY: -11 }],
   },
   button: {
     backgroundColor: "#2563eb",
@@ -285,22 +420,19 @@ const styles = StyleSheet.create({
     color: "#2563eb",
     fontWeight: "500",
   },
-  passwordWrapper: {
-    position: "relative",
+
+  pickerContainer: {
     marginBottom: 16,
   },
-  passwordInput: {
+  label: {
+    fontWeight: "600",
+    color: "#444",
+    marginBottom: 8,
+  },
+  pickerWrapper: {
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 8,
-    padding: 12,
-    paddingRight: 40, // space for the icon
     backgroundColor: "#fff",
-  },
-  eyeIcon: {
-    position: "absolute",
-    right: 12,
-    top: "50%",
-    transform: [{ translateY: -11 }], // vertically center the icon
   },
 });

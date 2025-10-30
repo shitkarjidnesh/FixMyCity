@@ -17,16 +17,38 @@ const upload = multer({ storage });
 // Corrected POST route to handle multiple photos
 router.post("/", upload.array("photos", 5), async (req, res) => {
   try {
-    const { mainTypeId, subTypeId, description, address, latitude, longitude } =
-      req.body;
+    const {
+      mainTypeId,
+      subTypeId,
+      description,
+      street,
+      area,
+      city,
+      landmark,
+      pincode,
+      latitude,
+      longitude,
+    } = req.body;
 
+    // 🧾 Basic validation
+    if (!mainTypeId || !subTypeId || !description || !area || !city)
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing required fields" });
+
+    // 🔍 Coordinate validation
+    if (!latitude || !longitude)
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing location coordinates" });
+
+    // 📷 Upload to Cloudinary
     let imageUrls = [];
-
     if (req.files && req.files.length > 0) {
       const uploadPromises = req.files.map((file) => {
         return new Promise((resolve, reject) => {
           const stream = cloudinary.uploader.upload_stream(
-            { folder: "fixmycity" },
+            { folder: "fixmycity/complaints" },
             (error, result) => {
               if (error) reject(error);
               else resolve(result.secure_url);
@@ -35,33 +57,45 @@ router.post("/", upload.array("photos", 5), async (req, res) => {
           Readable.from(file.buffer).pipe(stream);
         });
       });
-
       imageUrls = await Promise.all(uploadPromises);
     }
 
+    // 🏙️ Create complaint with structured address
     const complaint = new UserComplaints({
       userId: req.user.id,
       type: mainTypeId,
       subtype: subTypeId,
       description,
-      address,
+      address: {
+        street: street || "",
+        area,
+        city,
+        landmark: landmark || "",
+        pincode: pincode || "",
+      },
       location: {
         type: "Point",
         coordinates: [parseFloat(longitude), parseFloat(latitude)],
       },
-      imageUrls, // store URLs directly
+      imageUrls,
     });
 
     await complaint.save();
 
-    // Log activity
+    // 🧾 Log user activity
     try {
       await UserActivity.create({
         userId: req.user.id,
         action: "CREATE_COMPLAINT",
         targetType: "Complaint",
         targetId: complaint._id,
-        details: { type: mainTypeId, subTypeId, images: imageUrls.length },
+        details: {
+          mainTypeId,
+          subTypeId,
+          city,
+          area,
+          images: imageUrls.length,
+        },
       });
     } catch (logErr) {
       console.error("UserActivity log error:", logErr.message);
@@ -69,14 +103,15 @@ router.post("/", upload.array("photos", 5), async (req, res) => {
 
     res.status(201).json({
       success: true,
-      data: complaint,
       message: "Complaint submitted successfully",
+      data: complaint,
     });
   } catch (err) {
     console.error("Complaint submission error:", err);
-    res.status(500).json({ success: false, error: "Server error" });
+    res.status(500).json({ success: false, error: "Internal server error" });
   }
 });
+
 // GET /api/complaints - fetch only logged-in user's complaints
 router.get("/", async (req, res) => {
   try {

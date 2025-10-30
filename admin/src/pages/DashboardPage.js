@@ -17,6 +17,9 @@ import AdminList from "./AdminList";
 import AdminDetails from "./AdminDetails";
 import WorkerDetails from "./WorkerDetails";
 
+import AdminComplaintTypePage from "./AdminComplaintTypePage";
+import AdminDepartmentPage from "./AdminDepartmentPage";
+
 const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -30,6 +33,8 @@ const Sidebar = () => {
     { to: "/showWorker", text: "Worker" },
     { to: "/profile", text: "Profile" },
     { to: "/showadmins", text: "Admins" },
+    { to: "/addcomplaintstypes", text: "Complaint Types" },
+    { to: "/departments", text: "Departments" },
     //{ to: "/showadmin", text: "Admin" },
   ];
 
@@ -96,6 +101,11 @@ const DashboardPage = () => {
           <Route path="/showadmins" element={<AdminList />} />
           <Route path="/showadmin" element={<AdminDetails />} />
           <Route path="/workerdetails" element={<WorkerDetails />} />
+          <Route
+            path="/addcomplaintstypes"
+            element={<AdminComplaintTypePage />}
+          />
+          <Route path="/departments" element={<AdminDepartmentPage />} />
         </Routes>
       </main>
     </div>

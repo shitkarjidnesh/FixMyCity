@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function AddAdmin() {
   const [form, setForm] = useState({
@@ -12,8 +13,6 @@ export default function AddAdmin() {
     password: "",
     dob: "",
     gender: "",
-    idProofType: "",
-    idProofNumber: "",
     governmentEmployeeId: "",
     blockOrRegion: "",
     address: {
@@ -31,6 +30,7 @@ export default function AddAdmin() {
   const [profilePhoto, setProfilePhoto] = useState(null);
   const [idProofImage, setIdProofImage] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -47,6 +47,7 @@ export default function AddAdmin() {
     e.preventDefault();
     setLoading(true);
 
+    // Age validation
     const today = new Date();
     const birthDate = new Date(form.dob);
     let age = today.getFullYear() - birthDate.getFullYear();
@@ -54,7 +55,6 @@ export default function AddAdmin() {
     if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
       age--;
     }
-
     if (age < 18) {
       toast.error("⚠️ Admin must be at least 18 years old.");
       setLoading(false);
@@ -63,7 +63,6 @@ export default function AddAdmin() {
 
     try {
       const formData = new FormData();
-
       for (const key in form) {
         if (key === "address") {
           for (const addrKey in form.address) {
@@ -95,8 +94,6 @@ export default function AddAdmin() {
         password: "",
         dob: "",
         gender: "",
-        idProofType: "",
-        idProofNumber: "",
         governmentEmployeeId: "",
         blockOrRegion: "",
         address: {
@@ -132,6 +129,7 @@ export default function AddAdmin() {
 
         <form
           onSubmit={handleSubmit}
+          autoComplete="off"
           className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Full Name Fields */}
           <div>
@@ -142,6 +140,7 @@ export default function AddAdmin() {
               onChange={handleChange}
               placeholder="Enter first name"
               required
+              autoComplete="off"
               className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -153,6 +152,7 @@ export default function AddAdmin() {
               value={form.middleName}
               onChange={handleChange}
               placeholder="Enter middle name"
+              autoComplete="off"
               className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -165,6 +165,7 @@ export default function AddAdmin() {
               onChange={handleChange}
               placeholder="Enter surname"
               required
+              autoComplete="off"
               className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -178,6 +179,7 @@ export default function AddAdmin() {
               onChange={handleChange}
               placeholder="Enter email"
               required
+              autoComplete="off"
               className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -192,23 +194,33 @@ export default function AddAdmin() {
               onChange={handleChange}
               placeholder="10-digit mobile number"
               required
+              autoComplete="off"
               className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
-          <div>
+          {/* Password with Eye Toggle */}
+          <div className="relative">
             <label className="block text-gray-700 mb-1">Password</label>
             <input
               name="password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               value={form.password}
               onChange={handleChange}
               placeholder="Create password"
               required
-              className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
+              autoComplete="new-password"
+              className="w-full border rounded-md px-3 py-2 pr-10 focus:ring-2 focus:ring-blue-500"
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-9 text-gray-500 hover:text-gray-700">
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
           </div>
 
+          {/* Date of Birth */}
           <div>
             <label className="block text-gray-700 mb-1">Date of Birth</label>
             <input
@@ -217,10 +229,12 @@ export default function AddAdmin() {
               value={form.dob}
               onChange={handleChange}
               required
+              autoComplete="off"
               className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
+          {/* Gender */}
           <div>
             <label className="block text-gray-700 mb-1">Gender</label>
             <select
@@ -228,6 +242,7 @@ export default function AddAdmin() {
               value={form.gender}
               onChange={handleChange}
               required
+              autoComplete="off"
               className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500">
               <option value="">Select gender</option>
               <option>Male</option>
@@ -236,35 +251,7 @@ export default function AddAdmin() {
             </select>
           </div>
 
-          {/* ID Proof */}
-          <div>
-            <label className="block text-gray-700 mb-1">ID Proof Type</label>
-            <select
-              name="idProofType"
-              value={form.idProofType}
-              onChange={handleChange}
-              required
-              className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500">
-              <option value="">Select ID type</option>
-              <option value="Aadhaar Card">Aadhaar Card</option>
-              <option value="PAN Card">PAN Card</option>
-              <option value="Voter ID">Voter ID</option>
-              <option value="Passport">Passport</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-gray-700 mb-1">ID Proof Number</label>
-            <input
-              name="idProofNumber"
-              value={form.idProofNumber}
-              onChange={handleChange}
-              placeholder="Enter ID number"
-              required
-              className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
+          {/* Employee ID */}
           <div>
             <label className="block text-gray-700 mb-1">Employee ID</label>
             <input
@@ -273,10 +260,12 @@ export default function AddAdmin() {
               onChange={handleChange}
               placeholder="Enter government employee ID"
               required
+              autoComplete="off"
               className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
+          {/* Block / Region */}
           <div>
             <label className="block text-gray-700 mb-1">Block / Region</label>
             <input
@@ -285,6 +274,7 @@ export default function AddAdmin() {
               onChange={handleChange}
               placeholder="Enter assigned region"
               required
+              autoComplete="off"
               className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -312,12 +302,11 @@ export default function AddAdmin() {
             />
           </div>
 
-          {/* Address */}
+          {/* Address Section */}
           <div className="md:col-span-2 border-t pt-4">
             <h2 className="font-semibold text-lg mb-2 text-gray-800">
               Address Details
             </h2>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {[
                 "houseNo",
@@ -340,6 +329,7 @@ export default function AddAdmin() {
                   required={["area", "city", "state", "pincode"].includes(
                     field
                   )}
+                  autoComplete="off"
                   className="border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
                 />
               ))}

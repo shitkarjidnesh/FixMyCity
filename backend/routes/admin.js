@@ -12,6 +12,7 @@ const adminAuth = require("../middleware/adminAuth.js");
 const upload = require("../middleware/uploadMiddleware");
 const uploadToCloudinary = require("../utils/uploadToCloudinary");
 const AdminActivity = require("../models/AdminActivity");
+const ComplaintType = require("../models/ComplaintTypes");
 
 // ===================== ADMIN AUTHENTICATION =====================
 // These routes are public and do not need the auth middleware.
@@ -92,7 +93,8 @@ router.post(
       }
 
       // Hash password
-      const hashedPassword = await bcrypt.hash(password, 10);
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
 
       // Save new admin
       const admin = new Admin({
@@ -135,22 +137,54 @@ router.post(
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log("Login attempt:", email);
+
+    // ✅ Basic input validation
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        stage: "validation",
+        error: "Email and password are required",
+      });
+    }
+
+    // ✅ Check admin existence
     const admin = await Admin.findOne({ email });
     if (!admin) {
-      return res.status(400).json({ success: false, error: "Admin not found" });
+      console.log("❌ Admin not found");
+      return res.status(400).json({
+        success: false,
+        stage: "findOne",
+        error: "Admin not found",
+        receivedEmail: email,
+      });
     }
+
+    // ✅ Password check with detailed diagnostics
     const match = await bcrypt.compare(password, admin.password);
     if (!match) {
-      return res
-        .status(400)
-        .json({ success: false, error: "Invalid credentials" });
+      console.log("❌ Invalid password for:", email);
+      return res.status(400).json({
+        success: false,
+        stage: "bcrypt_compare",
+        error: "Invalid credentials",
+        debug: {
+          enteredPassword: password,
+          storedHash: admin.password,
+          bcryptResult: match,
+        },
+      });
     }
+
+    // ✅ Successful login
+    console.log("✅ Login successful:", email);
     const token = jwt.sign(
       { id: admin._id, role: "admin" },
       process.env.JWT_SECRET,
-      { expiresIn: "2d" } // Extended session time
+      { expiresIn: "2d" }
     );
-    res.json({
+
+    res.status(200).json({
       success: true,
       token,
       role: "admin",
@@ -160,7 +194,13 @@ router.post("/login", async (req, res) => {
     });
   } catch (err) {
     console.error("Admin login error:", err);
-    res.status(500).json({ success: false, error: "Server error" });
+    res.status(500).json({
+      success: false,
+      stage: "exception",
+      error: "Server error",
+      message: err.message,
+      stack: err.stack,
+    });
   }
 });
 
@@ -494,12 +534,16 @@ router.post("/complaints/:id/assign", adminAuth, async (req, res) => {
     const { workerId, priority } = req.body;
 
     if (!workerId) {
-      return res.status(400).json({ success: false, error: "workerId is required" });
+      return res
+        .status(400)
+        .json({ success: false, error: "workerId is required" });
     }
 
     const worker = await Worker.findById(workerId);
     if (!worker) {
-      return res.status(404).json({ success: false, error: "Worker not found" });
+      return res
+        .status(404)
+        .json({ success: false, error: "Worker not found" });
     }
 
     const complaint = await UserComplaints.findByIdAndUpdate(
@@ -519,7 +563,9 @@ router.post("/complaints/:id/assign", adminAuth, async (req, res) => {
       .populate("assignedTo", "name email department");
 
     if (!complaint) {
-      return res.status(404).json({ success: false, error: "Complaint not found" });
+      return res
+        .status(404)
+        .json({ success: false, error: "Complaint not found" });
     }
 
     await AdminActivity.create({
@@ -532,10 +578,16 @@ router.post("/complaints/:id/assign", adminAuth, async (req, res) => {
       userAgent: req.headers["user-agent"],
     });
 
-    res.json({ success: true, message: "Complaint assigned to worker", data: complaint });
+    res.json({
+      success: true,
+      message: "Complaint assigned to worker",
+      data: complaint,
+    });
   } catch (err) {
     console.error("❌ Assign complaint error:", err);
-    res.status(500).json({ success: false, error: "Failed to assign complaint" });
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to assign complaint" });
   }
 });
 
@@ -545,9 +597,14 @@ router.post("/complaints/:id/verify", adminAuth, async (req, res) => {
     const { id } = req.params;
     const { approve, notes } = req.body;
 
-    const complaint = await UserComplaints.findById(id).populate("type", "name subComplaints");
+    const complaint = await UserComplaints.findById(id).populate(
+      "type",
+      "name subComplaints"
+    );
     if (!complaint) {
-      return res.status(404).json({ success: false, error: "Complaint not found" });
+      return res
+        .status(404)
+        .json({ success: false, error: "Complaint not found" });
     }
 
     if (approve === true || approve === "true") {
@@ -569,10 +626,16 @@ router.post("/complaints/:id/verify", adminAuth, async (req, res) => {
       userAgent: req.headers["user-agent"],
     });
 
-    res.json({ success: true, message: approve ? "Resolution approved" : "Resolution rejected", data: complaint });
+    res.json({
+      success: true,
+      message: approve ? "Resolution approved" : "Resolution rejected",
+      data: complaint,
+    });
   } catch (err) {
     console.error("❌ Verify resolution error:", err);
-    res.status(500).json({ success: false, error: "Failed to verify resolution" });
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to verify resolution" });
   }
 });
 
@@ -1031,8 +1094,6 @@ router.put(
   }
 );
 
-
-
 // 🟠 Update worker status (active/suspended/removed)
 router.patch("/updateWorkerStatus/:id", adminAuth, async (req, res) => {
   try {
@@ -1106,6 +1167,192 @@ router.get("/departments", async (req, res) => {
   } catch (err) {
     console.error("Error fetching departments:", err);
     res.status(500).json({ message: "Server error", error: err.message });
+  }
+});
+
+router.post("/complaint-type/create", adminAuth, async (req, res) => {
+  try {
+    const { name, subComplaints, departmentId } = req.body;
+
+    if (!name || !departmentId)
+      return res
+        .status(400)
+        .json({ success: false, message: "Name and Department are required" });
+
+    const department = await Department.findById(departmentId);
+    if (!department)
+      return res
+        .status(404)
+        .json({ success: false, message: "Department not found" });
+
+    const newType = await ComplaintType.create({
+      name,
+      subComplaints: subComplaints || [],
+      departmentId,
+      createdBy: req.admin._id,
+    });
+
+    res.status(201).json({ success: true, data: newType });
+  } catch (error) {
+    console.error("❌ Create Complaint Type Error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+// 🟡 GET /api/admin/complaint-type/all
+router.get("/complaint-type/all", adminAuth, async (req, res) => {
+  try {
+    const complaintTypes = await ComplaintType.find()
+      .populate("departmentId", "name")
+      .populate("createdBy", "name email")
+      .populate("updatedBy", "name email")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({ success: true, data: complaintTypes });
+  } catch (error) {
+    console.error("❌ Fetch Complaint Types Error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+// 🟡 PUT /api/admin/complaint-type/update/:id
+router.put("/complaint-type/update/:id", adminAuth, async (req, res) => {
+  try {
+    const { name, subComplaints, departmentId } = req.body;
+
+    const updated = await ComplaintType.findByIdAndUpdate(
+      req.params.id,
+      {
+        name,
+        subComplaints,
+        departmentId,
+        updatedBy: req.admin._id, // 🔹 keep admin who made the update
+        updatedAt: new Date(),
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!updated) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Complaint type not found" });
+    }
+
+    res.status(200).json({ success: true, data: updated });
+  } catch (error) {
+    console.error("❌ Update Complaint Type Error:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+router.get("/departments/all", adminAuth, async (req, res) => {
+  try {
+    const departments = await Department.find()
+      .populate("createdBy", "name email")
+      .populate("updatedBy", "name email")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      message: "Departments fetched successfully",
+      data: departments,
+    });
+  } catch (error) {
+    console.error("❌ Fetch Departments Error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+// 🔴 POST /api/admin/departments/create — Only Super Admin can create departments
+router.post("/departments/create", adminAuth, async (req, res) => {
+  try {
+    if (req.admin.role !== "superadmin") {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied: Only Super Admin can create departments",
+      });
+    }
+
+    const { name, description, status } = req.body;
+
+    if (!name)
+      return res.status(400).json({
+        success: false,
+        message: "Department name is required",
+      });
+
+    const existing = await Department.findOne({ name });
+    if (existing)
+      return res.status(409).json({
+        success: false,
+        message: "Department name already exists",
+      });
+
+    const department = new Department({
+      name,
+      description,
+      status: status || "active",
+      createdBy: req.admin._id,
+    });
+
+    await department.save();
+
+    res.status(201).json({
+      success: true,
+      message: "Department created successfully",
+      data: department,
+    });
+  } catch (error) {
+    console.error("❌ Create Department Error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+// 🟡 PUT /api/admin/departments/update/:id — Only Super Admin can update
+// 🟡 PUT /api/admin/departments/update/:id
+router.put("/departments/update/:id", adminAuth, async (req, res) => {
+  try {
+    const admin = req.admin; // injected by adminAuth middleware
+
+    // ✅ Ensure only Super Admin can update
+    if (admin.role !== "superadmin") {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied. Super admin only.",
+      });
+    }
+
+    const { id } = req.params;
+    const { name, description, status } = req.body;
+
+    // ✅ Fetch existing document first to retain createdBy
+    const department = await Department.findById(id);
+    if (!department) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Department not found" });
+    }
+
+    // ✅ Update allowed fields
+    department.name = name || department.name;
+    department.description = description || department.description;
+    department.status = status || department.status;
+    department.updatedBy = admin._id;
+
+    await department.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Department updated successfully",
+      department,
+    });
+  } catch (error) {
+    console.error("❌ Update Department Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message,
+    });
   }
 });
 

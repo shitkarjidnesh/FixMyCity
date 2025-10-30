@@ -49,49 +49,61 @@ router.post("/login", async (req, res) => {
     const { email, password, role } = req.body;
 
     const user = await User.findOne({ email });
-    if (!user)
-      return res.status(400).json({ success: false, error: "User not found" });
-
-    // role check
-    if (role && user.role !== role) {
-      return res.status(400).json({ success: false, error: "Role mismatch" });
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        error: "User not found. Please register first.",
+      });
     }
 
-    // password check
-    const match = await bcrypt.compare(password, user.password);
-    if (!match)
-      return res
-        .status(400)
-        .json({ success: false, error: "Invalid credentials" });
+    // Role check
+    if (role && user.role !== role) {
+      return res.status(400).json({
+        success: false,
+        error: "Role mismatch. Please ensure correct login type.",
+      });
+    }
 
-    // generate JWT
+    // Password check
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid credentials. Please check your password.",
+      });
+    }
+
     if (!process.env.JWT_SECRET) {
       throw new Error("JWT_SECRET not defined in .env");
     }
 
+    // Generate JWT
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "2d" }
     );
 
-    // Inside /login route after generating JWT
-    res.json({
+    res.status(200).json({
       success: true,
+      message: "Login successful!",
       token,
       role: user.role,
       name: user.name,
       email: user.email,
       phone: user.phone,
       address: user.address,
-
-      userId: user._id, // <-- add this
+      userId: user._id,
     });
   } catch (err) {
     console.error("Login error:", err);
-    res.status(500).json({ success: false, error: "Server error" });
+    res.status(500).json({
+      success: false,
+      error: err.message || "Internal Server Error",
+    });
   }
 });
+
 
 router.put("/profile", verifyToken, async (req, res) => {
   try {

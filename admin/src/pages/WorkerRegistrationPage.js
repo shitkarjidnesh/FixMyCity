@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function AddWorker() {
   const [form, setForm] = useState({
@@ -32,6 +33,7 @@ export default function AddWorker() {
   const [idProof, setIdProof] = useState(null);
   const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // ✅ Fetch Departments
   useEffect(() => {
@@ -42,7 +44,9 @@ export default function AddWorker() {
 
         const res = await axios.get(
           "http://localhost:5000/api/admin/departments",
-          { headers: { Authorization: `Bearer ${token}` } }
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
         );
 
         setDepartments(res.data || []);
@@ -107,7 +111,6 @@ export default function AddWorker() {
       if (profilePhoto) formData.append("profilePhoto", profilePhoto);
       if (idProof) formData.append("idProof", idProof);
 
-      // ✅ API call
       const res = await axios.post(
         "http://localhost:5000/api/admin/addWorker",
         formData,
@@ -120,6 +123,7 @@ export default function AddWorker() {
       );
 
       toast.success(res.data?.message || "✅ Worker added successfully!");
+
       setForm({
         name: "",
         middleName: "",
@@ -171,19 +175,20 @@ export default function AddWorker() {
             { name: "name", label: "First Name", req: true },
             { name: "middleName", label: "Middle Name" },
             { name: "surname", label: "Surname", req: true },
-            { name: "email", label: "Email", type: "email", req: true },
+            {
+              name: "email",
+              label: "Email",
+              type: "email",
+              req: true,
+              ac: "off",
+            },
             {
               name: "phone",
               label: "Phone Number",
               type: "tel",
               pattern: "[0-9]{10}",
               req: true,
-            },
-            {
-              name: "password",
-              label: "Password",
-              type: "password",
-              req: true,
+              ac: "off",
             },
             { name: "dob", label: "Date of Birth", type: "date", req: true },
           ].map((f) => (
@@ -197,11 +202,34 @@ export default function AddWorker() {
                 onChange={handleChange}
                 placeholder={`Enter ${f.label.toLowerCase()}`}
                 required={f.req}
+                autoComplete={f.ac || "off"}
                 className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
               />
             </div>
           ))}
 
+          {/* Password with Toggle */}
+          <div className="relative">
+            <label className="block text-gray-700 mb-1">Password</label>
+            <input
+              name="password"
+              type={showPassword ? "text" : "password"}
+              value={form.password}
+              onChange={handleChange}
+              placeholder="Enter password"
+              required
+              autoComplete="new-password"
+              className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 pr-10"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-8 text-gray-500 hover:text-gray-700">
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
+
+          {/* Gender */}
           <div>
             <label className="block text-gray-700 mb-1">Gender</label>
             <select
@@ -297,7 +325,7 @@ export default function AddWorker() {
             />
           </div>
 
-          {/* Address */}
+          {/* Address Section */}
           <div className="md:col-span-2 border-t pt-4">
             <h2 className="font-semibold text-lg mb-2 text-gray-800">
               Address Details

@@ -53,34 +53,43 @@ export default function Login() {
     const s = (t % 60).toString().padStart(2, "0");
     return `${m}:${s}`;
   };
+const handleLogin = async () => {
+  if (!email || !password) {
+    Alert.alert("Error", "Please enter email and password");
+    return;
+  }
 
-  const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert("Error", "Please enter email and password");
-      return;
-    }
+  const role = "user";
 
-    const role = "user";
-    try {
-      const res = await axios.post("http://192.168.68.44:5000/api/auth/login", {
-        email,
-        password,
-        role,
-      });
+  try {
+    const res = await axios.post("http://192.168.68.44:5000/api/auth/login", {
+      email,
+      password,
+      role,
+    });
+
+    if (res.data.success) {
       await AsyncStorage.setItem("userData", JSON.stringify(res.data));
+      Alert.alert("Success", res.data.message || "Login successful!");
       router.replace("/home");
-    } catch (error: any) {
-      if (axios.isAxiosError(error)) {
-        Alert.alert(
-          "Login Error",
-          error.response?.data?.msg || "An error occurred during login."
-        );
-      } else {
-        Alert.alert("Login Error", "An unexpected error occurred.");
-        console.error(error);
-      }
+    } else {
+      Alert.alert("Login Failed", res.data.error || "Something went wrong.");
     }
-  };
+  } catch (error: any) {
+    console.error("Frontend login error:", error);
+
+    if (axios.isAxiosError(error)) {
+      const message =
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        "An error occurred during login.";
+      Alert.alert("Login Error", message);
+    } else {
+      Alert.alert("Login Error", "Unexpected error occurred.");
+    }
+  }
+};
+
 
   // Forgot password functions
   const requestOtp = async () => {

@@ -20,12 +20,17 @@ const StatusBadge = ({ status }) => {
   );
 };
 
+// ====================================================================
+// ComplaintCard Component
+// ====================================================================
 const ComplaintCard = ({
   complaint,
   onStatusChange,
   onAssignClick,
   isUpdating,
 }) => {
+  const [previewImage, setPreviewImage] = useState(null);
+
   const thumbnailUrl =
     complaint.imageUrls?.length > 0
       ? complaint.imageUrls[0]
@@ -33,12 +38,13 @@ const ComplaintCard = ({
 
   return (
     <div className="bg-white rounded-xl shadow-md overflow-hidden flex flex-col md:flex-row w-full">
-      {/* Left: Image */}
+      {/* Left: Thumbnail */}
       <div className="md:w-1/4">
         <img
           src={thumbnailUrl}
           alt="Complaint"
-          className="h-48 w-full object-cover md:h-full"
+          className="h-48 w-full object-cover md:h-full cursor-pointer"
+          onClick={() => setPreviewImage(thumbnailUrl)}
         />
       </div>
 
@@ -67,7 +73,17 @@ const ComplaintCard = ({
             <strong>Description:</strong> {complaint.description}
           </p>
           <p>
-            <strong>Address:</strong> {complaint.address}
+            <strong>Address:</strong>{" "}
+            {complaint.address
+              ? [
+                  complaint.address.street,
+                  complaint.address.landmark,
+                  complaint.address.area,
+                  complaint.address.city,
+                ]
+                  .filter(Boolean)
+                  .join(", ")
+              : "N/A"}
           </p>
           {complaint.latitude && complaint.longitude && (
             <p>
@@ -100,7 +116,8 @@ const ComplaintCard = ({
                 key={idx}
                 src={url}
                 alt={`Complaint ${idx}`}
-                className="h-32 w-32 object-cover rounded"
+                className="h-32 w-32 object-cover rounded cursor-pointer hover:scale-105 transition-transform"
+                onClick={() => setPreviewImage(url)}
               />
             ))}
           </div>
@@ -126,12 +143,25 @@ const ComplaintCard = ({
           </button>
         </div>
       </div>
+
+      {/* Image Preview Modal */}
+      {previewImage && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
+          onClick={() => setPreviewImage(null)}>
+          <img
+            src={previewImage}
+            alt="Preview"
+            className="max-w-4xl max-h-[80vh] object-contain rounded-lg shadow-lg"
+          />
+        </div>
+      )}
     </div>
   );
 };
 
 // ====================================================================
-// ComplaintsList Page (Updated to remove modal)
+// ComplaintsList Page
 // ====================================================================
 export default function ComplaintsList() {
   const [complaints, setComplaints] = useState([]);
@@ -144,8 +174,8 @@ export default function ComplaintsList() {
       try {
         setError(null);
         setLoading(true);
-         const token = localStorage.getItem("admintoken");
-         if (!token) throw new Error("Admin token not found.");
+        const token = localStorage.getItem("admintoken");
+        if (!token) throw new Error("Admin token not found.");
         const headers = { Authorization: `Bearer ${token}` };
         const res = await axios.get(
           "http://localhost:5000/api/admin/complaints",
@@ -165,8 +195,8 @@ export default function ComplaintsList() {
   const handleStatusChange = async (id, status) => {
     setUpdatingId(id);
     try {
-        const token = localStorage.getItem("admintoken");
-        if (!token) throw new Error("Admin token not found.");
+      const token = localStorage.getItem("admintoken");
+      if (!token) throw new Error("Admin token not found.");
       const headers = { Authorization: `Bearer ${token}` };
       const res = await axios.put(
         `http://localhost:5000/api/admin/complaints/${id}`,

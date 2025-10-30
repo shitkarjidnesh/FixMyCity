@@ -1,6 +1,7 @@
 {
-     "files.autoSave": "afterDelay",
-     "workbench.colorTheme": "Default High Contrast",
-     "editor.mouseWheelZoom": true,
-     "editor.formatOnPaste": true
+  "files.autoSave": "afterDelay",
+  "workbench.colorTheme": "Default High Contrast",
+  "editor.mouseWheelZoom": true,
+  "editor.formatOnPaste": true,
+  "foldOnOpen.targets": ["Level2"]
 }
