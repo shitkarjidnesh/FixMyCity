@@ -118,9 +118,19 @@ export default function AdminDetails() {
   const handleSave = async () => {
     try {
       const token = localStorage.getItem("admintoken");
+
+      // Prepare data for backend
+      const dataToSend = {
+        ...editForm,
+        idProofType: editForm.idProof?.type || editForm.idProofType,
+        idProofNumber: editForm.idProof?.number || editForm.idProofNumber,
+      };
+      // Remove nested idProof object if it exists
+      delete dataToSend.idProof;
+
       const res = await axios.put(
         `http://localhost:5000/api/admin/showadmins/editadmin/${adminId}`,
-        editForm,
+        dataToSend,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (res.data.success) {
@@ -221,55 +231,66 @@ export default function AdminDetails() {
               </h3>
               {editMode ? (
                 <>
-                  <EditField
-                    label="First Name"
-                    name="name"
-                    value={editForm.name}
-                    onChange={handleInputChange}
-                  />
-                  <EditField
-                    label="Middle Name"
-                    name="middleName"
-                    value={editForm.middleName}
-                    onChange={handleInputChange}
-                  />
-                  <EditField
-                    label="Surname"
-                    name="surname"
-                    value={editForm.surname}
-                    onChange={handleInputChange}
-                  />
-                  <EditField
-                    label="Email Address"
-                    name="email"
-                    type="email"
-                    value={editForm.email}
-                    onChange={handleInputChange}
-                  />
-                  <EditField
-                    label="Phone Number"
-                    name="phone"
-                    value={editForm.phone}
-                    onChange={handleInputChange}
-                  />
-                  <EditField
-                    label="Gender"
-                    name="gender"
-                    value={editForm.gender}
-                    onChange={handleInputChange}
-                    type="select">
-                    <option value="">Select Gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                  </EditField>
-                  <EditField
-                    label="Date of Birth"
-                    name="dob"
-                    type="date"
-                    value={editForm.dob ? editForm.dob.split("T")[0] : ""}
-                    onChange={handleInputChange}
-                  />
+                  {/* === Name Group === */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <EditField
+                      label="First Name"
+                      name="name"
+                      value={editForm.name}
+                      onChange={handleInputChange}
+                    />
+                    <EditField
+                      label="Middle Name"
+                      name="middleName"
+                      value={editForm.middleName}
+                      onChange={handleInputChange}
+                    />
+                    <EditField
+                      label="Surname"
+                      name="surname"
+                      value={editForm.surname}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+
+                  {/* === Contact Group === */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <EditField
+                      label="Email Address"
+                      name="email"
+                      type="email"
+                      value={editForm.email}
+                      onChange={handleInputChange}
+                    />
+                    <EditField
+                      label="Phone Number"
+                      name="phone"
+                      value={editForm.phone}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+
+                  {/* === Demographics Group === */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <EditField
+                      label="Gender"
+                      name="gender"
+                      value={editForm.gender}
+                      onChange={handleInputChange}
+                      type="select">
+                      <option value="">Select Gender</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Other">Other</option>
+                    </EditField>
+                    <EditField
+                      label="Date of Birth"
+                      name="dob"
+                      type="date"
+                      value={editForm.dob ? editForm.dob.split("T")[0] : ""}
+                      onChange={handleInputChange}
+                    />
+                  </div>
                 </>
               ) : (
                 <>
@@ -309,60 +330,103 @@ export default function AdminDetails() {
               </h3>
               {editMode ? (
                 <>
+                  {/* === Work Group === */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <EditField
+                      label="Role"
+                      name="role"
+                      value={editForm.role}
+                      onChange={handleInputChange}
+                      type="select">
+                      <option value="admin">Admin</option>
+                      <option value="superadmin">Superadmin</option>
+                    </EditField>
+                    <EditField
+                      label="Block / Region"
+                      name="blockOrRegion"
+                      value={editForm.blockOrRegion}
+                      onChange={handleInputChange}
+                    />
+                  </div>
                   <EditField
-                    label="Role"
-                    name="role"
-                    value={editForm.role}
-                    onChange={handleInputChange}
-                    type="select">
-                    <option value="admin">Admin</option>
-                    <option value="superadmin">Superadmin</option>
-                  </EditField>
-                  <EditField
-                    label="Block / Region"
-                    name="blockOrRegion"
-                    value={editForm.blockOrRegion}
+                    label="Government Employee ID"
+                    name="governmentEmployeeId"
+                    value={editForm.governmentEmployeeId}
                     onChange={handleInputChange}
                   />
+
+                  {/* === ID Proof Group === */}
+                  <h4 className="text-md font-semibold text-gray-700 pt-2">
+                    ID Proof
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <EditField
+                      label="ID Proof Type"
+                      name="idProofType"
+                      value={
+                        editForm.idProof?.type || editForm.idProofType || ""
+                      }
+                      onChange={handleInputChange}
+                      type="select">
+                      <option value="">Select ID Proof Type</option>
+                      <option value="Aadhaar Card">Aadhaar Card</option>
+                      <option value="PAN Card">PAN Card</option>
+                      <option value="Voter ID">Voter ID</option>
+                      <option value="Passport">Passport</option>
+                      <option value="Other">Other</option>
+                    </EditField>
+                    <EditField
+                      label="ID Proof Number"
+                      name="idProofNumber"
+                      value={
+                        editForm.idProof?.number || editForm.idProofNumber || ""
+                      }
+                      onChange={handleInputChange}
+                    />
+                  </div>
+
+                  {/* === Address Group === */}
                   <h4 className="text-md font-semibold text-gray-700 pt-2">
                     Address
                   </h4>
-                  <EditField
-                    label="House/Plot No."
-                    name="houseNo"
-                    value={editForm.address.houseNo}
-                    onChange={handleAddressChange}
-                  />
-                  <EditField
-                    label="Street / Locality"
-                    name="street"
-                    value={editForm.address.street}
-                    onChange={handleAddressChange}
-                  />
-                  <EditField
-                    label="Area"
-                    name="area"
-                    value={editForm.address.area}
-                    onChange={handleAddressChange}
-                  />
-                  <EditField
-                    label="City"
-                    name="city"
-                    value={editForm.address.city}
-                    onChange={handleAddressChange}
-                  />
-                  <EditField
-                    label="State"
-                    name="state"
-                    value={editForm.address.state}
-                    onChange={handleAddressChange}
-                  />
-                  <EditField
-                    label="Pincode"
-                    name="pincode"
-                    value={editForm.address.pincode}
-                    onChange={handleAddressChange}
-                  />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <EditField
+                      label="House/Plot No."
+                      name="houseNo"
+                      value={editForm.address.houseNo}
+                      onChange={handleAddressChange}
+                    />
+                    <EditField
+                      label="Street / Locality"
+                      name="street"
+                      value={editForm.address.street}
+                      onChange={handleAddressChange}
+                    />
+                    <EditField
+                      label="Area"
+                      name="area"
+                      value={editForm.address.area}
+                      onChange={handleAddressChange}
+                    />
+                    <EditField
+                      label="City"
+                      name="city"
+                      value={editForm.address.city}
+                      onChange={handleAddressChange}
+                    />
+                    <EditField
+                      label="State"
+                      name="state"
+                      value={editForm.address.state}
+                      onChange={handleAddressChange}
+                    />
+                    <EditField
+                      label="Pincode"
+                      name="pincode"
+                      value={editForm.address.pincode}
+                      onChange={handleAddressChange}
+                    />
+                  </div>
                 </>
               ) : (
                 <>
@@ -389,13 +453,32 @@ export default function AdminDetails() {
                     label="Government Employee ID"
                     value={admin.governmentEmployeeId}
                   />
-                  {/* <ProfileField
+                  <ProfileField
                     icon={Shield}
-                    label="ID Proof"
-                    value={`${admin.idProof?.type || "N/A"} (${
-                      admin.idProof?.number || "N/A"
-                    })`}
-                  /> */}
+                    label="ID Proof Type"
+                    value={admin.idProof?.type || "N/A"}
+                  />
+                  <ProfileField
+                    icon={Shield}
+                    label="ID Proof Number"
+                    value={admin.idProof?.number || "N/A"}
+                  />
+                  {admin.idProofImage && (
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">
+                        ID Proof Image
+                      </dt>
+                      <dd className="mt-1">
+                        <a
+                          href={admin.idProofImage}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:underline">
+                          View ID Proof Image
+                        </a>
+                      </dd>
+                    </div>
+                  )}
                 </>
               )}
             </div>

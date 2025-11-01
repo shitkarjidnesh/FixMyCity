@@ -44,6 +44,11 @@ const UserComplaintSchema = new mongoose.Schema(
     // Evidence media
     imageUrls: { type: [String], default: [] },
 
+    department: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Department",
+    },
+
     // Assignment and handling
     assignedTo: {
       type: mongoose.Schema.Types.ObjectId,

@@ -26,8 +26,10 @@ export default function AdminLogin() {
         form
       );
 
+      console.log("📦 Data:", JSON.stringify(res.data, null, 2));
+
       if (res.data.success) {
-        if (res.data.role !== "admin") {
+        if (res.data.role !== "admin" && res.data.role !== "superadmin") {
           toast.error("You are not authorized to access the admin panel.");
           return;
         }

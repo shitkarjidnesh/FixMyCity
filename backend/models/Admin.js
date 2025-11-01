@@ -4,9 +4,9 @@ const bcrypt = require("bcryptjs");
 const adminSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
-    middleName: { type: String, required: true },
+    middleName: { type: String }, // optional
     surname: { type: String, required: true },
-    name: { type: String, required: true },
+
     email: { type: String, required: true, unique: true },
     phone: { type: String, required: true },
     password: { type: String, required: true },
@@ -27,35 +27,64 @@ const adminSchema = new mongoose.Schema(
 
     blockOrRegion: { type: String, required: true },
     address: {
-      houseNo: { type: String }, // Optional: Flat/Plot/House number
-      street: { type: String }, // Road name or locality
-      landmark: { type: String }, // Optional: near temple, mall, etc.
-      area: { type: String, required: true }, // e.g. Andheri East, Dadar West
-      city: { type: String, required: true }, // Mumbai, Pune, Nagpur
-      district: { type: String }, // Especially useful in rural areas
-      state: { type: String, required: true }, // Maharashtra, Gujarat, etc.
-      pincode: { type: String, required: true }, // 6-digit postal code
+      houseNo: { type: String },
+      street: { type: String },
+      landmark: { type: String },
+      area: { type: String, required: true },
+      city: { type: String, required: true },
+      district: { type: String },
+      state: { type: String, required: true },
+      pincode: { type: String, required: true },
     },
+
     profilePhoto: { type: String },
     idProofImage: { type: String },
+
     status: {
       type: String,
       enum: ["active", "suspended", "removed"],
       default: "active",
     },
-    lastLogin: { type: Date },
 
-    role: { type: String, enum: ["admin", "superadmin"], default: "admin" },
+    role: {
+      type: String,
+      enum: ["admin", "superadmin"],
+      default: "admin",
+    },
+
+    isVerified: { type: Boolean, default: false },
+    verificationDate: { type: Date },
+
+    managedDepartments: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "Department" },
+    ],
+
+    activityLogs: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "AdminActivityLog" },
+    ],
+
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "Admin" },
     updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: "Admin" },
+
+    lastLogin: { type: Date },
+    lastPasswordChange: { type: Date },
+
+    loginHistory: [
+      {
+        timestamp: { type: Date, default: Date.now },
+        ip: { type: String },
+        device: { type: String },
+      },
+    ],
   },
   { timestamps: true }
 );
 
-// 🔒 Secure password hashing before saving
+// 🔒 Secure password hashing
 adminSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
   this.password = await bcrypt.hash(this.password, 10);
+  this.lastPasswordChange = new Date();
   next();
 });
 

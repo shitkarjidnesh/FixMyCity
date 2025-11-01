@@ -62,7 +62,7 @@ export default function WorkerDetails() {
 
         setWorker(normalized);
         setEditForm(normalized);
-      } catch {
+      } catch (error) {
         toast.error("Failed to fetch worker details");
       } finally {
         setLoading(false);
@@ -71,7 +71,7 @@ export default function WorkerDetails() {
     if (workerId) fetchWorker();
   }, [workerId]);
 
-  // 🔹 Handle input change
+  // 🔹 Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setEditForm((prev) => ({ ...prev, [name]: value }));
@@ -90,34 +90,29 @@ export default function WorkerDetails() {
   // 🔹 Update worker details
   const handleUpdate = async (e) => {
     e.preventDefault();
+
     try {
       const token = localStorage.getItem("admintoken");
 
-      // Create a shallow copy
+      // ✅ Clone and sanitize data
       const sanitized = { ...editForm };
 
-      // 🔹 Ensure department is an ObjectId (string)
-      if (sanitized.department && typeof sanitized.department === "object") {
-        sanitized.department = sanitized.department._id || "";
+      if (
+        typeof sanitized.department === "object" &&
+        sanitized.department?._id
+      ) {
+        sanitized.department = sanitized.department._id;
       }
 
-      // 🔹 If user selected new department from dropdown, keep that string ID
-      if (typeof sanitized.department !== "string" && worker.department?._id) {
-        sanitized.department = worker.department._id;
-      }
-
-      // 🔹 createdBy fix
       if (typeof sanitized.createdBy === "object" && sanitized.createdBy?._id) {
         sanitized.createdBy = sanitized.createdBy._id;
       }
 
-      // 🔹 Merge address
       sanitized.address = {
         ...worker.address,
         ...sanitized.address,
       };
 
-      // 🔹 Prepare FormData
       const formData = new FormData();
       Object.entries(sanitized).forEach(([key, value]) => {
         if (key === "address") {
@@ -130,7 +125,6 @@ export default function WorkerDetails() {
       if (profileFile) formData.append("profilePhoto", profileFile);
       if (idProofFile) formData.append("idProof", idProofFile);
 
-      // 🔹 Send PUT request
       const res = await axios.put(
         `http://localhost:5000/api/admin/editWorker/${workerId}`,
         formData,
@@ -142,26 +136,31 @@ export default function WorkerDetails() {
         }
       );
 
-      toast.success("Worker updated successfully");
+      // ✅ Backend success response
+      if (res.data.success) {
+        toast.success("Worker updated successfully");
 
-      let updatedWorker = res.data.data;
+        let updatedWorker = res.data.data;
 
-      // 🔹 Immediately fix department display
-      if (typeof updatedWorker.department === "string") {
-        const deptObj = departments.find(
-          (d) => d._id === updatedWorker.department
-        );
-        if (deptObj) updatedWorker.department = deptObj;
+        if (typeof updatedWorker.department === "string") {
+          const deptObj = departments.find(
+            (d) => d._id === updatedWorker.department
+          );
+          if (deptObj) updatedWorker.department = deptObj;
+        }
+
+        setWorker(updatedWorker);
+        setEditForm(updatedWorker);
+        setEditing(false);
+      } else {
+        toast.error(res.data.message || "Update failed");
       }
-
-      setWorker(updatedWorker);
-      setEditForm(updatedWorker);
-      setEditing(false);
     } catch (err) {
       console.error("❌ Worker update error:", err);
       toast.error(err.response?.data?.message || "Update failed");
     }
   };
+
   if (loading)
     return <div className="p-10 text-gray-600 text-center">Loading...</div>;
   if (!worker)
@@ -174,7 +173,7 @@ export default function WorkerDetails() {
       <Toaster position="top-center" reverseOrder={false} />
 
       <div className="max-w-4xl mx-auto bg-white shadow-md rounded-xl p-6">
-        {/* ===== Fixed Profile Section ===== */}
+        {/* ===== Profile Header ===== */}
         <div className="flex items-center gap-6 mb-6">
           <img
             src={worker.profilePhoto || "/default-profile.png"}
@@ -193,57 +192,31 @@ export default function WorkerDetails() {
 
         <hr className="my-4" />
 
-        {/* ===== Editable Metadata Section ===== */}
+        {/* ===== Form ===== */}
         <form
           onSubmit={handleUpdate}
           className="grid grid-cols-2 gap-6 text-gray-700">
-          {/* ===== Editable Name Fields ===== */}
-          <div>
-            <h3 className="font-semibold text-lg mb-2">First Name</h3>
-            {editing ? (
-              <input
-                type="text"
-                name="name"
-                value={editForm.name || ""}
-                onChange={handleChange}
-                className="border rounded p-2 w-full"
-              />
-            ) : (
-              <p>{worker.name}</p>
-            )}
-          </div>
+          {/* Name fields */}
+          {["name", "middleName", "surname"].map((field, i) => (
+            <div key={i}>
+              <h3 className="font-semibold text-lg mb-2">
+                {field.charAt(0).toUpperCase() + field.slice(1)}
+              </h3>
+              {editing ? (
+                <input
+                  type="text"
+                  name={field}
+                  value={editForm[field] || ""}
+                  onChange={handleChange}
+                  className="border rounded p-2 w-full"
+                />
+              ) : (
+                <p>{worker[field] || "—"}</p>
+              )}
+            </div>
+          ))}
 
-          <div>
-            <h3 className="font-semibold text-lg mb-2">Middle Name</h3>
-            {editing ? (
-              <input
-                type="text"
-                name="middleName"
-                value={editForm.middleName || ""}
-                onChange={handleChange}
-                className="border rounded p-2 w-full"
-              />
-            ) : (
-              <p>{worker.middleName || "—"}</p>
-            )}
-          </div>
-
-          <div>
-            <h3 className="font-semibold text-lg mb-2">Surname</h3>
-            {editing ? (
-              <input
-                type="text"
-                name="surname"
-                value={editForm.surname || ""}
-                onChange={handleChange}
-                className="border rounded p-2 w-full"
-              />
-            ) : (
-              <p>{worker.surname}</p>
-            )}
-          </div>
-
-          {/* ===== Department ===== */}
+          {/* Department */}
           <div>
             <h3 className="font-semibold text-lg mb-2">Department</h3>
             {editing ? (
@@ -257,7 +230,7 @@ export default function WorkerDetails() {
                 onChange={(e) =>
                   setEditForm((prev) => ({
                     ...prev,
-                    department: e.target.value, // store department ID directly
+                    department: e.target.value,
                   }))
                 }
                 className="border rounded p-2 w-full">
@@ -273,7 +246,7 @@ export default function WorkerDetails() {
             )}
           </div>
 
-          {/* ===== Experience ===== */}
+          {/* Experience */}
           <div>
             <h3 className="font-semibold text-lg mb-2">Experience</h3>
             {editing ? (
@@ -289,7 +262,7 @@ export default function WorkerDetails() {
             )}
           </div>
 
-          {/* ===== Gender ===== */}
+          {/* Gender */}
           <div>
             <h3 className="font-semibold text-lg mb-2">Gender</h3>
             {editing ? (
@@ -308,7 +281,7 @@ export default function WorkerDetails() {
             )}
           </div>
 
-          {/* ===== Block/Region ===== */}
+          {/* Block/Region */}
           <div>
             <h3 className="font-semibold text-lg mb-2">Block/Region</h3>
             {editing ? (
@@ -324,7 +297,7 @@ export default function WorkerDetails() {
             )}
           </div>
 
-          {/* ===== Address Section ===== */}
+          {/* Address */}
           <div className="col-span-2">
             <h3 className="font-semibold text-lg mb-2">Address</h3>
             {editing ? (
@@ -358,7 +331,7 @@ export default function WorkerDetails() {
             )}
           </div>
 
-          {/* ===== ID Proof ===== */}
+          {/* ID Proof */}
           <div className="col-span-2">
             <h3 className="font-semibold text-lg mb-2">ID Proof</h3>
             {editing ? (
@@ -391,7 +364,7 @@ export default function WorkerDetails() {
             )}
           </div>
 
-          {/* ===== Separate Photo Upload Section ===== */}
+          {/* Profile photo change */}
           {editing && (
             <div className="col-span-2 mt-4">
               <h3 className="font-semibold text-lg mb-2">
@@ -406,7 +379,7 @@ export default function WorkerDetails() {
           )}
         </form>
 
-        {/* ===== Action Buttons (Outside Form) ===== */}
+        {/* ===== Buttons ===== */}
         <div className="col-span-2 flex justify-between mt-8">
           <button
             type="button"

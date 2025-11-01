@@ -12,6 +12,7 @@ const adminAuth = require("../middleware/adminAuth.js");
 const upload = require("../middleware/uploadMiddleware");
 const uploadToCloudinary = require("../utils/uploadToCloudinary");
 const AdminActivity = require("../models/AdminActivity");
+const logAdminActivity = require("../utils/logAdminActivity");
 const ComplaintType = require("../models/ComplaintTypes");
 
 // ===================== ADMIN AUTHENTICATION =====================
@@ -121,6 +122,19 @@ router.post(
 
       await admin.save();
 
+      // Log activity if performed by superadmin
+      if (req.admin && req.admin.role === "superadmin") {
+        await logAdminActivity({
+          req,
+          action: "CREATE_ADMIN",
+          targetType: "Admin",
+          targetId: admin._id,
+          remarks: `Registered new ${admin.role}`,
+          success: true,
+          details: { email: admin.email, role: admin.role },
+        });
+      }
+
       res.status(201).json({
         success: true,
         message: "Admin registered successfully",
@@ -128,6 +142,19 @@ router.post(
       });
     } catch (error) {
       console.error("❌ Admin Register Error:", error);
+
+      // Log failed registration
+      if (req.admin && req.admin.role === "superadmin") {
+        await logAdminActivity({
+          req,
+          action: "CREATE_ADMIN",
+          targetType: "Admin",
+          remarks: "Admin registration failed",
+          success: false,
+          details: { error: error.message },
+        });
+      }
+
       res.status(500).json({ success: false, error: error.message });
     }
   }
@@ -179,15 +206,30 @@ router.post("/login", async (req, res) => {
     // ✅ Successful login
     console.log("✅ Login successful:", email);
     const token = jwt.sign(
-      { id: admin._id, role: "admin" },
+      { id: admin._id, role: admin.role },
       process.env.JWT_SECRET,
       { expiresIn: "2d" }
     );
 
+    // ✅ Update last login safely
+    await Admin.findByIdAndUpdate(admin._id, { lastLogin: new Date() });
+
+    // ✅ Log activity
+    await AdminActivity.create({
+      adminId: admin._id,
+      action: "Admin Login",
+      targetType: "Admin",
+      targetId: admin._id,
+      details: { email },
+      performedByRole: admin.role,
+      success: true,
+      remarks: "Admin logged in successfully",
+    });
+
     res.status(200).json({
       success: true,
       token,
-      role: "admin",
+      role: admin.role,
       name: admin.name,
       email: admin.email,
       userId: admin._id,
@@ -362,6 +404,16 @@ router.patch("/showadmins/updatestatus/:id", adminAuth, async (req, res) => {
       });
     }
 
+    await logAdminActivity({
+      req,
+      action: "UPDATE_ADMIN_STATUS",
+      targetType: "Admin",
+      targetId: updatedAdmin._id,
+      remarks: `Updated admin status to ${status}`,
+      success: true,
+      details: { status },
+    });
+
     res.status(200).json({
       success: true,
       message: "Admin status updated successfully.",
@@ -369,88 +421,111 @@ router.patch("/showadmins/updatestatus/:id", adminAuth, async (req, res) => {
     });
   } catch (error) {
     console.error("Update Admin Status Error:", error);
+
+    await logAdminActivity({
+      req,
+      action: "UPDATE_ADMIN_STATUS",
+      targetType: "Admin",
+      remarks: "Failed to update admin status",
+      success: false,
+      details: { error: error.message },
+    });
+
     res.status(500).json({ success: false, error: error.message });
   }
 });
 
-router.put(
-  "/showadmins/editadmin/:id",
-  adminAuth,
-  upload.single("idProofImage"),
-  async (req, res) => {
-    try {
-      const loggedInAdmin = req.admin;
-      const { id } = req.params;
+router.put("/showadmins/editadmin/:id", adminAuth, async (req, res) => {
+  try {
+    const loggedInAdmin = req.admin;
+    const { id } = req.params;
 
-      if (loggedInAdmin.role !== "superadmin") {
-        return res.status(403).json({
-          success: false,
-          message: "Access denied. Only SuperAdmin can edit admin details.",
-        });
-      }
-
-      const {
-        name,
-        middleName,
-        surname,
-        email,
-        phone,
-        blockOrRegion,
-        gender,
-        role,
-        idProofType,
-        idProofNumber,
-      } = req.body;
-
-      // Handle Cloudinary upload if provided
-      let idProofImageUrl;
-      if (req.file && req.file.path) {
-        idProofImageUrl = req.file.path;
-      }
-
-      const updateFields = {
-        name,
-        middleName,
-        surname,
-        email,
-        phone,
-        blockOrRegion,
-        gender,
-        role,
-        updatedBy: loggedInAdmin._id,
-      };
-
-      if (idProofType || idProofNumber || idProofImageUrl) {
-        updateFields.idProof = {
-          type: idProofType,
-          number: idProofNumber,
-          image: idProofImageUrl,
-        };
-      }
-
-      const updatedAdmin = await Admin.findByIdAndUpdate(id, updateFields, {
-        new: true,
-        runValidators: true,
-      }).select("-password");
-
-      if (!updatedAdmin) {
-        return res.status(404).json({
-          success: false,
-          message: "Admin not found.",
-        });
-      }
-
-      res.status(200).json({
-        success: true,
-        message: "Admin details updated successfully.",
-        admin: updatedAdmin,
+    if (loggedInAdmin.role !== "superadmin") {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied. Only SuperAdmin can edit admin details.",
       });
-    } catch (error) {
-      console.error("Edit Admin Error:", error);
-      res.status(500).json({ success: false, error: error.message });
     }
+
+    const {
+      name,
+      middleName,
+      surname,
+      email,
+      phone,
+      blockOrRegion,
+      gender,
+      role,
+      idProofType,
+      idProofNumber,
+      address,
+    } = req.body;
+
+    const updateFields = {
+      name,
+      middleName,
+      surname,
+      email,
+      phone,
+      blockOrRegion,
+      gender,
+      role,
+      updatedBy: loggedInAdmin._id,
+    };
+
+    if (address) {
+      updateFields.address = address;
+    }
+
+    if (idProofType || idProofNumber) {
+      updateFields.idProof = {
+        type: idProofType,
+        number: idProofNumber,
+      };
+    }
+
+    const updatedAdmin = await Admin.findByIdAndUpdate(id, updateFields, {
+      new: true,
+      runValidators: true,
+    }).select("-password");
+
+    if (!updatedAdmin) {
+      return res.status(404).json({
+        success: false,
+        message: "Admin not found.",
+      });
+    }
+
+    await logAdminActivity({
+      req,
+      action: "UPDATE_ADMIN_DETAILS",
+      targetType: "Admin",
+      targetId: updatedAdmin._id,
+      remarks: `Updated admin details for ${updatedAdmin.email}`,
+      success: true,
+      details: { email: updatedAdmin.email },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Admin details updated successfully.",
+      admin: updatedAdmin,
+    });
+  } catch (error) {
+    console.error("Edit Admin Error:", error);
+
+    await logAdminActivity({
+      req,
+      action: "UPDATE_ADMIN_DETAILS",
+      targetType: "Admin",
+      remarks: "Failed to update admin details",
+      success: false,
+      details: { error: error.message },
+    });
+
+    res.status(500).json({ success: false, error: error.message });
   }
-);
+});
 
 router.delete("/showadmins/delete/:id", adminAuth, async (req, res) => {
   try {
@@ -472,12 +547,31 @@ router.delete("/showadmins/delete/:id", adminAuth, async (req, res) => {
       });
     }
 
+    await logAdminActivity({
+      req,
+      action: "DELETE_ADMIN",
+      targetType: "Admin",
+      remarks: `Deleted admin ${deletedAdmin.email}`,
+      success: true,
+      details: { email: deletedAdmin.email, role: deletedAdmin.role },
+    });
+
     res.status(200).json({
       success: true,
       message: "Admin deleted successfully.",
     });
   } catch (error) {
     console.error("Delete Admin Error:", error);
+
+    await logAdminActivity({
+      req,
+      action: "DELETE_ADMIN",
+      targetType: "Admin",
+      remarks: "Failed to delete admin",
+      success: false,
+      details: { error: error.message },
+    });
+
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -497,99 +591,84 @@ router.get("/profile", adminAuth, async (req, res) => {
   }
 });
 
-// GET /api/admin/complaints
-router.get("/complaints", async (req, res) => {
+// ===================== ADMIN COMPLAINT MANAGEMENT =====================
+
+// ✅ Fetch all complaints (Admin view)
+router.get("/complaints", adminAuth, async (req, res) => {
   try {
     const complaints = await UserComplaints.find()
       .sort({ createdAt: -1 })
-      .populate("userId", "name email")
-      .populate("type", "name subComplaints");
+      .populate("userId", "name email phone")
+      .populate({
+        path: "assignedTo",
+        select:
+          "name surname email phone department blockOrRegion profilePhoto experience status",
+        populate: { path: "department", select: "name" },
+      })
+      .populate("assignedBy", "name surname email phone blockOrRegion")
+      .populate("department", "name")
+      .populate("type", "name")
+      .select("-__v");
 
-    // Map the subtype index to actual sub-complaint name
-    const complaintsWithSubNames = complaints.map((c) => {
-      let subtypeName = "N/A";
-      if (c.subtype !== undefined && c.type?.subComplaints) {
-        const index = parseInt(c.subtype, 10);
-        subtypeName = c.type.subComplaints[index] || "N/A";
-      }
+    const formattedComplaints = complaints.map((c) => {
+      const worker = c.assignedTo;
+      const admin = c.assignedBy;
+      const dept = c.department;
+
       return {
         ...c.toObject(),
-        subtypeName,
+
+        // Display-friendly values
+        subtypeName: c.subtype || "N/A",
+        departmentName: dept?.name || "N/A",
+
+        assignedToName: worker
+          ? `${worker.name} ${worker.surname}`
+          : "Unassigned",
+        assignedByName: admin
+          ? `${admin.name} ${admin.surname}`
+          : "Not Assigned",
+
+        // Worker extra details for frontend
+        assignedToDetails: worker
+          ? {
+              name: `${worker.name} ${worker.surname}`,
+              email: worker.email,
+              phone: worker.phone,
+              experience: worker.experience,
+              department: worker.department?.name || "N/A", // ✅ now shows readable name
+              blockOrRegion: worker.blockOrRegion || "N/A",
+              profilePhoto: worker.profilePhoto || null,
+            }
+          : null,
+
+        // Admin extra details for frontend
+        assignedByDetails: admin
+          ? {
+              name: `${admin.name} ${admin.surname}`,
+              email: admin.email,
+              phone: admin.phone,
+              blockOrRegion: admin.blockOrRegion || "N/A",
+            }
+          : null,
       };
     });
 
-    res.json({ success: true, data: complaintsWithSubNames });
-  } catch (err) {
-    console.error("❌ Server error:", err);
-    res
-      .status(500)
-      .json({ success: false, error: "Failed to fetch complaints" });
+    res.status(200).json({
+      success: true,
+      total: formattedComplaints.length,
+      data: formattedComplaints,
+    });
+  } catch (error) {
+    console.error("❌ Error fetching complaints:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch complaints",
+    });
   }
 });
 
 // POST /api/admin/complaints/:id/assign - Assign a complaint to a worker
-router.post("/complaints/:id/assign", adminAuth, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { workerId, priority } = req.body;
-
-    if (!workerId) {
-      return res
-        .status(400)
-        .json({ success: false, error: "workerId is required" });
-    }
-
-    const worker = await Worker.findById(workerId);
-    if (!worker) {
-      return res
-        .status(404)
-        .json({ success: false, error: "Worker not found" });
-    }
-
-    const complaint = await UserComplaints.findByIdAndUpdate(
-      id,
-      {
-        assignedTo: workerId,
-        assignedBy: req.admin._id,
-        status: "Assigned",
-        priority: priority || undefined,
-        lastUpdatedBy: req.admin._id,
-        lastUpdatedRole: "Admin",
-      },
-      { new: true }
-    )
-      .populate("userId", "name email")
-      .populate("type", "name subComplaints")
-      .populate("assignedTo", "name email department");
-
-    if (!complaint) {
-      return res
-        .status(404)
-        .json({ success: false, error: "Complaint not found" });
-    }
-
-    await AdminActivity.create({
-      adminId: req.admin._id,
-      action: "ASSIGN_COMPLAINT",
-      targetType: "Complaint",
-      targetId: complaint._id,
-      details: { workerId, priority: complaint.priority },
-      ip: req.ip,
-      userAgent: req.headers["user-agent"],
-    });
-
-    res.json({
-      success: true,
-      message: "Complaint assigned to worker",
-      data: complaint,
-    });
-  } catch (err) {
-    console.error("❌ Assign complaint error:", err);
-    res
-      .status(500)
-      .json({ success: false, error: "Failed to assign complaint" });
-  }
-});
 
 // POST /api/admin/complaints/:id/verify - Approve or reject a resolved complaint
 router.post("/complaints/:id/verify", adminAuth, async (req, res) => {
@@ -616,14 +695,14 @@ router.post("/complaints/:id/verify", adminAuth, async (req, res) => {
     complaint.lastUpdatedRole = "Admin";
     await complaint.save();
 
-    await AdminActivity.create({
-      adminId: req.admin._id,
+    await logAdminActivity({
+      req,
       action: approve ? "APPROVE_RESOLUTION" : "REJECT_RESOLUTION",
       targetType: "Complaint",
       targetId: complaint._id,
+      remarks: approve ? "Approved resolution" : "Rejected resolution",
+      success: true,
       details: { notes },
-      ip: req.ip,
-      userAgent: req.headers["user-agent"],
     });
 
     res.json({
@@ -633,6 +712,16 @@ router.post("/complaints/:id/verify", adminAuth, async (req, res) => {
     });
   } catch (err) {
     console.error("❌ Verify resolution error:", err);
+
+    await logAdminActivity({
+      req,
+      action: "VERIFY_RESOLUTION",
+      targetType: "Complaint",
+      remarks: "Failed to verify resolution",
+      success: false,
+      details: { error: err.message },
+    });
+
     res
       .status(500)
       .json({ success: false, error: "Failed to verify resolution" });
@@ -671,19 +760,15 @@ router.put("/complaints/:id", async (req, res) => {
     }
 
     // Log admin status update
-    try {
-      await AdminActivity.create({
-        adminId: req.admin?._id || null,
-        action: "UPDATE_COMPLAINT_STATUS",
-        targetType: "Complaint",
-        targetId: complaint._id,
-        details: { status },
-        ip: req.ip,
-        userAgent: req.headers["user-agent"],
-      });
-    } catch (logErr) {
-      console.error("AdminActivity log error:", logErr.message);
-    }
+    await logAdminActivity({
+      req,
+      action: "UPDATE_COMPLAINT_STATUS",
+      targetType: "Complaint",
+      targetId: complaint._id,
+      remarks: `Updated complaint status to ${status}`,
+      success: true,
+      details: { status },
+    });
 
     // Return complaint with resolved subtypeName
     res.json({
@@ -692,9 +777,184 @@ router.put("/complaints/:id", async (req, res) => {
     });
   } catch (err) {
     console.error("❌ Server error:", err);
+
+    await logAdminActivity({
+      req,
+      action: "UPDATE_COMPLAINT_STATUS",
+      targetType: "Complaint",
+      remarks: "Failed to update complaint status",
+      success: false,
+      details: { error: err.message },
+    });
+
     res
       .status(500)
       .json({ success: false, error: "Failed to update complaint" });
+  }
+});
+
+///complaint assignment route
+
+router.get("/eligible/:complaintId", adminAuth, async (req, res) => {
+  try {
+    console.log(
+      "🔍 Eligible worker lookup for complaint:",
+      req.params.complaintId
+    );
+
+    // Step 1 — Fetch complaint with department and address
+    const complaint = await UserComplaints.findById(req.params.complaintId)
+      .populate("department", "name")
+      .select("department address");
+
+    if (!complaint) {
+      console.log("❌ Complaint not found");
+      return res
+        .status(404)
+        .json({ success: false, message: "Complaint not found" });
+    }
+
+    if (!complaint.department) {
+      console.log("❌ Department missing in complaint");
+      return res.status(404).json({
+        success: false,
+        message: "Department not linked to complaint",
+      });
+    }
+
+    const { city } = complaint.address || {};
+    console.log("📍 Complaint context →", {
+      deptId: complaint.department._id.toString(),
+      deptName: complaint.department.name,
+      city,
+    });
+
+    // Step 2 — Diagnostic counters
+    const total = await Worker.countDocuments();
+    const deptMatch = await Worker.countDocuments({
+      department: complaint.department._id,
+    });
+    const regionMatch = await Worker.countDocuments({ blockOrRegion: city });
+    const activeMatch = await Worker.countDocuments({ status: "active" });
+    const deptRegionMatch = await Worker.countDocuments({
+      department: complaint.department._id,
+      blockOrRegion: city,
+    });
+
+    console.log("📊 Diagnostic counts →", {
+      totalWorkers: total,
+      departmentMatched: deptMatch,
+      regionMatched: regionMatch,
+      activeWorkers: activeMatch,
+      deptRegionMatched: deptRegionMatch,
+    });
+
+    // Step 3 — Primary filter
+    const query = {
+      department: complaint.department._id,
+      status: "active",
+      blockOrRegion: { $regex: new RegExp(`^${city}$`, "i") },
+    };
+
+    console.log("🧩 Final query →", JSON.stringify(query, null, 2));
+
+    const eligibleWorkers = await Worker.find(query).select(
+      "name surname phone department blockOrRegion experience availability status"
+    );
+
+    console.log(`✅ Eligible workers found: ${eligibleWorkers.length}`);
+
+    if (eligibleWorkers.length === 0) {
+      console.log("⚠️ No eligible workers — cause →", {
+        noDepartmentMatch: deptMatch === 0,
+        noRegionMatch: regionMatch === 0,
+        noActiveWorkers: activeMatch === 0,
+      });
+    }
+
+    // Step 4 — Response
+    return res.status(200).json({
+      success: true,
+      total: eligibleWorkers.length,
+      eligibleWorkers,
+      diagnostics: {
+        total,
+        deptMatch,
+        regionMatch,
+        activeMatch,
+        deptRegionMatch,
+      },
+      filterCriteria: {
+        department: complaint.department.name,
+        matchedRegionOrBlock: city,
+      },
+    });
+  } catch (err) {
+    console.error("❌ Eligible worker lookup error:", err);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+router.post("/complaints/assign/:complaintId", adminAuth, async (req, res) => {
+  try {
+    const { complaintId } = req.params;
+    const { workerId } = req.body;
+    const adminId = req.admin.id;
+
+    // 1️⃣ Validate worker existence
+    const worker = await Worker.findById(workerId);
+    if (!worker) {
+      return res.status(404).json({ message: "Worker not found" });
+    }
+
+    // 2️⃣ Validate complaint existence
+    const complaint = await UserComplaints.findById(complaintId);
+    if (!complaint) {
+      return res.status(404).json({ message: "Complaint not found" });
+    }
+
+    // 3️⃣ Update complaint with assignment
+    complaint.assignedTo = workerId;
+    complaint.assignedBy = adminId;
+    complaint.status = "In Progress";
+    complaint.lastUpdatedBy = adminId;
+    complaint.lastUpdatedRole = "Admin";
+    await complaint.save();
+
+    // 4️⃣ Optionally update worker availability
+    await Worker.findByIdAndUpdate(workerId, { availability: "Busy" });
+
+    await logAdminActivity({
+      req,
+      action: "ASSIGN_COMPLAINT_TO_WORKER",
+      targetType: "Complaint",
+      targetId: complaint._id,
+      remarks: `Assigned complaint to worker`,
+      success: true,
+      details: { workerId, complaintId },
+    });
+
+    // 5️⃣ Success response
+    res.status(200).json({
+      message: "Worker assigned successfully",
+      complaint,
+    });
+  } catch (error) {
+    console.error("❌ Error assigning worker:", error);
+
+    await logAdminActivity({
+      req,
+      action: "ASSIGN_COMPLAINT_TO_WORKER",
+      targetType: "Complaint",
+      remarks: "Failed to assign worker to complaint",
+      success: false,
+      details: { error: error.message },
+    });
+
+    res.status(500).json({
+      message: "Server error while assigning worker",
+      error: error.message,
+    });
   }
 });
 
@@ -731,6 +991,16 @@ router.patch("/users/:id/status", async (req, res) => {
       return res.status(404).json({ success: false, error: "User not found" });
     }
 
+    await logAdminActivity({
+      req,
+      action: "UPDATE_USER_STATUS",
+      targetType: "User",
+      targetId: user._id,
+      remarks: `User ${status === "suspended" ? "suspended" : "reactivated"}`,
+      success: true,
+      details: { status },
+    });
+
     res.json({
       success: true,
       message: `User ${
@@ -740,6 +1010,16 @@ router.patch("/users/:id/status", async (req, res) => {
     });
   } catch (err) {
     console.error("❌ Server error:", err);
+
+    await logAdminActivity({
+      req,
+      action: "UPDATE_USER_STATUS",
+      targetType: "User",
+      remarks: "Failed to update user status",
+      success: false,
+      details: { error: err.message },
+    });
+
     res
       .status(500)
       .json({ success: false, error: "Failed to update user status" });
@@ -759,9 +1039,29 @@ router.delete("/users/:id", async (req, res) => {
     await UserComplaints.deleteMany({ userId: req.params.id });
     await User.findByIdAndDelete(req.params.id);
 
+    await logAdminActivity({
+      req,
+      action: "DELETE_USER",
+      targetType: "User",
+      targetId: user._id,
+      remarks: "User permanently deleted",
+      success: true,
+      details: { email: user.email },
+    });
+
     res.json({ success: true, message: "User permanently deleted" });
   } catch (err) {
     console.error("❌ Server error:", err);
+
+    await logAdminActivity({
+      req,
+      action: "DELETE_USER",
+      targetType: "User",
+      remarks: "Failed to delete user",
+      success: false,
+      details: { error: err.message },
+    });
+
     res.status(500).json({ success: false, error: "Failed to delete user" });
   }
 });
@@ -886,6 +1186,16 @@ router.post(
         createdBy: req.admin._id,
       });
 
+      await logAdminActivity({
+        req,
+        action: "CREATE_WORKER",
+        targetType: "Worker",
+        targetId: worker._id,
+        remarks: "Worker created successfully",
+        success: true,
+        details: { email: worker.email, employeeId: worker.employeeId },
+      });
+
       res.status(201).json({
         success: true,
         message: "Worker created successfully",
@@ -893,6 +1203,16 @@ router.post(
       });
     } catch (err) {
       console.error("❌ Add Worker Error:", err);
+
+      await logAdminActivity({
+        req,
+        action: "CREATE_WORKER",
+        targetType: "Worker",
+        remarks: "Failed to create worker",
+        success: false,
+        details: { error: err.message },
+      });
+
       res.status(500).json({
         success: false,
         message: "Server error while adding worker",
@@ -1021,74 +1341,77 @@ router.put(
   ]),
   async (req, res) => {
     try {
-      const { id } = req.params;
-      const existingWorker = await Worker.findById(id);
-
-      if (!existingWorker) {
-        return res.status(404).json({
-          success: false,
-          message: "Worker not found",
-        });
+      const workerId = req.params.id;
+      const worker = await Worker.findById(workerId);
+      if (!worker) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Worker not found" });
       }
 
-      const updateData = { ...req.body };
+      const {
+        name,
+        middleName,
+        surname,
+        email,
+        phone,
+        gender,
+        dob,
+        experience,
+        blockOrRegion,
+        department,
+        employeeId,
+        address,
+      } = req.body;
 
-      // 🔹 Parse address if frontend sends JSON string
-      if (updateData.address && typeof updateData.address === "string") {
-        try {
-          updateData.address = JSON.parse(updateData.address);
-        } catch {
-          console.warn("Invalid address JSON");
-        }
-      }
+      // Prepare update object only with provided fields
+      const updateData = {};
 
-      // 🔹 Ensure department is an ObjectId string
-      if (updateData.department && typeof updateData.department === "object") {
-        updateData.department = updateData.department._id;
-      }
+      if (name) updateData.name = name.trim();
+      if (middleName !== undefined) updateData.middleName = middleName.trim();
+      if (surname) updateData.surname = surname.trim();
+      if (email) updateData.email = email.trim().toLowerCase();
+      if (phone) updateData.phone = phone.trim();
+      if (gender) updateData.gender = gender;
+      if (dob) updateData.dob = dob;
+      if (experience) updateData.experience = experience;
+      if (blockOrRegion) updateData.blockOrRegion = blockOrRegion.trim();
+      if (employeeId) updateData.employeeId = employeeId.trim();
+      if (department) updateData.department = department;
+      if (address) updateData.address = JSON.parse(address);
 
-      // 🔹 Retain uneditable fixed fields
-      updateData.email = existingWorker.email;
-      updateData.phone = existingWorker.phone;
-      updateData.createdBy = existingWorker.createdBy;
-      updateData.status = existingWorker.status;
-
-      // 🔹 Handle Cloudinary uploads
-      if (req.files?.profilePhoto?.length) {
-        const uploadResult = await uploadToCloudinary(
+      // Handle optional uploads
+      if (req.files?.profilePhoto?.[0]) {
+        updateData.profilePhoto = await uploadToCloudinary(
           req.files.profilePhoto[0].path,
           "worker/profile_photos"
         );
-        if (uploadResult?.url) updateData.profilePhoto = uploadResult.url;
       }
-
-      if (req.files?.idProof?.length) {
-        const uploadResult = await uploadToCloudinary(
+      if (req.files?.idProof?.[0]) {
+        updateData.idProof = await uploadToCloudinary(
           req.files.idProof[0].path,
           "worker/id_proofs"
         );
-        if (uploadResult?.url) updateData.idProof = uploadResult.url;
       }
 
-      // 🔹 Update metadata
-      updateData.updatedBy = req.admin._id;
+      // Perform partial update
+      const updatedWorker = await Worker.findByIdAndUpdate(
+        workerId,
+        { $set: updateData },
+        { new: true, runValidators: true }
+      ).populate("department", "name");
 
-      const updatedWorker = await Worker.findByIdAndUpdate(id, updateData, {
-        new: true,
-        runValidators: true,
-      }).populate("department");
-
-      return res.status(200).json({
+      res.status(200).json({
         success: true,
-        message: "Worker details updated successfully",
+        message: "Worker updated successfully",
         data: updatedWorker,
       });
-    } catch (err) {
-      console.error("❌ Error updating worker:", err);
-      return res.status(500).json({
+    } catch (error) {
+      console.error("❌ Worker update error:", error);
+      res.status(500).json({
         success: false,
-        message: "Server error while updating worker",
-        error: err.message,
+        message: "Internal Server Error",
+        error: error.message,
       });
     }
   }
@@ -1118,6 +1441,16 @@ router.patch("/updateWorkerStatus/:id", adminAuth, async (req, res) => {
         .json({ success: false, message: "Worker not found" });
     }
 
+    await logAdminActivity({
+      req,
+      action: "UPDATE_WORKER_STATUS",
+      targetType: "Worker",
+      targetId: updatedWorker._id,
+      remarks: `Worker status updated to ${status}`,
+      success: true,
+      details: { status },
+    });
+
     res.status(200).json({
       success: true,
       message: `Worker status updated to '${status}'`,
@@ -1125,6 +1458,16 @@ router.patch("/updateWorkerStatus/:id", adminAuth, async (req, res) => {
     });
   } catch (err) {
     console.error("❌ Error updating worker status:", err);
+
+    await logAdminActivity({
+      req,
+      action: "UPDATE_WORKER_STATUS",
+      targetType: "Worker",
+      remarks: "Failed to update worker status",
+      success: false,
+      details: { error: err.message },
+    });
+
     res.status(500).json({
       success: false,
       message: "Server error while updating worker status",
@@ -1145,12 +1488,35 @@ router.delete("/deleteWorker/:id", adminAuth, async (req, res) => {
         .json({ success: false, message: "Worker not found" });
     }
 
+    await logAdminActivity({
+      req,
+      action: "DELETE_WORKER",
+      targetType: "Worker",
+      targetId: deletedWorker._id,
+      remarks: "Worker permanently deleted",
+      success: true,
+      details: {
+        email: deletedWorker.email,
+        employeeId: deletedWorker.employeeId,
+      },
+    });
+
     res.status(200).json({
       success: true,
       message: "Worker deleted successfully",
     });
   } catch (err) {
     console.error("❌ Error deleting worker:", err);
+
+    await logAdminActivity({
+      req,
+      action: "DELETE_WORKER",
+      targetType: "Worker",
+      remarks: "Failed to delete worker",
+      success: false,
+      details: { error: err.message },
+    });
+
     res.status(500).json({
       success: false,
       message: "Server error while deleting worker",
@@ -1192,9 +1558,29 @@ router.post("/complaint-type/create", adminAuth, async (req, res) => {
       createdBy: req.admin._id,
     });
 
+    await logAdminActivity({
+      req,
+      action: "CREATE_COMPLAINT_TYPE",
+      targetType: "Department",
+      targetId: newType._id,
+      remarks: "Complaint type created successfully",
+      success: true,
+      details: { name, departmentId },
+    });
+
     res.status(201).json({ success: true, data: newType });
   } catch (error) {
     console.error("❌ Create Complaint Type Error:", error);
+
+    await logAdminActivity({
+      req,
+      action: "CREATE_COMPLAINT_TYPE",
+      targetType: "Department",
+      remarks: "Failed to create complaint type",
+      success: false,
+      details: { error: error.message },
+    });
+
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
@@ -1238,9 +1624,29 @@ router.put("/complaint-type/update/:id", adminAuth, async (req, res) => {
         .json({ success: false, message: "Complaint type not found" });
     }
 
+    await logAdminActivity({
+      req,
+      action: "UPDATE_COMPLAINT_TYPE",
+      targetType: "Department",
+      targetId: updated._id,
+      remarks: "Complaint type updated successfully",
+      success: true,
+      details: { name: updated.name },
+    });
+
     res.status(200).json({ success: true, data: updated });
   } catch (error) {
     console.error("❌ Update Complaint Type Error:", error);
+
+    await logAdminActivity({
+      req,
+      action: "UPDATE_COMPLAINT_TYPE",
+      targetType: "Department",
+      remarks: "Failed to update complaint type",
+      success: false,
+      details: { error: error.message },
+    });
+
     res.status(500).json({ success: false, message: error.message });
   }
 });
@@ -1297,6 +1703,16 @@ router.post("/departments/create", adminAuth, async (req, res) => {
 
     await department.save();
 
+    await logAdminActivity({
+      req,
+      action: "CREATE_DEPARTMENT",
+      targetType: "Department",
+      targetId: department._id,
+      remarks: "Department created successfully",
+      success: true,
+      details: { name },
+    });
+
     res.status(201).json({
       success: true,
       message: "Department created successfully",
@@ -1304,6 +1720,16 @@ router.post("/departments/create", adminAuth, async (req, res) => {
     });
   } catch (error) {
     console.error("❌ Create Department Error:", error);
+
+    await logAdminActivity({
+      req,
+      action: "CREATE_DEPARTMENT",
+      targetType: "Department",
+      remarks: "Failed to create department",
+      success: false,
+      details: { error: error.message },
+    });
+
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
@@ -1341,6 +1767,16 @@ router.put("/departments/update/:id", adminAuth, async (req, res) => {
 
     await department.save();
 
+    await logAdminActivity({
+      req,
+      action: "UPDATE_DEPARTMENT",
+      targetType: "Department",
+      targetId: department._id,
+      remarks: "Department updated successfully",
+      success: true,
+      details: { name, status },
+    });
+
     res.status(200).json({
       success: true,
       message: "Department updated successfully",
@@ -1348,6 +1784,67 @@ router.put("/departments/update/:id", adminAuth, async (req, res) => {
     });
   } catch (error) {
     console.error("❌ Update Department Error:", error);
+
+    await logAdminActivity({
+      req,
+      action: "UPDATE_DEPARTMENT",
+      targetType: "Department",
+      remarks: "Failed to update department",
+      success: false,
+      details: { error: error.message },
+    });
+
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message,
+    });
+  }
+});
+
+// ===================== GET ACTIVITY LOGS =====================
+router.get("/activity", adminAuth, async (req, res) => {
+  try {
+    const {
+      page = 1,
+      limit = 50,
+      success,
+      targetType,
+      performedByRole,
+      action,
+    } = req.query;
+    const filter = {};
+
+    // Apply filters
+    if (success !== undefined) filter.success = success === "true";
+    if (targetType) filter.targetType = targetType;
+    if (performedByRole) filter.performedByRole = performedByRole;
+    if (action) filter.action = { $regex: action, $options: "i" };
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const activities = await AdminActivity.find(filter)
+      .populate("adminId", "name email role")
+      .populate("targetId")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    const total = await AdminActivity.countDocuments(filter);
+
+    res.status(200).json({
+      success: true,
+      message: "Activity logs fetched successfully",
+      data: activities,
+      meta: {
+        totalRecords: total,
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(total / limit) || 0,
+        count: activities.length,
+      },
+    });
+  } catch (error) {
+    console.error("❌ Fetch Activity Logs Error:", error);
     res.status(500).json({
       success: false,
       message: "Server error",

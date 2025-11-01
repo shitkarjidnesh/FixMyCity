@@ -16,6 +16,7 @@ const complaintTypesRoutes = require("./routes/complaintTypes");
 const workerAuthRoutes = require("./routes/workerAuth");
 const workerRoutes = require("./routes/worker");
 const otpRoutes = require("./routes/otp");
+const { debugLogger } = require("./middleware/debugLogger");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -40,10 +41,13 @@ app.use(bodyParser.json({ limit: "5mb" }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 app.use(helmet());
+app.use(debugLogger);
 
 // -----------------------------
 // MongoDB connection
 // -----------------------------
+
+
 mongoose
   .connect(process.env.MONGO_URI, {
     useNewUrlParser: true,

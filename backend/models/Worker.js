@@ -3,15 +3,16 @@ const bcrypt = require("bcryptjs");
 
 const WorkerSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true }, // First name
-    middleName: { type: String }, // Optional middle name
-    surname: { type: String, required: true }, // Last name / family name
-
-    email: { type: String, required: true, unique: true },
-    phone: { type: String, required: true },
+    // ────────────── Basic Information ──────────────
+    name: { type: String, required: true },
+    middleName: { type: String },
+    surname: { type: String, required: true },
     gender: { type: String, enum: ["Male", "Female", "Other"] },
     dob: { type: Date },
+    email: { type: String, required: true, unique: true },
+    phone: { type: String, required: true },
 
+    // ────────────── Address ──────────────
     address: {
       houseNo: { type: String },
       street: { type: String },
@@ -22,35 +23,48 @@ const WorkerSchema = new mongoose.Schema(
       state: { type: String, required: true },
       pincode: { type: String, required: true },
     },
+    blockOrRegion: { type: String, required: true },
+    preferredArea: { type: String }, // optional field for future use
 
+    // ────────────── Employment Details ──────────────
     employeeId: { type: String, required: true, unique: true },
     department: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Department",
       required: true,
     },
-
     experience: { type: Number, default: 0 },
+    dateOfJoining: { type: Date, default: Date.now },
     availability: {
       type: String,
       enum: ["Available", "Busy", "On Leave"],
       default: "Available",
     },
-
-    blockOrRegion: { type: String, required: true },
-    password: { type: String, required: true },
-
-    profilePhoto: { type: String },
-    idProof: { type: String },
-
     status: {
       type: String,
       enum: ["active", "suspended", "removed"],
       default: "active",
     },
 
+    // ────────────── Performance Tracking ──────────────
+    solveCount: { type: Number, default: 0 }, // total resolved cases
+    assignedComplaints: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "UserComplaint" },
+    ],
+    completedComplaints: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "UserComplaint" },
+    ],
+    lastAssignedAt: { type: Date },
+    performanceRating: { type: Number, min: 0, max: 5, default: 0 },
+    remarks: { type: String },
+
+    // ────────────── Credentials ──────────────
+    password: { type: String, required: true },
+    profilePhoto: { type: String },
+    idProof: { type: String },
     lastLogin: { type: Date },
 
+    // ────────────── Audit Trail ──────────────
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Admin",
@@ -61,7 +75,7 @@ const WorkerSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Password hashing middleware
+// ────────────── Password Hashing ──────────────
 WorkerSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
   const salt = await bcrypt.genSalt(10);

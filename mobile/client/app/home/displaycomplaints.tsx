@@ -100,7 +100,11 @@ const DisplayComplaints: React.FC = () => {
             type: c.type?.name || "Unknown",
             subType: c.subtypeName || "N/A",
             description: c.description || "",
-            address: c.address || "",
+            address:
+              typeof c.address === "object" && c.address !== null
+                ? `${c.address.street || ""} ${c.address.landmark || ""}, ${c.address.area || ""}, ${c.address.city || ""}`.trim()
+                : c.address || "",
+
             status: c.status || "Pending",
             dateTime: new Date(c.createdAt).toLocaleString(),
             imageUrls: c.imageUrls || [],

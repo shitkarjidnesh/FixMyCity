@@ -13,8 +13,11 @@ export default function AddAdmin() {
     password: "",
     dob: "",
     gender: "",
+    idProofType: "",
+    idProofNumber: "",
     governmentEmployeeId: "",
     blockOrRegion: "",
+    role: "admin",
     address: {
       houseNo: "",
       street: "",
@@ -94,8 +97,11 @@ export default function AddAdmin() {
         password: "",
         dob: "",
         gender: "",
+        idProofType: "",
+        idProofNumber: "",
         governmentEmployeeId: "",
         blockOrRegion: "",
+        role: "admin",
         address: {
           houseNo: "",
           street: "",
@@ -251,6 +257,39 @@ export default function AddAdmin() {
             </select>
           </div>
 
+          {/* ID Proof Type */}
+          <div>
+            <label className="block text-gray-700 mb-1">ID Proof Type</label>
+            <select
+              name="idProofType"
+              value={form.idProofType}
+              onChange={handleChange}
+              required
+              autoComplete="off"
+              className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500">
+              <option value="">Select ID Proof Type</option>
+              <option value="Aadhaar Card">Aadhaar Card</option>
+              <option value="PAN Card">PAN Card</option>
+              <option value="Voter ID">Voter ID</option>
+              <option value="Passport">Passport</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          {/* ID Proof Number */}
+          <div>
+            <label className="block text-gray-700 mb-1">ID Proof Number</label>
+            <input
+              name="idProofNumber"
+              value={form.idProofNumber}
+              onChange={handleChange}
+              placeholder="Enter ID proof number"
+              required
+              autoComplete="off"
+              className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
           {/* Employee ID */}
           <div>
             <label className="block text-gray-700 mb-1">Employee ID</label>
@@ -277,6 +316,21 @@ export default function AddAdmin() {
               autoComplete="off"
               className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
             />
+          </div>
+
+          {/* Role (Admin/SuperAdmin) */}
+          <div>
+            <label className="block text-gray-700 mb-1">Role</label>
+            <select
+              name="role"
+              value={form.role}
+              onChange={handleChange}
+              required
+              autoComplete="off"
+              className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500">
+              <option value="admin">Admin</option>
+              <option value="superadmin">SuperAdmin</option>
+            </select>
           </div>
 
           {/* File Uploads */}

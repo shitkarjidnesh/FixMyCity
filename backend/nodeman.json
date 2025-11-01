@@ -1,5 +1,6 @@
 {
   "watch": ["."],
   "ext": "js,json",
-  "delay": "5"
+  "delay": "5",
+  "exec": "cls && node index.js"
 }

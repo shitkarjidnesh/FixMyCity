@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import toast from "react-hot-toast";
 
 // ====================================================================
 // StatusBadge Component
@@ -30,11 +31,12 @@ const ComplaintCard = ({
   isUpdating,
 }) => {
   const [previewImage, setPreviewImage] = useState(null);
-
   const thumbnailUrl =
     complaint.imageUrls?.length > 0
       ? complaint.imageUrls[0]
       : "https://via.placeholder.com/150/e0e0e0/808080?text=No+Image";
+
+  const worker = complaint.assignedWorker;
 
   return (
     <div className="bg-white rounded-xl shadow-md overflow-hidden flex flex-col md:flex-row w-full">
@@ -63,11 +65,14 @@ const ComplaintCard = ({
           <StatusBadge status={complaint.status || "Pending"} />
         </div>
 
-        {/* Full Complaint Details */}
+        {/* Complaint Details */}
         <div className="text-sm text-gray-700 space-y-1">
           <p>
             <strong>User:</strong> {complaint.userId?.name || "N/A"} (
             {complaint.userId?.email || "N/A"})
+          </p>
+          <p>
+            <strong>Department:</strong> {complaint.department?.name || "N/A"}
           </p>
           <p>
             <strong>Description:</strong> {complaint.description}
@@ -92,35 +97,79 @@ const ComplaintCard = ({
             </p>
           )}
           <p>
-            <strong>Status:</strong> {complaint.status || "Pending"}
-          </p>
-          <p>
-            <strong>Created At:</strong>{" "}
-            {complaint.createdAt
-              ? new Date(complaint.createdAt).toLocaleString()
-              : "N/A"}
-          </p>
-          <p>
-            <strong>Last Updated:</strong>{" "}
-            {complaint.updatedAt
-              ? new Date(complaint.updatedAt).toLocaleString()
-              : "N/A"}
+            <strong>Created:</strong>{" "}
+            {new Date(complaint.createdAt).toLocaleString()}
           </p>
         </div>
 
-        {/* Images */}
-        {complaint.imageUrls?.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-3">
-            {complaint.imageUrls.map((url, idx) => (
+        {/* Assigned Worker Info */}
+        {/* Assigned Worker Info */}
+        {complaint.assignedTo ? (
+          <div className="mt-3 border-t pt-3 text-sm text-gray-700">
+            <h4 className="font-semibold text-gray-800 mb-2">
+              Assigned Worker
+            </h4>
+
+            <div className="flex items-center gap-3 mb-2">
               <img
-                key={idx}
-                src={url}
-                alt={`Complaint ${idx}`}
-                className="h-32 w-32 object-cover rounded cursor-pointer hover:scale-105 transition-transform"
-                onClick={() => setPreviewImage(url)}
+                src={
+                  complaint.assignedTo.profilePhoto ||
+                  "https://via.placeholder.com/50x50?text=No+Img"
+                }
+                alt="Worker"
+                className="w-12 h-12 rounded-full object-cover border"
               />
-            ))}
+              <div>
+                <p className="font-semibold text-gray-900">
+                  {complaint.assignedTo.name} {complaint.assignedTo.surname}
+                </p>
+                <p className="text-xs text-gray-600">
+                  🏢 {complaint.assignedTo.department?.name || "N/A"} | 💼{" "}
+                  {complaint.assignedTo.experience || "0"} yrs
+                </p>
+                <p className="text-xs text-gray-500">
+                  📍 {complaint.assignedTo.blockOrRegion || "N/A"} | ⚙️{" "}
+                  {complaint.assignedTo.status === "active"
+                    ? "Active"
+                    : "Inactive"}
+                </p>
+              </div>
+            </div>
+
+            {/* Assigned By (Admin Info) */}
+            {complaint.assignedBy && (
+              <div className="mt-3 border-t pt-3">
+                <h4 className="font-semibold text-gray-800 mb-1">
+                  Assigned By (Admin)
+                </h4>
+                <div className="flex items-center gap-3">
+                  <img
+                    src={
+                      complaint.assignedBy.profilePhoto||
+                      "https://via.placeholder.com/50x50?text=Admin"
+                    }
+                    alt="Admin"
+                    className="w-10 h-10 rounded-full object-cover border"
+                  />
+                  <div>
+                    <p className="font-semibold text-gray-900">
+                      {complaint.assignedBy.name} {complaint.assignedBy.surname}
+                    </p>
+                    <p className="text-xs text-gray-600">
+                      📧 {complaint.assignedBy.email || "N/A"}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      🏢 {complaint.assignedBy.blockOrRegion || "N/A"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
+        ) : (
+          <p className="mt-3 text-sm text-gray-500 italic">
+            No worker assigned yet.
+          </p>
         )}
 
         {/* Actions */}
@@ -139,7 +188,7 @@ const ComplaintCard = ({
           <button
             onClick={onAssignClick}
             className="bg-blue-500 text-white font-semibold py-2 px-4 rounded-md text-sm w-full sm:w-auto hover:bg-blue-600">
-            Assign
+            {worker ? "Reassign Worker" : "Assign Worker"}
           </button>
         </div>
       </div>
@@ -161,6 +210,95 @@ const ComplaintCard = ({
 };
 
 // ====================================================================
+// WorkerAssignmentModal Component
+// ====================================================================
+const WorkerAssignmentModal = ({
+  workers,
+  isOpen,
+  onClose,
+  onConfirm,
+  filterCriteria,
+}) => {
+  const [selectedWorker, setSelectedWorker] = useState(null);
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+      <div className="bg-white rounded-xl shadow-lg w-full max-w-3xl p-6 relative">
+        <h2 className="text-2xl font-bold mb-4 text-gray-800">Assign Worker</h2>
+        <p className="text-sm text-gray-600 mb-3">
+          <strong>Filter:</strong> {filterCriteria?.region} (
+          {filterCriteria?.department})
+        </p>
+
+        {workers.length === 0 ? (
+          <p className="text-gray-500">No eligible workers found.</p>
+        ) : (
+          <div className="space-y-3 max-h-80 overflow-y-auto">
+            {workers.map((w) => (
+              <div
+                key={w._id}
+                className={`flex justify-between items-center border p-3 rounded-md cursor-pointer hover:bg-gray-100 ${
+                  selectedWorker === w._id
+                    ? "border-blue-500 bg-blue-50"
+                    : "border-gray-200"
+                }`}
+                onClick={() => setSelectedWorker(w._id)}>
+                <div className="flex items-center gap-3">
+                  <img
+                    src={
+                      w.profilePhoto?.url ||
+                      "https://via.placeholder.com/50x50?text=No+Img"
+                    }
+                    alt="Worker"
+                    className="w-10 h-10 rounded-full object-cover"
+                  />
+                  <div>
+                    <p className="font-semibold text-gray-800">
+                      {w.name} {w.surname}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      🏢 {w.department?.name || "N/A"} | 💼 {w.experience} yrs
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      📍 {w.blockOrRegion} | ⚙️{" "}
+                      {w.status === "active" ? "Active" : "Inactive"}
+                    </p>
+                  </div>
+                </div>
+                <input
+                  type="radio"
+                  name="worker"
+                  checked={selectedWorker === w._id}
+                  onChange={() => setSelectedWorker(w._id)}
+                  className="h-4 w-4 text-blue-600"
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="mt-5 flex justify-end gap-3">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-gray-300 rounded-md text-gray-800 hover:bg-gray-400">
+            Cancel
+          </button>
+          <button
+            onClick={() => onConfirm(selectedWorker)}
+            disabled={!selectedWorker}
+            className={`px-4 py-2 rounded-md text-white ${
+              selectedWorker ? "bg-blue-600 hover:bg-blue-700" : "bg-blue-300"
+            }`}>
+            Confirm Assignment
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ====================================================================
 // ComplaintsList Page
 // ====================================================================
 export default function ComplaintsList() {
@@ -169,6 +307,13 @@ export default function ComplaintsList() {
   const [error, setError] = useState(null);
   const [updatingId, setUpdatingId] = useState(null);
 
+  // Modal state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [eligibleWorkers, setEligibleWorkers] = useState([]);
+  const [filterCriteria, setFilterCriteria] = useState(null);
+  const [activeComplaintId, setActiveComplaintId] = useState(null);
+
+  // Fetch complaints
   useEffect(() => {
     const fetchComplaints = async () => {
       try {
@@ -181,6 +326,7 @@ export default function ComplaintsList() {
           "http://localhost:5000/api/admin/complaints",
           { headers }
         );
+        console.log("📦 Complaints Data:", res.data);
         setComplaints(res.data.data);
       } catch (err) {
         console.error("Error fetching complaints:", err);
@@ -192,6 +338,7 @@ export default function ComplaintsList() {
     fetchComplaints();
   }, []);
 
+  // Status change handler
   const handleStatusChange = async (id, status) => {
     setUpdatingId(id);
     try {
@@ -203,21 +350,79 @@ export default function ComplaintsList() {
         { status },
         { headers }
       );
-      setComplaints(
-        complaints.map((c) =>
+      setComplaints((prev) =>
+        prev.map((c) =>
           c._id === id ? { ...c, status: res.data.data.status } : c
         )
       );
+      toast.success("Status updated successfully!");
     } catch (err) {
       console.error("Error updating status:", err);
-      alert("Failed to update status.");
+      toast.error("Failed to update status.");
     } finally {
       setUpdatingId(null);
     }
   };
 
-  const handleAssign = (complaintId) => {
-    alert(`Assigning complaint ID: ${complaintId}`);
+  // Open worker selection modal
+  const handleAssign = async (complaintId) => {
+    try {
+      const token = localStorage.getItem("admintoken");
+      if (!token) throw new Error("Admin token not found.");
+      const headers = { Authorization: `Bearer ${token}` };
+
+      const res = await axios.get(
+        `http://localhost:5000/api/admin/eligible/${complaintId}`,
+        { headers }
+      );
+
+      const { eligibleWorkers, filterCriteria } = res.data;
+
+      if (!eligibleWorkers.length) {
+        toast.error(
+          `No available workers found in ${
+            filterCriteria?.region || "this region"
+          }.`
+        );
+        return;
+      }
+
+      setEligibleWorkers(eligibleWorkers);
+      setFilterCriteria(filterCriteria);
+      setActiveComplaintId(complaintId);
+      setIsModalOpen(true);
+    } catch (err) {
+      console.error("Assign error:", err);
+      toast.error("Failed to fetch eligible workers.");
+    }
+  };
+
+  // Confirm worker assignment
+  const handleConfirmAssignment = async (workerId) => {
+    try {
+      if (!workerId) {
+        toast.error("Please select a worker to assign.");
+        return;
+      }
+
+      const token = localStorage.getItem("admintoken");
+      const headers = { Authorization: `Bearer ${token}` };
+      const assignRes = await axios.post(
+        `http://localhost:5000/api/admin/complaints/assign/${activeComplaintId}`,
+        { workerId },
+        { headers }
+      );
+
+      toast.success(
+        `Complaint assigned to ${
+          assignRes.data.worker?.name || "selected worker"
+        }.`
+      );
+      setIsModalOpen(false);
+    } catch (err) {
+      console.error("Assignment error:", err);
+      toast.error("Failed to assign worker.");
+    }
   };
 
   if (loading) return <p className="text-center mt-8">Loading complaints...</p>;
@@ -246,6 +451,15 @@ export default function ComplaintsList() {
           </div>
         )}
       </div>
+
+      {/* Worker assignment modal */}
+      <WorkerAssignmentModal
+        isOpen={isModalOpen}
+        workers={eligibleWorkers}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={handleConfirmAssignment}
+        filterCriteria={filterCriteria}
+      />
     </div>
   );
 }

@@ -7,12 +7,21 @@ function auth(requiredRole = null) {
 
     const token = authHeader.split(" ")[1];
     if (!token) return res.status(401).json({ msg: "Malformed token" });
-    console.log(token);
+
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      if (requiredRole && decoded.role !== requiredRole) {
-        return res.status(403).json({ msg: "Forbidden: wrong role" });
+
+      // ✅ Allow both admin and superadmin for admin-only routes
+      if (requiredRole) {
+        const roleAllowed =
+          decoded.role === requiredRole ||
+          (requiredRole === "admin" && decoded.role === "superadmin");
+
+        if (!roleAllowed) {
+          return res.status(403).json({ msg: "Forbidden: insufficient role" });
+        }
       }
+
       req.user = decoded;
       next();
     } catch (err) {
