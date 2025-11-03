@@ -1,10 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const bcrypt = require("bcryptjs");
+const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const UserComplaints = require("../models/UserComplaints");
-const auth = require("../middleware/auth");
 const Admin = require("../models/Admin");
 const Department = require("../models/Department.js");
 const Worker = require("../models/Worker.js");
@@ -119,7 +118,7 @@ router.post(
       await admin.save();
 
       // Log activity if performed by superadmin
-      if (req.admin && req.admin.role === "superadmin") {
+      if (req.auth && req.auth.role === "superadmin") {
         await logAdminActivity({
           req,
           action: "CREATE_ADMIN",
@@ -140,7 +139,7 @@ router.post(
       console.error("❌ Admin Register Error:", error);
 
       // Log failed registration
-      if (req.admin && req.admin.role === "superadmin") {
+      if (req.auth && req.auth.role === "superadmin") {
         await logAdminActivity({
           req,
           action: "CREATE_ADMIN",
@@ -243,11 +242,9 @@ router.post("/login", async (req, res) => {
 });
 
 // ===================== ADMIN PROTECTED ROUTES =====================
-// CRITICAL FIX: All routes below this line are now protected.
-// They can only be accessed by a logged-in user with an "admin" role.
-router.use(auth("admin"));
+router.use(adminAuth);
 
-router.get("/showadmins", adminAuth, async (req, res) => {
+router.get("/showadmins", async (req, res) => {
   try {
     const {
       role,
@@ -260,7 +257,7 @@ router.get("/showadmins", adminAuth, async (req, res) => {
       sort = "createdAt:desc",
     } = req.query;
 
-    const loggedInAdmin = req.admin;
+    const loggedInAdmin = req.auth;
     const filter = {};
 
     // ✅ ROLE RESTRICTION (admin can see only same region)
@@ -326,7 +323,7 @@ router.get("/showadmins", adminAuth, async (req, res) => {
   }
 });
 
-router.get("/getadmin/:id", adminAuth, async (req, res) => {
+router.get("/getadmin/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -366,9 +363,9 @@ router.get("/getadmin/:id", adminAuth, async (req, res) => {
   }
 });
 
-router.patch("/showadmins/updatestatus/:id", adminAuth, async (req, res) => {
+router.patch("/showadmins/updatestatus/:id", async (req, res) => {
   try {
-    const loggedInAdmin = req.admin;
+    const loggedInAdmin = req.auth;
     const { id } = req.params;
     const { status } = req.body;
 
@@ -389,7 +386,7 @@ router.patch("/showadmins/updatestatus/:id", adminAuth, async (req, res) => {
 
     const updatedAdmin = await Admin.findByIdAndUpdate(
       id,
-      { status, updatedBy: loggedInAdmin._id },
+      { status, updatedBy: loggedInAdmin.id },
       { new: true }
     ).select("-password");
 
@@ -431,9 +428,9 @@ router.patch("/showadmins/updatestatus/:id", adminAuth, async (req, res) => {
   }
 });
 
-router.put("/showadmins/editadmin/:id", adminAuth, async (req, res) => {
+router.put("/showadmins/editadmin/:id", async (req, res) => {
   try {
-    const loggedInAdmin = req.admin;
+    const loggedInAdmin = req.auth;
     const { id } = req.params;
 
     if (loggedInAdmin.role !== "superadmin") {
@@ -466,7 +463,7 @@ router.put("/showadmins/editadmin/:id", adminAuth, async (req, res) => {
       blockOrRegion,
       gender,
       role,
-      updatedBy: loggedInAdmin._id,
+      updatedBy: loggedInAdmin.id,
     };
 
     if (address) {
@@ -523,9 +520,9 @@ router.put("/showadmins/editadmin/:id", adminAuth, async (req, res) => {
   }
 });
 
-router.delete("/showadmins/delete/:id", adminAuth, async (req, res) => {
+router.delete("/showadmins/delete/:id", async (req, res) => {
   try {
-    const loggedInAdmin = req.admin;
+    const loggedInAdmin = req.auth;
     const { id } = req.params;
 
     if (loggedInAdmin.role !== "superadmin") {
@@ -572,9 +569,9 @@ router.delete("/showadmins/delete/:id", adminAuth, async (req, res) => {
   }
 });
 
-router.get("/profile", adminAuth, async (req, res) => {
+router.get("/profile", async (req, res) => {
   try {
-    const admin = await Admin.findById(req.admin._id).select("-password");
+    const admin = await Admin.findById(req.auth.id).select("-password");
     if (!admin) {
       return res
         .status(404)
@@ -590,7 +587,7 @@ router.get("/profile", adminAuth, async (req, res) => {
 // ===================== ADMIN COMPLAINT MANAGEMENT =====================
 
 // ✅ Fetch all complaints (Admin view)
-router.get("/complaints", adminAuth, async (req, res) => {
+router.get("/complaints", async (req, res) => {
   try {
     const complaints = await UserComplaints.find()
       .sort({ createdAt: -1 })
@@ -667,7 +664,7 @@ router.get("/complaints", adminAuth, async (req, res) => {
 // POST /api/admin/complaints/:id/assign - Assign a complaint to a worker
 
 // POST /api/admin/complaints/:id/verify - Approve or reject a resolved complaint
-router.post("/complaints/:id/verify", adminAuth, async (req, res) => {
+router.post("/complaints/:id/verify", async (req, res) => {
   try {
     const { id } = req.params;
     const { approve, notes } = req.body;
@@ -687,7 +684,7 @@ router.post("/complaints/:id/verify", adminAuth, async (req, res) => {
     } else {
       complaint.status = "Rejected";
     }
-    complaint.lastUpdatedBy = req.admin._id;
+    complaint.lastUpdatedBy = req.auth.id;
     complaint.lastUpdatedRole = "Admin";
     await complaint.save();
 
@@ -791,7 +788,7 @@ router.put("/complaints/:id", async (req, res) => {
 
 ///complaint assignment route
 
-router.get("/eligible/:complaintId", adminAuth, async (req, res) => {
+router.get("/eligible/:complaintId", async (req, res) => {
   try {
     console.log(
       "🔍 Eligible worker lookup for complaint:",
@@ -891,11 +888,11 @@ router.get("/eligible/:complaintId", adminAuth, async (req, res) => {
   }
 });
 
-router.post("/complaints/assign/:complaintId", adminAuth, async (req, res) => {
+router.post("/complaints/assign/:complaintId", async (req, res) => {
   try {
     const { complaintId } = req.params;
     const { workerId } = req.body;
-    const adminId = req.admin.id;
+    const adminId = req.auth.id;
 
     // 1️⃣ Validate worker existence
     const worker = await Worker.findById(workerId);
@@ -1068,7 +1065,6 @@ router.delete("/users/:id", async (req, res) => {
 // ➕ Add a new worker
 router.post(
   "/addWorker",
-  adminAuth,
   upload.fields([
     { name: "profilePhoto", maxCount: 1 },
     { name: "idProof", maxCount: 1 },
@@ -1182,7 +1178,7 @@ router.post(
         password: password,
         profilePhoto: profilePhotoUrl,
         idProof: idProofUrl,
-        createdBy: req.admin._id,
+        createdBy: req.auth.id,
       });
 
       await logAdminActivity({
@@ -1222,7 +1218,7 @@ router.post(
 );
 
 // 📋 Show all workers
-router.get("/showWorkers", adminAuth, async (req, res) => {
+router.get("/showWorkers", async (req, res) => {
   try {
     const workers = await Worker.find()
       .populate("department", "name")
@@ -1279,7 +1275,7 @@ router.get("/showWorkers", adminAuth, async (req, res) => {
 });
 
 // 🟢 Get single worker by ID
-router.get("/worker/:id", adminAuth, async (req, res) => {
+router.get("/worker/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const worker = await Worker.findById(id)
@@ -1308,7 +1304,7 @@ router.get("/worker/:id", adminAuth, async (req, res) => {
   }
 });
 
-router.get("/getWorkerById/:id", adminAuth, async (req, res) => {
+router.get("/getWorkerById/:id", async (req, res) => {
   try {
     const worker = await Worker.findById(req.params.id)
       .populate("department", "name")
@@ -1333,7 +1329,6 @@ router.get("/getWorkerById/:id", adminAuth, async (req, res) => {
 // 🟡 Update worker details (profile or fields)
 router.put(
   "/editWorker/:id",
-  adminAuth,
   upload.fields([
     { name: "profilePhoto", maxCount: 1 },
     { name: "idProof", maxCount: 1 },
@@ -1417,7 +1412,7 @@ router.put(
 );
 
 // 🟠 Update worker status (active/suspended/removed)
-router.patch("/updateWorkerStatus/:id", adminAuth, async (req, res) => {
+router.patch("/updateWorkerStatus/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
@@ -1430,7 +1425,7 @@ router.patch("/updateWorkerStatus/:id", adminAuth, async (req, res) => {
 
     const updatedWorker = await Worker.findByIdAndUpdate(
       id,
-      { status, updatedBy: req.admin._id },
+      { status, updatedBy: req.auth.id },
       { new: true, runValidators: true }
     );
 
@@ -1476,7 +1471,7 @@ router.patch("/updateWorkerStatus/:id", adminAuth, async (req, res) => {
 });
 
 // 🔴 Delete worker (hard delete)
-router.delete("/deleteWorker/:id", adminAuth, async (req, res) => {
+router.delete("/deleteWorker/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const deletedWorker = await Worker.findByIdAndDelete(id);
@@ -1535,7 +1530,7 @@ router.get("/departments", async (req, res) => {
   }
 });
 
-router.post("/complaint-type/create", adminAuth, async (req, res) => {
+router.post("/complaint-type/create", async (req, res) => {
   try {
     const { name, subComplaints, departmentId } = req.body;
 
@@ -1554,7 +1549,7 @@ router.post("/complaint-type/create", adminAuth, async (req, res) => {
       name,
       subComplaints: subComplaints || [],
       departmentId,
-      createdBy: req.admin._id,
+      createdBy: req.auth.id,
     });
 
     await logAdminActivity({
@@ -1585,7 +1580,7 @@ router.post("/complaint-type/create", adminAuth, async (req, res) => {
 });
 
 // 🟡 GET /api/admin/complaint-type/all
-router.get("/complaint-type/all", adminAuth, async (req, res) => {
+router.get("/complaint-type/all", async (req, res) => {
   try {
     const complaintTypes = await ComplaintType.find()
       .populate("departmentId", "name")
@@ -1601,7 +1596,7 @@ router.get("/complaint-type/all", adminAuth, async (req, res) => {
 });
 
 // 🟡 PUT /api/admin/complaint-type/update/:id
-router.put("/complaint-type/update/:id", adminAuth, async (req, res) => {
+router.put("/complaint-type/update/:id", async (req, res) => {
   try {
     const { name, subComplaints, departmentId } = req.body;
 
@@ -1611,7 +1606,7 @@ router.put("/complaint-type/update/:id", adminAuth, async (req, res) => {
         name,
         subComplaints,
         departmentId,
-        updatedBy: req.admin._id, // 🔹 keep admin who made the update
+        updatedBy: req.auth.id, // 🔹 keep admin who made the update
         updatedAt: new Date(),
       },
       { new: true, runValidators: true }
@@ -1650,7 +1645,7 @@ router.put("/complaint-type/update/:id", adminAuth, async (req, res) => {
   }
 });
 
-router.get("/departments/all", adminAuth, async (req, res) => {
+router.get("/departments/all", async (req, res) => {
   try {
     const departments = await Department.find()
       .populate("createdBy", "name email")
@@ -1669,9 +1664,9 @@ router.get("/departments/all", adminAuth, async (req, res) => {
 });
 
 // 🔴 POST /api/admin/departments/create — Only Super Admin can create departments
-router.post("/departments/create", adminAuth, async (req, res) => {
+router.post("/departments/create", async (req, res) => {
   try {
-    if (req.admin.role !== "superadmin") {
+    if (req.auth.role !== "superadmin") {
       return res.status(403).json({
         success: false,
         message: "Access denied: Only Super Admin can create departments",
@@ -1697,7 +1692,7 @@ router.post("/departments/create", adminAuth, async (req, res) => {
       name,
       description,
       status: status || "active",
-      createdBy: req.admin._id,
+      createdBy: req.auth.id,
     });
 
     await department.save();
@@ -1735,9 +1730,9 @@ router.post("/departments/create", adminAuth, async (req, res) => {
 
 // 🟡 PUT /api/admin/departments/update/:id — Only Super Admin can update
 // 🟡 PUT /api/admin/departments/update/:id
-router.put("/departments/update/:id", adminAuth, async (req, res) => {
+router.put("/departments/update/:id", async (req, res) => {
   try {
-    const admin = req.admin; // injected by adminAuth middleware
+    const admin = req.auth; // injected by adminAuth middleware
 
     // ✅ Ensure only Super Admin can update
     if (admin.role !== "superadmin") {
@@ -1762,7 +1757,7 @@ router.put("/departments/update/:id", adminAuth, async (req, res) => {
     department.name = name || department.name;
     department.description = description || department.description;
     department.status = status || department.status;
-    department.updatedBy = admin._id;
+    department.updatedBy = admin.id;
 
     await department.save();
 
@@ -1802,7 +1797,7 @@ router.put("/departments/update/:id", adminAuth, async (req, res) => {
 });
 
 // ===================== GET ACTIVITY LOGS =====================
-router.get("/activity", adminAuth, async (req, res) => {
+router.get("/activity", async (req, res) => {
   try {
     const {
       page = 1,

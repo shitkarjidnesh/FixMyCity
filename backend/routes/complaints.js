@@ -4,11 +4,11 @@ const multer = require("multer");
 const cloudinary = require("../config/cloudinary");
 const { Readable } = require("stream");
 const UserComplaints = require("../models/UserComplaints");
-const auth = require("../middleware/auth");
+const userAuth = require("../middleware/userAuth");
 const UserActivity = require("../models/UserActivity");
 const ComplaintType = require("../models/ComplaintTypes");
 
-router.use(auth());
+router.use(userAuth);
 
 // Multer in-memory storage
 const storage = multer.memoryStorage();
@@ -141,7 +141,7 @@ router.post("/", upload.array("photos", 5), async (req, res) => {
     // 🏙️ Create complaint document
     console.log("🧱 Creating new UserComplaint document...");
     const complaint = new UserComplaints({
-      userId: req.user?.id || "UNKNOWN_USER",
+      userId: req.auth?.id || "UNKNOWN_USER",
       type: mainTypeId,
       subtype: subtypeName,
       description,
@@ -167,7 +167,7 @@ router.post("/", upload.array("photos", 5), async (req, res) => {
     try {
       console.log("🧾 Logging user activity...");
       await UserActivity.create({
-        userId: req.user?.id || "UNKNOWN_USER",
+        userId: req.auth?.id || "UNKNOWN_USER",
         action: "CREATE_COMPLAINT",
         targetType: "Complaint",
         targetId: complaint._id,
@@ -202,7 +202,7 @@ router.post("/", upload.array("photos", 5), async (req, res) => {
 // GET /api/complaints - fetch only logged-in user's complaints
 router.get("/", async (req, res) => {
   try {
-    const userId = req.user?.id;
+    const userId = req.auth?.id;
     if (!userId) {
       return res.status(401).json({ success: false, error: "Unauthorized" });
     }

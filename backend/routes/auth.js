@@ -1,9 +1,9 @@
 // routes/auth.js
 const express = require("express");
-const bcrypt = require("bcryptjs");
+const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
-const { verifyToken } = require("../middleware/verifyToken");
+const userAuth = require("../middleware/userAuth");
 const { verifyOTP } = require("../otp/otpController");
 const router = express.Router();
 
@@ -102,10 +102,10 @@ router.post("/login", async (req, res) => {
 
 // ===================== UPDATE PROFILE =====================
 
-router.put("/profile", verifyToken, async (req, res) => {
+router.put("/profile", userAuth, async (req, res) => {
   try {
     const { name, email, phone } = req.body;
-    const userId = req.user.id;
+    const userId = req.auth.id;
 
     if (!name || !email || !phone) {
       return res.status(400).json({ msg: "All fields are required" });
