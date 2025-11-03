@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const Admin = require("../models/Admin"); // adjust path as needed
+const Admin = require("../models/Admin");
 
 module.exports = async function adminAuth(req, res, next) {
   try {
@@ -14,17 +14,14 @@ module.exports = async function adminAuth(req, res, next) {
     const token = authHeader.split(" ")[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Fetch admin details
     const admin = await Admin.findById(decoded.id).select("-password");
     if (!admin) {
       return res
         .status(401)
         .json({ success: false, message: "Invalid admin token." });
     }
-    //console.log(admin);
 
-    // Attach admin info to request
-    req.admin = admin;
+    req.auth = { id: admin._id, email: admin.email, role: admin.role };
     next();
   } catch (err) {
     console.error("❌ Admin Auth Error:", err);

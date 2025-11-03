@@ -51,7 +51,8 @@ export default function TopNav() {
       | { pathname: `/home`; params?: UnknownInputParams }
       | { pathname: `/home/profile`; params?: UnknownInputParams }
       | { pathname: `/home/setting`; params?: UnknownInputParams }
-      | { pathname: `/home/reportProblem`; params?: UnknownInputParams },
+      | { pathname: `/home/reportProblem`; params?: UnknownInputParams }
+      | { pathname: `/home/workerComplaintList`; params?: UnknownInputParams }
   ) => {
     setMenuVisible(false);
     router.push(e);
@@ -125,6 +126,12 @@ export default function TopNav() {
             </TouchableOpacity>
 
             <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => handleNavigate("/home/workerComplaintList")}>
+              <Text style={styles.menuText}>View Complaints</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
               style={[
                 styles.menuItem,
                 { borderTopWidth: 1, borderTopColor: "#ddd" },
@@ -144,7 +151,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   header: {
-    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight  : 10,
+    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 10,
     paddingHorizontal: 20,
     paddingBottom: 10,
     backgroundColor: "#007AFF",

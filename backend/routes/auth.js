@@ -20,15 +20,11 @@ router.post("/register", async (req, res) => {
         .json({ success: false, error: "User already exists" });
     }
 
-    // hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
     // save user
     const user = new User({
       name,
       email,
-      password: hashedPassword,
+      password: password,
       role: role || "user", // default to "user"
     });
 
@@ -104,6 +100,7 @@ router.post("/login", async (req, res) => {
   }
 });
 
+// ===================== UPDATE PROFILE =====================
 
 router.put("/profile", verifyToken, async (req, res) => {
   try {

@@ -93,10 +93,6 @@ router.post(
         idProofImageUrl = uploadResult.url;
       }
 
-      // Hash password
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(password, salt);
-
       // Save new admin
       const admin = new Admin({
         name,
@@ -104,7 +100,7 @@ router.post(
         surname,
         email,
         phone,
-        password: hashedPassword,
+        password: password,
         dob,
         gender,
         idProof: {
@@ -1143,19 +1139,22 @@ router.post(
       // Cloudinary Uploads
       let profilePhotoUrl = null;
       let idProofUrl = null;
-      const profileUpload = await uploadToCloudinary(
-        req.files.profilePhoto[0].path,
-        "worker/profile_photos"
-      );
-      profilePhotoUrl = profileUpload?.url || null;
 
-      const proofUpload = await uploadToCloudinary(
-        req.files.idProof[0].path,
-        "worker/id_proofs"
-      );
-      idProofUrl = proofUpload?.url || null;
-      // Hash password
-      const hashedPassword = await bcrypt.hash(password, 10);
+      if (req.files && req.files.profilePhoto && req.files.profilePhoto[0]) {
+        const profileUpload = await uploadToCloudinary(
+          req.files.profilePhoto[0].path,
+          "worker/profile_photos"
+        );
+        profilePhotoUrl = profileUpload?.url || null;
+      }
+
+      if (req.files && req.files.idProof && req.files.idProof[0]) {
+        const proofUpload = await uploadToCloudinary(
+          req.files.idProof[0].path,
+          "worker/id_proofs"
+        );
+        idProofUrl = proofUpload?.url || null;
+      }
 
       // Persist to DB
       const worker = await Worker.create({
@@ -1180,7 +1179,7 @@ router.post(
         department,
         experience,
         blockOrRegion,
-        password: hashedPassword,
+        password: password,
         profilePhoto: profilePhotoUrl,
         idProof: idProofUrl,
         createdBy: req.admin._id,

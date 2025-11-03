@@ -2,12 +2,11 @@ import { useEffect, useState } from "react";
 import {
   View,
   Text,
-  TextInput,
-  TouchableOpacity,
   StyleSheet,
   ScrollView,
-  Alert,
   Image,
+  ActivityIndicator,
+  RefreshControl,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
@@ -15,165 +14,213 @@ import TopNav from "@/components/TopNav";
 import BottomNav from "@/components/BottomNav";
 import AuthGuard from "@/components/AuthGuard";
 
-export default function Profile() {
-  const [userData, setUserData] = useState(null);
-  const [editing, setEditing] = useState(false);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [address, setAddress] = useState("");
-  const [updating, setUpdating] = useState(false);
+// ──────────────── Type Definitions ────────────────
+interface Address {
+  houseNo?: string;
+  street?: string;
+  landmark?: string;
+  area?: string;
+  city?: string;
+  district?: string;
+  state?: string;
+  pincode?: string;
+}
 
-  useEffect(() => {
-    const loadUser = async () => {
-      const stored = await AsyncStorage.getItem("userData");
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        setUserData(parsed);
-        setName(parsed.name || "");
-        setEmail(parsed.email || "");
-        setPhone(parsed.phone || "");
-        setAddress(parsed.address || "");
-      }
-    };
-    loadUser();
-  }, []);
+interface Department {
+  _id?: string;
+  name?: string;
+}
 
-  const handleEditToggle = () => setEditing(!editing);
+interface Worker {
+  _id: string;
+  name: string;
+  middleName?: string;
+  surname: string;
+  email: string;
+  phone: string;
+  gender?: string;
+  dob?: string;
+  employeeId: string;
+  experience?: string;
+  blockOrRegion: string;
+  address?: Address;
+  department?: Department;
+  profilePhoto?: string;
+}
 
-  const handleUpdate = async () => {
-    if (!name || !email || !phone || !address) {
-      Alert.alert("Error", "All fields are required");
-      return;
-    }
+// ──────────────── Component ────────────────
+export default function WorkerProfile() {
+  const [worker, setWorker] = useState<Worker | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
 
+  // 🔹 Load Worker Profile from API
+  const loadWorkerProfile = async (): Promise<void> => {
     try {
-      setUpdating(true);
-      const res = await axios.put(
-        "http://10.0.2.2:5000/api/users/profile",
-        { name, email, phone, address },
-        { headers: { Authorization: `Bearer ${userData?.token}` } }
+      const stored = await AsyncStorage.getItem("workerData");
+      if (!stored) return;
+
+      const parsed = JSON.parse(stored);
+      const token: string | undefined = parsed?.token;
+
+      if (!token) {
+        console.warn("⚠️ No token found in storage.");
+        return;
+      }
+
+      const res = await axios.get(
+        "http://192.168.68.44:5000/api/worker/profile",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
       );
 
-      const updatedData = { ...userData, ...res.data };
-      await AsyncStorage.setItem("userData", JSON.stringify(updatedData));
-      setUserData(updatedData);
-      setEditing(false);
-      Alert.alert("Success", "Profile updated successfully");
-    } catch (error) {
-      Alert.alert(
-        "Update Error",
-        error.response?.data?.msg || "Failed to update profile"
+      console.log("✅ Worker profile API response:", res.data);
+
+      const fetchedWorker = res.data?.data;
+      if (!fetchedWorker?._id) {
+        console.warn("⚠️ Worker data missing from API response:", res.data);
+        return;
+      }
+      setWorker(fetchedWorker);
+
+      // 🔹 Log each important field clearly
+      console.log("🟦 Worker Info Debug -----------------------------");
+      console.log("🆔 ID:", fetchedWorker._id);
+      console.log(
+        "👤 Name:",
+        fetchedWorker.name,
+        fetchedWorker.middleName,
+        fetchedWorker.surname
       );
+      console.log("📧 Email:", fetchedWorker.email);
+      console.log("📞 Phone:", fetchedWorker.phone);
+      console.log("👩 Gender:", fetchedWorker.gender);
+      console.log("🎂 DOB:", fetchedWorker.dob);
+      console.log("🏢 Department:", fetchedWorker.department?.name);
+      console.log("🧾 Employee ID:", fetchedWorker.employeeId);
+      console.log("💼 Experience:", fetchedWorker.experience);
+      console.log("🌍 Block/Region:", fetchedWorker.blockOrRegion);
+      console.log("🏠 Address:", fetchedWorker.address);
+      console.log("🖼️ Profile Photo URL:", fetchedWorker.profilePhoto);
+      console.log("🟦 ---------------------------------------------");
+    } catch (error) {
+      console.error("❌ Failed to load worker profile:", error);
     } finally {
-      setUpdating(false);
+      setLoading(false);
+      setRefreshing(false);
     }
   };
 
-  if (!userData) {
+  useEffect(() => {
+    loadWorkerProfile();
+  }, []);
+
+  const onRefresh = (): void => {
+    setRefreshing(true);
+    loadWorkerProfile();
+  };
+
+  // ──────────────── Loading State ────────────────
+  if (loading) {
     return (
       <AuthGuard>
         <TopNav />
         <View style={styles.loadingContainer}>
-          <Text>Loading profile...</Text>
+          <ActivityIndicator size="large" color="#2563eb" />
+          <Text style={{ marginTop: 10 }}>Loading profile...</Text>
         </View>
         <BottomNav />
       </AuthGuard>
     );
   }
 
+  // ──────────────── No Worker Data ────────────────
+  if (!worker) {
+    return (
+      <AuthGuard>
+        <TopNav />
+        <View style={styles.loadingContainer}>
+          <Text>No profile data found.</Text>
+        </View>
+        <BottomNav />
+      </AuthGuard>
+    );
+  }
+
+  // ──────────────── Profile View ────────────────
   return (
     <AuthGuard>
       <TopNav />
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView
+        contentContainerStyle={styles.container}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }>
         {/* Profile Picture */}
         <View style={styles.avatarContainer}>
           <Image
             source={{
               uri:
-                userData.avatar ||
+                worker.profilePhoto ||
                 "https://cdn-icons-png.flaticon.com/512/149/149071.png",
             }}
             style={styles.avatar}
           />
         </View>
 
-        <Text style={styles.title}>Profile</Text>
-
-        {!editing ? (
-          <View>
-            <View style={styles.card}>
-              <Text style={styles.label}>Full Name</Text>
-              <Text style={styles.value}>{userData.name}</Text>
-
-              <Text style={styles.label}>Email</Text>
-              <Text style={styles.value}>{userData.email}</Text>
-
-              <Text style={styles.label}>Phone</Text>
-              <Text style={styles.value}>{userData.phone}</Text>
-
-              <Text style={styles.label}>Address</Text>
-              <Text style={styles.value}>{userData.address}</Text>
-            </View>
-
-            <TouchableOpacity style={styles.button} onPress={handleEditToggle}>
-              <Text style={styles.buttonText}>Edit Profile</Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <View>
-            <View style={styles.card}>
-              <TextInput
-                style={styles.input}
-                placeholder="Full Name"
-                value={name}
-                onChangeText={setName}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Email"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Phone"
-                value={phone}
-                onChangeText={setPhone}
-                keyboardType="phone-pad"
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Address"
-                value={address}
-                onChangeText={setAddress}
-              />
-            </View>
-
-            <TouchableOpacity
-              style={[styles.button, updating && { backgroundColor: "#999" }]}
-              onPress={handleUpdate}
-              disabled={updating}>
-              <Text style={styles.buttonText}>
-                {updating ? "Updating..." : "Save Changes"}
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.button, { backgroundColor: "#ccc" }]}
-              onPress={handleEditToggle}
-              disabled={updating}>
-              <Text style={[styles.buttonText, { color: "#333" }]}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+        <Text style={styles.title}>My Profile</Text>
 
         <View style={styles.card}>
-          <Text style={styles.label}>Token</Text>
-          <Text style={styles.value} numberOfLines={1} ellipsizeMode="middle">
-            {userData?.token || "N/A"}
+          <Text style={styles.label}>Full Name</Text>
+          <Text style={styles.value}>
+            {`${worker.name} ${worker.middleName || ""} ${
+              worker.surname || ""
+            }`}
+          </Text>
+
+          <Text style={styles.label}>Email</Text>
+          <Text style={styles.value}>{worker.email}</Text>
+
+          <Text style={styles.label}>Phone</Text>
+          <Text style={styles.value}>{worker.phone}</Text>
+
+          <Text style={styles.label}>Gender</Text>
+          <Text style={styles.value}>{worker.gender || "N/A"}</Text>
+
+          <Text style={styles.label}>Date of Birth</Text>
+          <Text style={styles.value}>
+            {worker.dob
+              ? new Date(worker.dob).toLocaleDateString("en-IN")
+              : "N/A"}
+          </Text>
+
+          <Text style={styles.label}>Department</Text>
+          <Text style={styles.value}>{worker.department?.name || "N/A"}</Text>
+
+          <Text style={styles.label}>Employee ID</Text>
+          <Text style={styles.value}>{worker.employeeId}</Text>
+
+          <Text style={styles.label}>Experience</Text>
+          <Text style={styles.value}>{worker.experience || "N/A"}</Text>
+
+          <Text style={styles.label}>Block / Region</Text>
+          <Text style={styles.value}>{worker.blockOrRegion}</Text>
+
+          <Text style={styles.label}>Address</Text>
+          <Text style={styles.value}>
+            {[
+              worker.address?.houseNo,
+              worker.address?.street,
+              worker.address?.landmark,
+              worker.address?.area,
+              worker.address?.city,
+              worker.address?.district,
+              worker.address?.state,
+              worker.address?.pincode,
+            ]
+              .filter(Boolean)
+              .join(", ")}
           </Text>
         </View>
       </ScrollView>
@@ -182,9 +229,15 @@ export default function Profile() {
   );
 }
 
+// ──────────────── Styles ────────────────
 const styles = StyleSheet.create({
   container: { padding: 20 },
-  loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 80,
+  },
   avatarContainer: { alignItems: "center", marginBottom: 20 },
   avatar: { width: 100, height: 100, borderRadius: 50, marginBottom: 10 },
   title: {
@@ -206,19 +259,4 @@ const styles = StyleSheet.create({
   },
   label: { fontWeight: "bold", fontSize: 14, marginTop: 10 },
   value: { fontSize: 16, marginTop: 2, color: "#333" },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 10,
-  },
-  button: {
-    backgroundColor: "#2563eb",
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  buttonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
 });

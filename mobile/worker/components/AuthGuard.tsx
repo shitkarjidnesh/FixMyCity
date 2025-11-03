@@ -15,7 +15,7 @@ export default function AuthGuard({ children }: Props) {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const token = await AsyncStorage.getItem("userData");
+        const token = await AsyncStorage.getItem("workerData");
         if (!token) {
           Alert.alert("Unauthorized", "Please login to continue.");
           router.replace("/login"); // redirect to login

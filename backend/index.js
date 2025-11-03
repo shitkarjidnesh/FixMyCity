@@ -13,7 +13,7 @@ const complaintsRoute = require("./routes/complaints");
 const authRoutes = require("./routes/auth");
 const adminRoutes = require("./routes/admin");
 const complaintTypesRoutes = require("./routes/complaintTypes");
-const workerAuthRoutes = require("./routes/workerAuth");
+// const workerAuthRoutes = require("./routes/workerAuth");
 const workerRoutes = require("./routes/worker");
 const otpRoutes = require("./routes/otp");
 const { debugLogger } = require("./middleware/debugLogger");
@@ -71,7 +71,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/complaint-types", complaintTypesRoutes);
 app.use("/api/otp", otpRoutes);
-app.use("/api/worker/auth", workerAuthRoutes);
+//npapp.use("/api/worker/auth", workerAuthRoutes);
 app.use("/api/worker", workerRoutes);
 
 // -----------------------------
