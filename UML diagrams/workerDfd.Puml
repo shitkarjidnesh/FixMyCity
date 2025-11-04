@@ -1,0 +1,49 @@
+@startuml
+title Use Case Diagram - Public Grievance Reporting System (Worker Perspective - Vertical Layout)
+
+top to bottom direction
+
+skinparam shadowing false
+skinparam linetype ortho
+skinparam actor {
+  FontSize 14
+  FontColor black
+}
+skinparam usecase {
+  BackgroundColor white
+  BorderColor black
+  FontColor black
+}
+skinparam rectangle {
+  BorderColor black
+  RoundCorner 10
+}
+skinparam defaultTextAlignment center
+
+actor "Worker" as WorkerActor
+
+rectangle "Public Grievance Reporting System" as System {
+
+  usecase "Login" as UC_Login
+  usecase "View Assigned Complaints" as UC_View
+  usecase "Update Complaint Status" as UC_UpdateStatus
+  usecase "Upload Resolution Proof" as UC_Upload
+  usecase "Handle Rework Request" as UC_Rework
+  usecase "View Work History / Logs" as UC_Logs
+  usecase "Receive Notifications" as UC_Notify
+}
+
+WorkerActor --> UC_Login
+WorkerActor --> UC_View
+WorkerActor --> UC_UpdateStatus
+WorkerActor --> UC_Upload
+WorkerActor --> UC_Rework
+WorkerActor --> UC_Logs
+WorkerActor --> UC_Notify
+
+' Relationships
+UC_Upload .> UC_UpdateStatus : <<include>>
+UC_Rework .> UC_Upload : <<include>>
+UC_Logs .> UC_View : <<include>>
+
+@enduml

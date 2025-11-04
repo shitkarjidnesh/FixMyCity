@@ -1,0 +1,54 @@
+@startuml
+title Sequence Diagram - Public Grievance Reporting System (Admin Workflow)
+
+skinparam shadowing false
+skinparam sequenceArrowThickness 1
+skinparam sequenceArrowColor black
+skinparam sequenceLifeLineBorderColor black
+skinparam sequenceLifeLineBackgroundColor white
+skinparam participant {
+  BorderColor black
+  BackgroundColor white
+}
+skinparam defaultTextAlignment center
+
+actor Admin
+participant "System Backend" as System
+database "Database" as DB
+participant Worker
+participant User
+
+== Admin Login ==
+Admin -> System : Enter credentials
+System -> DB : Validate admin(email, password)
+DB --> System : Return validation result
+System --> Admin : Login success / failure
+
+== View and Assign Complaint ==
+Admin -> System : Request unassigned complaints
+System -> DB : Fetch complaints(status = "Pending")
+DB --> System : Return complaint list
+System --> Admin : Display complaint list
+
+Admin -> System : Assign complaint to worker
+System -> DB : Update complaint(workerId, status="Assigned")
+DB --> System : Confirm update
+System -> Worker : Notify assignment
+System -> DB : Record admin action (AdminLog)
+
+== Worker Resolves Complaint ==
+Worker -> System : Upload resolution photo and status="Resolved"
+System -> DB : Update complaint(resolvedAt, status="Resolved")
+DB --> System : Confirm update
+System -> Admin : Notify resolution submission
+
+== Admin Verifies Resolution ==
+Admin -> System : Verify resolution proof
+System -> DB : Fetch complaint and evidence
+DB --> System : Return complaint details
+Admin -> System : Mark complaint "Verified"
+System -> DB : Update status="Verified"
+System -> User : Notify user of resolution
+System -> DB : Record verification in AdminLog
+
+@enduml

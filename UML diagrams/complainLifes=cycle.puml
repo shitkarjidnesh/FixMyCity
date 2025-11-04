@@ -1,0 +1,29 @@
+@startuml
+title State Transition Diagram - Complaint Lifecycle (Admin Perspective)
+
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam state {
+  BackgroundColor white
+  BorderColor black
+  FontColor black
+}
+skinparam arrow {
+  Color black
+  FontColor black
+}
+skinparam linetype ortho
+
+[*] --> Pending : Complaint Submitted (User)
+
+Pending --> Assigned : Assign to Worker (Admin)
+Assigned --> InProgress : Work Started (Worker)
+InProgress --> Resolved : Upload Resolution (Worker)
+Resolved --> UnderVerification : Review Proof (Admin)
+UnderVerification --> Verified : Resolution Accepted (Admin)
+UnderVerification --> ReworkRequired : Resolution Rejected (Admin)
+ReworkRequired --> InProgress : Rework by Worker
+Verified --> Closed : Complaint Closed (System/Admin)
+Closed --> [*]
+
+@enduml

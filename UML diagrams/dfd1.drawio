@@ -1,0 +1,67 @@
+<mxfile host="65bd71144e">
+    <diagram id="worker-dfd-level0" name="DFD Level 0 - Worker Module">
+        <mxGraphModel dx="1050" dy="563" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="system" value="Public Grievance Reporting System" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;fontStyle=1;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="200" y="100" width="380" height="300" as="geometry"/>
+                </mxCell>
+                <mxCell id="workerModule" value="Worker Module" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="system" vertex="1">
+                    <mxGeometry x="90" y="80" width="200" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="db" value="Database (Complaints, Workers, Logs)" style="shape=cylinder;whiteSpace=wrap;html=1;boundedLbl=1;" parent="1" vertex="1">
+                    <mxGeometry x="300" y="460" width="200" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="flow1" value="Login / View / Update / Upload" style="exitX=1;exitY=0.3333333333333333;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="5" target="workerModule" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="200" y="200" as="targetPoint"/>
+                        <mxPoint x="130" y="202.63157894736844" as="sourcePoint"/>
+                        <Array as="points">
+                            <mxPoint x="160" y="130"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="flow2" value="Dashboard / Confirmation" style="entryX=1;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="workerModule" target="5" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="130" y="202.63157894736844" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="170" y="280"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="flow3" value="Assign Complaint / Rework Request" style="exitX=0;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="3" target="workerModule" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="450" y="220" as="targetPoint"/>
+                        <mxPoint x="730" y="220.68493150684935" as="sourcePoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="flow4" value="Status Update / Resolution Submitted" style="entryX=0;entryY=0.3333333333333333;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="workerModule" target="3" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="730" y="220.68493150684935" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="630" y="150"/>
+                            <mxPoint x="750" y="150"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="flow5" value="Fetch / Update Complaint and Logs" parent="1" source="workerModule" target="db" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="330" y="400" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="flow6" value="Data / Confirmation" parent="1" source="db" target="workerModule" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="340" y="280" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="3" value="admin" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
+                    <mxGeometry x="780" y="180" width="30" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="5" value="worker" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
+                    <mxGeometry x="40" y="180" width="30" height="60" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

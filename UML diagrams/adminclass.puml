@@ -1,0 +1,155 @@
+@startuml
+title Class Diagram - Public Grievance Reporting System (Admin Perspective)
+
+skinparam shadowing false
+skinparam linetype ortho
+skinparam class {
+  BackgroundColor white
+  BorderColor black
+  RoundCorner 10
+}
+skinparam arrow {
+  Color black
+  FontColor black
+}
+
+'=====================
+' CLASSES
+'=====================
+
+class Admin {
+  - _id : ObjectId
+  - name : String
+  - email : String
+  - phone : String
+  - governmentId : String
+  - employeeId : String
+  - address : String
+  - blockOrRegion : String
+  - idProof : String
+  - passwordHash : String
+  - createdAt : Date
+  - updatedAt : Date
+  --
+  + register()
+  + login()
+  + assignComplaint()
+  + verifyComplaint()
+  + viewLogs()
+}
+
+class User {
+  - _id : ObjectId
+  - name : String
+  - email : String
+  - phone : String
+  - address : String
+  - role : String
+  - passwordHash : String
+  - createdAt : Date
+  --
+  + register()
+  + login()
+  + submitComplaint()
+  + viewStatus()
+}
+
+class Worker {
+  - _id : ObjectId
+  - name : String
+  - middleName : String
+  - surname : String
+  - email : String
+  - phone : String
+  - street : String
+  - city : String
+  - state : String
+  - pincode : String
+  - departmentId : ObjectId
+  - experience : Number
+  - blockOrRegion : String
+  - createdByAdmin : ObjectId
+  - passwordHash : String
+  - createdAt : Date
+  --
+  + login()
+  + updateStatus()
+  + uploadResolution()
+}
+
+class Department {
+  - _id : ObjectId
+  - name : String
+  - description : String
+  --
+  + addDepartment()
+  + updateDepartment()
+}
+
+class UserComplaint {
+  - _id : ObjectId
+  - userId : ObjectId
+  - adminId : ObjectId
+  - workerId : ObjectId
+  - departmentId : ObjectId
+  - category : String
+  - subCategory : String
+  - description : String
+  - latitude : Number
+  - longitude : Number
+  - image : String
+  - assignedAt : Date
+  - resolvedAt : Date
+  - status : String
+  - priority : String
+  - createdAt : Date
+  --
+  + createComplaint()
+  + assignWorker()
+  + markResolved()
+  + verifyResolution()
+}
+
+class AdminLog {
+  - _id : ObjectId
+  - adminId : ObjectId
+  - action : String
+  - targetEntity : String
+  - targetId : ObjectId
+  - timestamp : Date
+  - details : String
+}
+
+class WorkerLog {
+  - _id : ObjectId
+  - workerId : ObjectId
+  - action : String
+  - targetComplaint : ObjectId
+  - timestamp : Date
+  - notes : String
+}
+
+class UserLog {
+  - _id : ObjectId
+  - userId : ObjectId
+  - action : String
+  - targetComplaint : ObjectId
+  - timestamp : Date
+  - notes : String
+}
+
+'=====================
+' RELATIONSHIPS
+'=====================
+
+Admin "1" --> "*" Worker : creates >
+Admin "1" --> "*" UserComplaint : manages >
+User "1" --> "*" UserComplaint : submits >
+Worker "1" --> "*" UserComplaint : resolves >
+Department "1" --> "*" Worker : has >
+Department "1" --> "*" UserComplaint : handles >
+Admin "1" --> "*" AdminLog : performs >
+Worker "1" --> "*" WorkerLog : records >
+User "1" --> "*" UserLog : records >
+
+@enduml

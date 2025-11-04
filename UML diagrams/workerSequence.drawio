@@ -1,0 +1,133 @@
+<mxfile host="65bd71144e">
+    <diagram id="worker-sequence" name="Sequence Diagram - Worker Module">
+        <mxGraphModel dx="1002" dy="563" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1000" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="actor_worker" value="Worker" style="shape=umlLifeline;participant=1;" parent="1" vertex="1">
+                    <mxGeometry x="80" y="50" width="10" height="700" as="geometry"/>
+                </mxCell>
+                <mxCell id="ctrl" value="Worker Controller / Frontend" style="shape=umlLifeline;participant=1;" parent="1" vertex="1">
+                    <mxGeometry x="320" y="50" width="10" height="700" as="geometry"/>
+                </mxCell>
+                <mxCell id="auth" value="Auth Service" style="shape=umlLifeline;participant=1;" parent="1" vertex="1">
+                    <mxGeometry x="530" y="60" width="20" height="700" as="geometry"/>
+                </mxCell>
+                <mxCell id="complaint" value="Complaint Service" style="shape=umlLifeline;participant=1;" parent="1" vertex="1">
+                    <mxGeometry x="740" y="60" width="10" height="700" as="geometry"/>
+                </mxCell>
+                <mxCell id="admin" value="Admin" style="shape=umlLifeline;participant=1;" parent="1" vertex="1">
+                    <mxGeometry x="980" y="60" width="10" height="700" as="geometry"/>
+                </mxCell>
+                <mxCell id="user" value="User" style="shape=umlLifeline;participant=1;" parent="1" vertex="1">
+                    <mxGeometry x="1150" y="60" width="10" height="700" as="geometry"/>
+                </mxCell>
+                <mxCell id="activity" value="WorkerActivity Log" style="shape=umlLifeline;participant=1;" parent="1" vertex="1">
+                    <mxGeometry x="1300" y="60" width="20" height="700" as="geometry"/>
+                </mxCell>
+                <mxCell id="m1" value="1. Login(email, password)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=open;html=1;" parent="1" source="actor_worker" target="ctrl" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="230" y="120"/>
+                            <mxPoint x="230" y="120"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="m2" value="2. Verify Credentials" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=open;html=1;" parent="1" source="ctrl" target="auth" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="470" y="140"/>
+                            <mxPoint x="470" y="140"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="m3" value="3. Auth Result (JWT Token)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=open;html=1;dashed=1;" parent="1" source="auth" target="ctrl" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="460" y="190"/>
+                            <mxPoint x="460" y="190"/>
+                        </Array>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="m4" value="4. Get Assigned Complaints" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=open;html=1;" parent="1" source="ctrl" target="complaint" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="540" y="240"/>
+                            <mxPoint x="540" y="240"/>
+                        </Array>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="m5" value="5. Complaint List" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=open;html=1;dashed=1;" parent="1" source="complaint" target="ctrl" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="540" y="280"/>
+                            <mxPoint x="540" y="280"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="m6" value="6. Update Complaint(Status, Remarks, Image)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=open;html=1;" parent="1" source="ctrl" target="complaint" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="640" y="320"/>
+                            <mxPoint x="640" y="320"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="m7" value="7. Validate &amp; Save to DB" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=open;html=1;entryX=1;entryY=0.457;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.44;exitY=0.401;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="complaint" target="complaint" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="770" y="340" as="sourcePoint"/>
+                        <Array as="points">
+                            <mxPoint x="890" y="341"/>
+                            <mxPoint x="890" y="380"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="m8" value="8. Notify(Admin, User)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=open;html=1;" parent="1" source="complaint" target="admin" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="880" y="420"/>
+                            <mxPoint x="880" y="420"/>
+                        </Array>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="m9" value="8a. Notify(User)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=open;html=1;" parent="1" source="complaint" target="user" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="950" y="470"/>
+                            <mxPoint x="950" y="470"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="m10" value="9. Record Activity(WorkerID, Action, Timestamp)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=open;html=1;" parent="1" source="complaint" target="activity" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1020" y="530"/>
+                            <mxPoint x="1020" y="530"/>
+                        </Array>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="m11" value="10. Acknowledgement" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=open;html=1;dashed=1;" parent="1" source="complaint" target="ctrl" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="520" y="570"/>
+                            <mxPoint x="520" y="570"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="m12" value="11. Success Message" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=open;html=1;dashed=1;" parent="1" source="ctrl" target="actor_worker" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="200" y="610"/>
+                            <mxPoint x="200" y="610"/>
+                        </Array>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

@@ -1,0 +1,148 @@
+@startuml
+title ER Diagram - Public Grievance Reporting System (Admin Perspective)
+
+skinparam shadowing false
+skinparam linetype ortho
+skinparam rectangle {
+  BorderColor black
+  RoundCorner 10
+  BackgroundColor white
+}
+skinparam arrow {
+  Color black
+  FontColor black
+}
+
+'=====================
+' ENTITIES
+'=====================
+
+entity "Admin" as Admin {
+  * _id : ObjectId
+  --
+  name : String
+  email : String
+  phone : String
+  governmentId : String
+  employeeId : String
+  address : String
+  blockOrRegion : String
+  idProof : String
+  passwordHash : String
+  createdAt : Date
+  updatedAt : Date
+}
+
+entity "User" as User {
+  * _id : ObjectId
+  --
+  name : String
+  email : String
+  phone : String
+  address : String
+  role : String ("user" / "worker")
+  passwordHash : String
+  createdAt : Date
+}
+
+entity "Worker" as Worker {
+  * _id : ObjectId
+  --
+  name : String
+  middleName : String
+  surname : String
+  email : String
+  phone : String
+  street : String
+  city : String
+  state : String
+  pincode : String
+  departmentId : ObjectId
+  experience : Number
+  blockOrRegion : String
+  createdByAdmin : ObjectId
+  passwordHash : String
+  createdAt : Date
+}
+
+entity "Department" as Department {
+  * _id : ObjectId
+  --
+  name : String
+  description : String
+}
+
+entity "UserComplaint" as Complaint {
+  * _id : ObjectId
+  --
+  userId : ObjectId
+  adminId : ObjectId
+  workerId : ObjectId
+  departmentId : ObjectId
+  category : String
+  subCategory : String
+  description : String
+  houseNo : String
+  street : String
+  area : String
+  city : String
+  district : String
+  state : String
+  pincode : String
+  landmark : String
+  latitude : Number
+  longitude : Number
+  image : String
+  assignedAt : Date
+  resolvedAt : Date
+  status : String
+  priority : String
+  createdAt : Date
+}
+
+entity "AdminLog" as AdminLog {
+  * _id : ObjectId
+  --
+  adminId : ObjectId
+  action : String
+  targetEntity : String
+  targetId : ObjectId
+  timestamp : Date
+  details : String
+}
+
+entity "WorkerLog" as WorkerLog {
+  * _id : ObjectId
+  --
+  workerId : ObjectId
+  action : String
+  targetComplaint : ObjectId
+  timestamp : Date
+  notes : String
+}
+
+entity "UserLog" as UserLog {
+  * _id : ObjectId
+  --
+  userId : ObjectId
+  action : String
+  targetComplaint : ObjectId
+  timestamp : Date
+  notes : String
+}
+
+'=====================
+' RELATIONSHIPS
+'=====================
+
+Admin ||--o{ Worker : creates >
+Admin ||--o{ Complaint : manages >
+Department ||--o{ Worker : has >
+Department ||--o{ Complaint : handles >
+User ||--o{ Complaint : submits >
+Worker ||--o{ Complaint : resolves >
+Admin ||--o{ AdminLog : performs >
+Worker ||--o{ WorkerLog : records >
+User ||--o{ UserLog : records >
+
+@enduml

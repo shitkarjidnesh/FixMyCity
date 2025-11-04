@@ -1,0 +1,43 @@
+@startuml
+title DFD Level 0 - Context Diagram (Worker Module)
+
+skinparam shadowing false
+skinparam linetype ortho
+skinparam defaultTextAlignment center
+skinparam rectangle {
+  BorderColor black
+  RoundCorner 10
+  BackgroundColor white
+}
+skinparam database {
+  BorderColor black
+  BackgroundColor white
+  RoundCorner 10
+}
+skinparam actor {
+  FontColor black
+  FontSize 14
+}
+
+actor "Worker" as WorkerEntity
+actor "Admin" as AdminEntity
+
+rectangle "Public Grievance Reporting System" as System {
+  rectangle "Worker Module" as WorkerModule
+}
+
+database "Database\n(Complaints, Workers, Logs)" as DB
+
+'======================
+' DATA FLOWS
+'======================
+WorkerEntity -down-> WorkerModule : Login / View Complaints
+WorkerEntity -down-> WorkerModule : Update Status / Upload Proof
+WorkerEntity -down-> WorkerModule : Rework Submission / View Logs
+WorkerModule -down-> DB : Fetch / Update Complaint Data
+DB -up-> WorkerModule : Return Complaint Info / Confirmation
+
+AdminEntity -right-> WorkerModule : Assign Complaints / Rework Requests
+WorkerModule -left-> AdminEntity : Notify Resolution / Status Updates
+
+@enduml

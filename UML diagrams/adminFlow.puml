@@ -1,0 +1,46 @@
+@startuml
+title Flowchart - Public Grievance Reporting System (Admin Workflow)
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam ArrowColor black
+skinparam defaultTextAlignment center
+skinparam roundcorner 15
+
+start
+
+:Admin logs in;
+if (Valid credentials?) then (Yes)
+  :Display Admin Dashboard;
+  :Fetch new complaints from database;
+  if (New complaints available?) then (Yes)
+    :Show complaint list;
+    :Select complaint to assign;
+    :Check eligible worker;
+    :Assign complaint to worker;
+    :Update complaint status = "Assigned";
+    :Notify worker;
+    :Log admin action;
+    :Wait for resolution update from worker;
+
+    if (Worker submitted resolution?) then (Yes)
+      :Verify resolution proof;
+      if (Resolution valid?) then (Yes)
+        :Mark complaint as "Verified";
+        :Notify user about resolution;
+        :Update database and logs;
+      else (No)
+        :Return complaint for rework;
+      endif
+    else (No)
+      :Remind worker to update;
+    endif
+  else (No)
+    :Display "No pending complaints";
+  endif
+else (No)
+  :Display error - Invalid credentials;
+endif
+
+stop
+@enduml
