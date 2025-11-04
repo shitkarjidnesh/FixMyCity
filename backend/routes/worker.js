@@ -8,7 +8,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const Worker = require("../models/Worker");
 const workerAuth = require("../middleware/workerAuth");
-
+const uploadMiddleware = require("../middleware/uploadMiddleware");
 // ===================== LOGIN =====================
 router.post("/login", async (req, res) => {
   try {
@@ -52,7 +52,6 @@ router.post("/login", async (req, res) => {
       success: true,
       message: "Login successful!",
       token,
-     
     });
   } catch (err) {
     console.error("Worker Login Error:", err);
@@ -97,13 +96,34 @@ router.get("/profile", async (req, res) => {
   }
 });
 
-
-
 router.get("/fetchComplaints", async (req, res) => {
   try {
     const workerId = req.auth.id;
+    const { page = 1, limit = 10, status, search } = req.query;
 
-    const complaints = await UserComplaint.find({ assignedTo: workerId })
+    const filter = { assignedTo: workerId };
+
+    if (status) {
+      filter.status = status;
+    }
+
+    if (search) {
+      const searchRegex = new RegExp(search, "i");
+      filter.$or = [
+        { description: searchRegex },
+        { "address.street": searchRegex },
+        { "address.landmark": searchRegex },
+        { "address.area": searchRegex },
+        { "address.city": searchRegex },
+      ];
+    }
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const complaints = await UserComplaints.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit))
       .populate("userId", "name email phone")
       .populate("department", "name")
       .populate("assignedBy", "name email")
@@ -112,10 +132,18 @@ router.get("/fetchComplaints", async (req, res) => {
       )
       .lean();
 
+    const total = await UserComplaints.countDocuments(filter);
+
     return res.status(200).json({
       success: true,
       message: "Assigned complaints fetched successfully",
       data: complaints,
+      meta: {
+        totalRecords: total,
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(total / limit),
+        count: complaints.length,
+      },
     });
   } catch (error) {
     console.error("❌ Worker fetch complaints error:", error);
@@ -127,9 +155,45 @@ router.get("/fetchComplaints", async (req, res) => {
   }
 });
 
+router.get("/complaint/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const complaint = await UserComplaints.findById(id)
+      .populate("userId", "name email phone")
+      .populate("department", "name")
+      .populate("assignedBy", "name email")
+      .populate("assignedTo", "name email")
+      .select(
+        "type subtype description address location imageUrls status priority createdAt updatedAt resolutionDetails"
+      )
+      .lean();
+
+    if (!complaint) {
+      return res.status(404).json({
+        success: false,
+        message: "Complaint not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Complaint details fetched successfully",
+      data: complaint,
+    });
+  } catch (error) {
+    console.error("❌ Worker fetch complaint details error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch complaint details",
+      error: error.message,
+    });
+  }
+});
+
 // ───────────────────────────────────────────────
 // 2️⃣ Upload Resolution Details
 // ───────────────────────────────────────────────
+
 router.post(
   "/uploadResolution/:complaintId",
   upload.array("resolutionPhotos", 5),
@@ -137,9 +201,9 @@ router.post(
     try {
       const workerId = req.auth.id;
       const { complaintId } = req.params;
-      const { resolutionNotes } = req.body;
+      const { resolutionNotes, latitude, longitude, timestamp } = req.body;
 
-      const complaint = await UserComplaint.findOne({
+      const complaint = await UserComplaints.findOne({
         _id: complaintId,
         assignedTo: workerId,
       });
@@ -151,24 +215,30 @@ router.post(
         });
       }
 
-      // ───── Upload photos to Cloudinary
+      // ───── Cloudinary Uploads (standardized)
       let uploadedPhotos = [];
-      if (req.files && req.files.length > 0) {
+      if (req.files?.length > 0) {
         for (const file of req.files) {
-          const result = await cloudinary.uploader.upload(file.path, {
-            folder: "fixmycity/complaint_resolutions",
-          });
-          uploadedPhotos.push(result.secure_url);
+          const uploaded = await uploadToCloudinary(
+            file.path,
+            "fixmycity/complaint_resolutions"
+          );
+          if (uploaded?.url) uploadedPhotos.push(uploaded.url);
         }
       }
 
-      // ───── Update resolution info
+      // ───── Update resolution info with location + timestamp
       complaint.resolutionDetails = {
         resolvedBy: workerId,
-        resolvedAt: new Date(),
-        resolutionNotes: resolutionNotes || "",
+        resolvedAt: timestamp ? new Date(timestamp) : new Date(),
+        resolutionNotes: resolutionNotes?.trim() || "",
         resolutionPhotos: uploadedPhotos,
+        location: {
+          latitude: latitude ? parseFloat(latitude) : null,
+          longitude: longitude ? parseFloat(longitude) : null,
+        },
       };
+
       complaint.status = "Resolved";
       complaint.lastUpdatedBy = workerId;
       complaint.lastUpdatedRole = "Worker";
@@ -190,5 +260,4 @@ router.post(
     }
   }
 );
-
 module.exports = router;

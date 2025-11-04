@@ -8,6 +8,8 @@ import {
   ActivityIndicator,
   StyleSheet,
   RefreshControl,
+  TextInput,
+  Image,
 } from "react-native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -22,6 +24,7 @@ type Complaint = {
   _id: string;
   description: string;
   type: { name: string };
+  subtype: string;
   address: {
     street?: string;
     area?: string;
@@ -29,6 +32,7 @@ type Complaint = {
   };
   status: string;
   createdAt: string;
+  imageUrls: string[];
 };
 
 export default function WorkerComplaintList() {
@@ -37,18 +41,37 @@ export default function WorkerComplaintList() {
   const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
 
-  const fetchComplaints = async () => {
+  // Pagination and Filter State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [filters, setFilters] = useState({ status: "", search: "" });
+
+  const fetchComplaints = async (page = 1, newFilters = filters) => {
     try {
       setLoading(true);
       const stored = await AsyncStorage.getItem("workerData");
       if (!stored) return;
       const { token } = JSON.parse(stored);
 
-      const res = await axios.get(`${BASE_URL}/api/worker/fetchcomplaints`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const queryParams = new URLSearchParams({
+        page: page.toString(),
+        limit: "10",
+        ...newFilters,
+      }).toString();
 
-      setComplaints(res.data.data || []);
+      const res = await axios.get(
+        `${BASE_URL}/api/worker/fetchcomplaints?${queryParams}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (page === 1) {
+        setComplaints(res.data.data || []);
+      } else {
+        setComplaints((prev) => [...prev, ...(res.data.data || [])]);
+      }
+      setTotalPages(res.data.meta.totalPages);
     } catch (err) {
       console.warn("Failed to fetch complaints:", err);
     } finally {
@@ -57,34 +80,54 @@ export default function WorkerComplaintList() {
   };
 
   useEffect(() => {
-    fetchComplaints();
-  }, []);
+    fetchComplaints(1, filters);
+  }, [filters]);
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await fetchComplaints();
+    setCurrentPage(1);
+    await fetchComplaints(1, filters);
     setRefreshing(false);
+  };
+
+  const handleLoadMore = () => {
+    if (currentPage < totalPages) {
+      const nextPage = currentPage + 1;
+      setCurrentPage(nextPage);
+      fetchComplaints(nextPage, filters);
+    }
   };
 
   const renderItem = ({ item }: { item: Complaint }) => (
     <TouchableOpacity
       style={styles.card}
-      onPress={() =>
-        router.push({
-          pathname: "/WorkerComplaintDetails",
-          params: { id: item._id },
-        })
-      }>
-      <Text style={styles.title}>{item.type?.name || "Complaint"}</Text>
-      <Text style={styles.desc} numberOfLines={2}>
-        {item.description}
-      </Text>
-      <Text style={styles.addr}>
-        📍 {item.address?.area}, {item.address?.city}
-      </Text>
-      <Text style={[styles.status, { color: getStatusColor(item.status) }]}>
-        {item.status.toUpperCase()}
-      </Text>
+     onPress={async () => {
+  await AsyncStorage.setItem("selectedComplaintId", item._id);
+  router.push("/home/workerComplaintDetails");
+}}
+     
+
+
+      >
+      <Image
+        source={{
+          uri: item.imageUrls?.[0] || "https://via.placeholder.com/150",
+        }}
+        style={styles.image}
+      />
+      <View style={styles.textContainer}>
+        <Text style={styles.title}>{item.type?.name || "Complaint"}</Text>
+        <Text style={styles.subtitle}>{item.subtype}</Text>
+        <Text style={styles.desc} numberOfLines={2}>
+          {item.description}
+        </Text>
+        <Text style={styles.addr}>
+          📍 {item.address?.street}, {item.address?.area}, {item.address?.city}
+        </Text>
+        <Text style={[styles.status, { color: getStatusColor(item.status) }]}>
+          {item.status.toUpperCase()}
+        </Text>
+      </View>
     </TouchableOpacity>
   );
 
@@ -105,13 +148,51 @@ export default function WorkerComplaintList() {
     <AuthGuard>
       <View style={{ flex: 1, backgroundColor: "#f9f9f9" }}>
         <TopNav />
-        {loading ? (
+        <View style={styles.filterContainer}>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search by description or address..."
+            value={filters.search}
+            onChangeText={(text) => setFilters({ ...filters, search: text })}
+          />
+          <View style={styles.statusFilterContainer}>
+            <TouchableOpacity
+              style={[
+                styles.statusButton,
+                filters.status === "" && styles.activeStatus,
+              ]}
+              onPress={() => setFilters({ ...filters, status: "" })}>
+              <Text>All</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.statusButton,
+                filters.status === "Pending" && styles.activeStatus,
+              ]}
+              onPress={() => setFilters({ ...filters, status: "Pending" })}>
+              <Text>Pending</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.statusButton,
+                filters.status === "In Progress" && styles.activeStatus,
+              ]}
+              onPress={() => setFilters({ ...filters, status: "In Progress" })}>
+              <Text>In Progress</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.statusButton,
+                filters.status === "Resolved" && styles.activeStatus,
+              ]}
+              onPress={() => setFilters({ ...filters, status: "Resolved" })}>
+              <Text>Resolved</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+        {loading && currentPage === 1 ? (
           <View style={styles.center}>
             <ActivityIndicator size="large" />
-          </View>
-        ) : complaints.length === 0 ? (
-          <View style={styles.center}>
-            <Text>No complaints assigned yet.</Text>
           </View>
         ) : (
           <FlatList
@@ -121,7 +202,17 @@ export default function WorkerComplaintList() {
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={
+              loading && currentPage > 1 ? <ActivityIndicator /> : null
+            }
             contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
+            ListEmptyComponent={
+              <View style={styles.center}>
+                <Text>No complaints assigned yet.</Text>
+              </View>
+            }
           />
         )}
         <BottomNav />
@@ -141,10 +232,47 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 4,
     elevation: 2,
+    flexDirection: "row",
+  },
+  image: {
+    width: 100,
+    height: 100,
+    borderRadius: 8,
+    marginRight: 16,
+  },
+  textContainer: {
+    flex: 1,
   },
   title: { fontSize: 18, fontWeight: "bold", marginBottom: 6 },
+  subtitle: { fontSize: 14, color: "#555", marginBottom: 6 },
   desc: { fontSize: 14, color: "#555" },
   addr: { marginTop: 4, fontSize: 13, color: "#777" },
   status: { marginTop: 6, fontWeight: "bold" },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
+  filterContainer: {
+    padding: 16,
+    backgroundColor: "white",
+  },
+  searchInput: {
+    height: 40,
+    borderColor: "#ccc",
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    marginBottom: 10,
+  },
+  statusFilterContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+  },
+  statusButton: {
+    padding: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#ccc",
+  },
+  activeStatus: {
+    backgroundColor: "#1e90ff",
+    borderColor: "#1e90ff",
+  },
 });

@@ -589,9 +589,50 @@ router.get("/profile", async (req, res) => {
 // ✅ Fetch all complaints (Admin view)
 router.get("/complaints", async (req, res) => {
   try {
-    const complaints = await UserComplaints.find()
-      .sort({ createdAt: -1 })
-      .populate("userId", "name email phone")
+    const {
+      page = 1,
+      limit = 10,
+      status,
+      department,
+      startDate,
+      endDate,
+      search,
+      sortBy = "createdAt",
+      sortOrder = "desc",
+    } = req.query;
+
+    const filter = {};
+
+    if (status) filter.status = status;
+    if (department) filter.department = department;
+
+    if (startDate || endDate) {
+      filter.createdAt = {};
+      if (startDate) filter.createdAt.$gte = new Date(startDate);
+      if (endDate) filter.createdAt.$lte = new Date(endDate);
+    }
+
+    if (search) {
+      const searchRegex = new RegExp(search, "i");
+      filter.$or = [
+        { description: searchRegex },
+        { "address.street": searchRegex },
+        { "address.landmark": searchRegex },
+        { "address.area": searchRegex },
+        { "address.city": searchRegex },
+      ];
+    }
+
+    const sortQuery = {};
+    sortQuery[sortBy] = sortOrder === "asc" ? 1 : -1;
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const complaints = await UserComplaints.find(filter)
+      .sort(sortQuery)
+      .skip(skip)
+      .limit(parseInt(limit))
+      .populate("userId", "name surname email phone")
       .populate({
         path: "assignedTo",
         select:
@@ -601,19 +642,33 @@ router.get("/complaints", async (req, res) => {
       .populate("assignedBy", "name surname email phone blockOrRegion")
       .populate("department", "name")
       .populate("type", "name")
-      .select("-__v");
+      .populate({
+        path: "resolutionDetails.resolvedBy",
+        select:
+          "name surname email phone department blockOrRegion profilePhoto experience",
+        populate: { path: "department", select: "name" },
+      })
+      .populate({
+        path: "lastUpdatedBy",
+        select: "name surname email role",
+      })
+      .select("-__v")
+      .lean();
+
+    const total = await UserComplaints.countDocuments(filter);
 
     const formattedComplaints = complaints.map((c) => {
       const worker = c.assignedTo;
       const admin = c.assignedBy;
       const dept = c.department;
+      const resolver = c.resolutionDetails?.resolvedBy;
 
       return {
-        ...c.toObject(),
+        ...c,
 
-        // Display-friendly values
-        subtypeName: c.subtype || "N/A",
+        // Readable display fields
         departmentName: dept?.name || "N/A",
+        subtypeName: c.subtype || "N/A",
 
         assignedToName: worker
           ? `${worker.name} ${worker.surname}`
@@ -622,20 +677,18 @@ router.get("/complaints", async (req, res) => {
           ? `${admin.name} ${admin.surname}`
           : "Not Assigned",
 
-        // Worker extra details for frontend
         assignedToDetails: worker
           ? {
               name: `${worker.name} ${worker.surname}`,
               email: worker.email,
               phone: worker.phone,
               experience: worker.experience,
-              department: worker.department?.name || "N/A", // ✅ now shows readable name
+              department: worker.department?.name || "N/A",
               blockOrRegion: worker.blockOrRegion || "N/A",
               profilePhoto: worker.profilePhoto || null,
             }
           : null,
 
-        // Admin extra details for frontend
         assignedByDetails: admin
           ? {
               name: `${admin.name} ${admin.surname}`,
@@ -644,12 +697,45 @@ router.get("/complaints", async (req, res) => {
               blockOrRegion: admin.blockOrRegion || "N/A",
             }
           : null,
+
+        resolutionDetails: c.resolutionDetails
+          ? {
+              resolvedBy: resolver
+                ? {
+                    name: `${resolver.name} ${resolver.surname}`,
+                    email: resolver.email,
+                    phone: resolver.phone,
+                    department: resolver.department?.name || "N/A",
+                    blockOrRegion: resolver.blockOrRegion || "N/A",
+                  }
+                : null,
+              resolvedAt: c.resolutionDetails.resolvedAt || null,
+              resolutionNotes: c.resolutionDetails.resolutionNotes || null,
+              resolutionPhotos: c.resolutionDetails.resolutionPhotos || [],
+              resolutionLocation:
+                c.resolutionDetails.resolutionLocation || null,
+            }
+          : null,
+
+        lastUpdatedBy: c.lastUpdatedBy
+          ? {
+              name: c.lastUpdatedBy.name,
+              surname: c.lastUpdatedBy.surname,
+              email: c.lastUpdatedBy.email,
+              role: c.lastUpdatedRole,
+            }
+          : null,
       };
     });
 
     res.status(200).json({
       success: true,
-      total: formattedComplaints.length,
+      meta: {
+        totalRecords: total,
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(total / limit),
+        count: formattedComplaints.length,
+      },
       data: formattedComplaints,
     });
   } catch (error) {
@@ -657,6 +743,157 @@ router.get("/complaints", async (req, res) => {
     res.status(500).json({
       success: false,
       error: "Failed to fetch complaints",
+    });
+  }
+});
+
+// ✅ GET single complaint (full relational structure only)
+router.get("/complaints/:id", adminAuth, async (req, res) => {
+  try {
+    const complaint = await UserComplaints.findById(req.params.id)
+      .populate("type", "name description")
+      .populate("department", "name")
+      .populate("userId", "name surname email phone address role")
+      .populate({
+        path: "assignedTo",
+        select:
+          "name surname email phone experience department blockOrRegion profilePhoto status",
+        populate: { path: "department", select: "name" },
+      })
+      .populate({
+        path: "assignedBy",
+        select: "name surname email phone blockOrRegion profilePhoto role",
+      })
+      .populate({
+        path: "resolutionDetails.resolvedBy",
+        select:
+          "name surname email phone experience department blockOrRegion profilePhoto",
+        populate: { path: "department", select: "name" },
+      })
+      .populate("lastUpdatedBy", "name surname email role")
+      .lean();
+
+    if (!complaint)
+      return res
+        .status(404)
+        .json({ success: false, message: "Complaint not found" });
+
+    const response = {
+      _id: complaint._id,
+      description: complaint.description,
+      type: complaint.type?.name || "N/A",
+      subtype: complaint.subtype || "N/A",
+      department: complaint.department?.name || "N/A",
+      priority: complaint.priority || "Medium",
+      status: complaint.status,
+      createdAt: complaint.createdAt,
+      updatedAt: complaint.updatedAt,
+
+      reportedBy: complaint.userId
+        ? {
+            name: complaint.userId.name,
+            surname: complaint.userId.surname,
+            email: complaint.userId.email,
+            phone: complaint.userId.phone,
+            role: complaint.userId.role,
+            address: complaint.userId.address || null,
+          }
+        : null,
+
+      address: complaint.address || {},
+
+      location: complaint.location
+        ? {
+            type: complaint.location.type,
+            coordinates: complaint.location.coordinates,
+            latitude: complaint.location.coordinates?.[1] || null,
+            longitude: complaint.location.coordinates?.[0] || null,
+          }
+        : null,
+
+      evidencePhotos: Array.isArray(complaint.evidencePhotos)
+        ? complaint.evidencePhotos
+        : complaint.imageUrls || [],
+
+      assignedTo: complaint.assignedTo
+        ? {
+            name: complaint.assignedTo.name,
+            surname: complaint.assignedTo.surname,
+            email: complaint.assignedTo.email,
+            phone: complaint.assignedTo.phone,
+            department: complaint.assignedTo.department?.name || "N/A",
+            experience: complaint.assignedTo.experience || "N/A",
+            blockOrRegion: complaint.assignedTo.blockOrRegion || "N/A",
+            profilePhoto: complaint.assignedTo.profilePhoto || null,
+            status: complaint.assignedTo.status,
+          }
+        : null,
+
+      assignedBy: complaint.assignedBy
+        ? {
+            name: complaint.assignedBy.name,
+            surname: complaint.assignedBy.surname,
+            email: complaint.assignedBy.email,
+            phone: complaint.assignedBy.phone,
+            blockOrRegion: complaint.assignedBy.blockOrRegion || "N/A",
+            profilePhoto: complaint.assignedBy.profilePhoto || null,
+            role: complaint.assignedBy.role || "Admin",
+          }
+        : null,
+
+      resolutionDetails: complaint.resolutionDetails
+        ? {
+            resolvedBy: complaint.resolutionDetails.resolvedBy
+              ? {
+                  name: complaint.resolutionDetails.resolvedBy.name,
+                  surname: complaint.resolutionDetails.resolvedBy.surname,
+                  email: complaint.resolutionDetails.resolvedBy.email,
+                  phone: complaint.resolutionDetails.resolvedBy.phone,
+                  department:
+                    complaint.resolutionDetails.resolvedBy.department?.name ||
+                    "N/A",
+                  experience:
+                    complaint.resolutionDetails.resolvedBy.experience || "N/A",
+                  blockOrRegion:
+                    complaint.resolutionDetails.resolvedBy.blockOrRegion ||
+                    "N/A",
+                }
+              : null,
+            resolvedAt: complaint.resolutionDetails.resolvedAt || null,
+            resolutionNotes: complaint.resolutionDetails.resolutionNotes || "",
+            resolutionPhotos:
+              complaint.resolutionDetails.resolutionPhotos || [],
+            resolutionLocation: complaint.resolutionDetails.resolutionLocation
+              ? {
+                  latitude:
+                    complaint.resolutionDetails.resolutionLocation
+                      .coordinates?.[1] || null,
+                  longitude:
+                    complaint.resolutionDetails.resolutionLocation
+                      .coordinates?.[0] || null,
+                }
+              : null,
+          }
+        : null,
+
+      lastUpdatedBy: complaint.lastUpdatedBy
+        ? {
+            name: complaint.lastUpdatedBy.name,
+            surname: complaint.lastUpdatedBy.surname,
+            email: complaint.lastUpdatedBy.email,
+            role: complaint.lastUpdatedRole,
+          }
+        : null,
+      lastUpdatedRole: complaint.lastUpdatedRole,
+    };
+
+    res.status(200).json({ success: true, data: response });
+  } catch (error) {
+    console.error("❌ Error fetching full complaint:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch full complaint details",
+      error: error.message,
     });
   }
 });
@@ -1665,6 +1902,7 @@ router.get("/departments/all", async (req, res) => {
 
 // 🔴 POST /api/admin/departments/create — Only Super Admin can create departments
 router.post("/departments/create", async (req, res) => {
+  j;
   try {
     if (req.auth.role !== "superadmin") {
       return res.status(403).json({

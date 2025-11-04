@@ -1,33 +1,24 @@
-import React, { useContext } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
-import { AuthContext } from "./context/AuthContext";
+import React from "react";
+import { Routes, Route } from "react-router-dom";
+import AuthGuard from "./components/AuthGuard";
 
 import AdminLoginPage from "./pages/AdminLoginPage";
 import DashboardPage from "./pages/DashboardPage";
-
-function PrivateRoute({ children }) {
-  const { auth, loading } = useContext(AuthContext);
-
-  // Wait until localStorage finishes loading
-  if (loading) {
-    return <div className="text-center mt-10">Loading...</div>;
-  }
-
-  // Redirect if not logged in
-  if (!auth?.token) {
-    return <Navigate to="/login" />;
-  }
-
-  return children;
-}
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 
 function App() {
-  const { auth } = useContext(AuthContext);
-
   return (
     <Routes>
       <Route path="/login" element={<AdminLoginPage />} />
-      <Route path="/*" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route
+        path="/*"
+        element={
+          <AuthGuard>
+            <DashboardPage />
+          </AuthGuard>
+        }
+      />
     </Routes>
   );
 }

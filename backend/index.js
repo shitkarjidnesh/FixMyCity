@@ -37,6 +37,8 @@ app.use(
     credentials: true,
   })
 );
+
+
 app.use(bodyParser.json({ limit: "5mb" }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan("dev"));
@@ -46,7 +48,6 @@ app.use(debugLogger);
 // -----------------------------
 // MongoDB connection
 // -----------------------------
-
 
 mongoose
   .connect(process.env.MONGO_URI, {

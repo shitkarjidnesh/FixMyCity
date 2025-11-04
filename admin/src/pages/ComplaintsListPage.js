@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
 
@@ -27,8 +28,8 @@ const StatusBadge = ({ status }) => {
 const ComplaintCard = ({
   complaint,
   onStatusChange,
-  onAssignClick,
   isUpdating,
+  onCardClick,
 }) => {
   const [previewImage, setPreviewImage] = useState(null);
   const thumbnailUrl =
@@ -36,17 +37,20 @@ const ComplaintCard = ({
       ? complaint.imageUrls[0]
       : "https://via.placeholder.com/150/e0e0e0/808080?text=No+Image";
 
-  const worker = complaint.assignedWorker;
-
   return (
-    <div className="bg-white rounded-xl shadow-md overflow-hidden flex flex-col md:flex-row w-full">
+    <div
+      className="bg-white rounded-xl shadow-md overflow-hidden flex flex-col md:flex-row w-full cursor-pointer"
+      onClick={onCardClick}>
       {/* Left: Thumbnail */}
       <div className="md:w-1/4">
         <img
           src={thumbnailUrl}
           alt="Complaint"
-          className="h-48 w-full object-cover md:h-full cursor-pointer"
-          onClick={() => setPreviewImage(thumbnailUrl)}
+          className="h-48 w-full object-cover md:h-full"
+          onClick={(e) => {
+            e.stopPropagation();
+            setPreviewImage(thumbnailUrl);
+          }}
         />
       </div>
 
@@ -103,7 +107,6 @@ const ComplaintCard = ({
         </div>
 
         {/* Assigned Worker Info */}
-        {/* Assigned Worker Info */}
         {complaint.assignedTo ? (
           <div className="mt-3 border-t pt-3 text-sm text-gray-700">
             <h4 className="font-semibold text-gray-800 mb-2">
@@ -145,7 +148,7 @@ const ComplaintCard = ({
                 <div className="flex items-center gap-3">
                   <img
                     src={
-                      complaint.assignedBy.profilePhoto||
+                      complaint.assignedBy.profilePhoto ||
                       "https://via.placeholder.com/50x50?text=Admin"
                     }
                     alt="Admin"
@@ -176,6 +179,7 @@ const ComplaintCard = ({
         <div className="flex flex-col sm:flex-row items-center gap-3 mt-4 pt-4 border-t border-gray-200">
           <select
             onChange={(e) => onStatusChange(e.target.value)}
+            onClick={(e) => e.stopPropagation()}
             value={complaint.status || "Pending"}
             disabled={isUpdating}
             className="border border-gray-300 rounded-md p-2 text-sm w-full sm:w-auto">
@@ -184,12 +188,6 @@ const ComplaintCard = ({
             <option value="In Progress">In Progress</option>
             <option value="Resolved">Resolved</option>
           </select>
-
-          <button
-            onClick={onAssignClick}
-            className="bg-blue-500 text-white font-semibold py-2 px-4 rounded-md text-sm w-full sm:w-auto hover:bg-blue-600">
-            {worker ? "Reassign Worker" : "Assign Worker"}
-          </button>
         </div>
       </div>
 
@@ -197,7 +195,10 @@ const ComplaintCard = ({
       {previewImage && (
         <div
           className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
-          onClick={() => setPreviewImage(null)}>
+          onClick={(e) => {
+            e.stopPropagation();
+            setPreviewImage(null);
+          }}>
           <img
             src={previewImage}
             alt="Preview"
@@ -210,108 +211,37 @@ const ComplaintCard = ({
 };
 
 // ====================================================================
-// WorkerAssignmentModal Component
-// ====================================================================
-const WorkerAssignmentModal = ({
-  workers,
-  isOpen,
-  onClose,
-  onConfirm,
-  filterCriteria,
-}) => {
-  const [selectedWorker, setSelectedWorker] = useState(null);
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-lg w-full max-w-3xl p-6 relative">
-        <h2 className="text-2xl font-bold mb-4 text-gray-800">Assign Worker</h2>
-        <p className="text-sm text-gray-600 mb-3">
-          <strong>Filter:</strong> {filterCriteria?.region} (
-          {filterCriteria?.department})
-        </p>
-
-        {workers.length === 0 ? (
-          <p className="text-gray-500">No eligible workers found.</p>
-        ) : (
-          <div className="space-y-3 max-h-80 overflow-y-auto">
-            {workers.map((w) => (
-              <div
-                key={w._id}
-                className={`flex justify-between items-center border p-3 rounded-md cursor-pointer hover:bg-gray-100 ${
-                  selectedWorker === w._id
-                    ? "border-blue-500 bg-blue-50"
-                    : "border-gray-200"
-                }`}
-                onClick={() => setSelectedWorker(w._id)}>
-                <div className="flex items-center gap-3">
-                  <img
-                    src={
-                      w.profilePhoto?.url ||
-                      "https://via.placeholder.com/50x50?text=No+Img"
-                    }
-                    alt="Worker"
-                    className="w-10 h-10 rounded-full object-cover"
-                  />
-                  <div>
-                    <p className="font-semibold text-gray-800">
-                      {w.name} {w.surname}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      🏢 {w.department?.name || "N/A"} | 💼 {w.experience} yrs
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      📍 {w.blockOrRegion} | ⚙️{" "}
-                      {w.status === "active" ? "Active" : "Inactive"}
-                    </p>
-                  </div>
-                </div>
-                <input
-                  type="radio"
-                  name="worker"
-                  checked={selectedWorker === w._id}
-                  onChange={() => setSelectedWorker(w._id)}
-                  className="h-4 w-4 text-blue-600"
-                />
-              </div>
-            ))}
-          </div>
-        )}
-
-        <div className="mt-5 flex justify-end gap-3">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 bg-gray-300 rounded-md text-gray-800 hover:bg-gray-400">
-            Cancel
-          </button>
-          <button
-            onClick={() => onConfirm(selectedWorker)}
-            disabled={!selectedWorker}
-            className={`px-4 py-2 rounded-md text-white ${
-              selectedWorker ? "bg-blue-600 hover:bg-blue-700" : "bg-blue-300"
-            }`}>
-            Confirm Assignment
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// ====================================================================
 // ComplaintsList Page
 // ====================================================================
 export default function ComplaintsList() {
+  const navigate = useNavigate();
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [updatingId, setUpdatingId] = useState(null);
 
-  // Modal state
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [eligibleWorkers, setEligibleWorkers] = useState([]);
-  const [filterCriteria, setFilterCriteria] = useState(null);
-  const [activeComplaintId, setActiveComplaintId] = useState(null);
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalComplaints, setTotalComplaints] = useState(0);
+
+  // Filter state
+  const [filters, setFilters] = useState({
+    status: "",
+    department: "",
+    startDate: "",
+    endDate: "",
+    search: "",
+  });
+
+  // Dropdown data
+  const [departments, setDepartments] = useState([]);
+  const [complaintTypes, setComplaintTypes] = useState([]);
+
+  const handleCardClick = (complaintId) => {
+    navigate(`/complaintdetails/${complaintId}`);
+  };
 
   // Fetch complaints
   useEffect(() => {
@@ -322,12 +252,21 @@ export default function ComplaintsList() {
         const token = localStorage.getItem("admintoken");
         if (!token) throw new Error("Admin token not found.");
         const headers = { Authorization: `Bearer ${token}` };
+
+        const queryParams = new URLSearchParams({
+          page: currentPage,
+          limit: itemsPerPage,
+          ...filters,
+        }).toString();
+
         const res = await axios.get(
-          "http://localhost:5000/api/admin/complaints",
+          `http://localhost:5000/api/admin/complaints?${queryParams}`,
           { headers }
         );
         console.log("📦 Complaints Data:", res.data);
         setComplaints(res.data.data);
+        setTotalPages(res.data.meta.totalPages);
+        setTotalComplaints(res.data.meta.totalRecords);
       } catch (err) {
         console.error("Error fetching complaints:", err);
         setError(err.message || "Failed to fetch complaints.");
@@ -336,7 +275,64 @@ export default function ComplaintsList() {
       }
     };
     fetchComplaints();
+  }, [currentPage, itemsPerPage, filters]);
+
+  // Fetch departments
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      try {
+        const token = localStorage.getItem("admintoken");
+        const headers = { Authorization: `Bearer ${token}` };
+        const res = await axios.get(
+          "http://localhost:5000/api/admin/departments/all",
+          { headers }
+        );
+        setDepartments(res.data.data);
+      } catch (err) {
+        console.error("Error fetching departments:", err);
+        toast.error("Failed to fetch departments.");
+      }
+    };
+    fetchDepartments();
   }, []);
+
+  // Fetch complaint types
+  useEffect(() => {
+    const fetchComplaintTypes = async () => {
+      try {
+        const token = localStorage.getItem("admintoken");
+        const headers = { Authorization: `Bearer ${token}` };
+        const res = await axios.get(
+          "http://localhost:5000/api/admin/complaint-type/all",
+          { headers }
+        );
+        setComplaintTypes(res.data.data);
+      } catch (err) {
+        console.error("Error fetching complaint types:", err);
+        toast.error("Failed to fetch complaint types.");
+      }
+    };
+    fetchComplaintTypes();
+  }, []);
+
+  // Handle filter changes
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters((prev) => ({ ...prev, [name]: value }));
+    setCurrentPage(1); // Reset to first page on filter change
+  };
+
+  // Handle search input change
+  const handleSearchChange = (e) => {
+    setFilters((prev) => ({ ...prev, search: e.target.value }));
+    setCurrentPage(1); // Reset to first page on search change
+  };
+
+  // Handle items per page change
+  const handleItemsPerPageChange = (e) => {
+    setItemsPerPage(Number(e.target.value));
+    setCurrentPage(1); // Reset to first page on items per page change
+  };
 
   // Status change handler
   const handleStatusChange = async (id, status) => {
@@ -364,73 +360,131 @@ export default function ComplaintsList() {
     }
   };
 
-  // Open worker selection modal
-  const handleAssign = async (complaintId) => {
-    try {
-      const token = localStorage.getItem("admintoken");
-      if (!token) throw new Error("Admin token not found.");
-      const headers = { Authorization: `Bearer ${token}` };
-
-      const res = await axios.get(
-        `http://localhost:5000/api/admin/eligible/${complaintId}`,
-        { headers }
-      );
-
-      const { eligibleWorkers, filterCriteria } = res.data;
-
-      if (!eligibleWorkers.length) {
-        toast.error(
-          `No available workers found in ${
-            filterCriteria?.region || "this region"
-          }.`
-        );
-        return;
-      }
-
-      setEligibleWorkers(eligibleWorkers);
-      setFilterCriteria(filterCriteria);
-      setActiveComplaintId(complaintId);
-      setIsModalOpen(true);
-    } catch (err) {
-      console.error("Assign error:", err);
-      toast.error("Failed to fetch eligible workers.");
-    }
-  };
-
-  // Confirm worker assignment
-  const handleConfirmAssignment = async (workerId) => {
-    try {
-      if (!workerId) {
-        toast.error("Please select a worker to assign.");
-        return;
-      }
-
-      const token = localStorage.getItem("admintoken");
-      const headers = { Authorization: `Bearer ${token}` };
-      const assignRes = await axios.post(
-        `http://localhost:5000/api/admin/complaints/assign/${activeComplaintId}`,
-        { workerId },
-        { headers }
-      );
-
-      toast.success(
-        `Complaint assigned to ${
-          assignRes.data.worker?.name || "selected worker"
-        }.`
-      );
-      setIsModalOpen(false);
-    } catch (err) {
-      console.error("Assignment error:", err);
-      toast.error("Failed to assign worker.");
-    }
-  };
-
   if (loading) return <p className="text-center mt-8">Loading complaints...</p>;
   if (error) return <p className="text-center mt-8 text-red-500">{error}</p>;
 
   return (
     <div className="p-4 md:p-8 bg-gray-50 min-h-screen">
       <h1 className="text-3xl font-bold mb-6 text-gray-800">All Complaints</h1>
+
+      {/* Filter and Search Controls */}
+      <div className="bg-white rounded-xl shadow-md p-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+          {/* Status Filter */}
+          <div>
+            <label
+              htmlFor="status"
+              class="block text-sm font-medium text-gray-700">
+              Status
+            </label>
+            <select
+              id="status"
+              name="status"
+              value={filters.status}
+              onChange={handleFilterChange}
+              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+              <option value="">All Statuses</option>
+              <option value="Pending">Pending</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Resolved">Resolved</option>
+            </select>
+          </div>
+
+          {/* Department Filter */}
+          <div>
+            <label
+              htmlFor="department"
+              class="block text-sm font-medium text-gray-700">
+              Department
+            </label>
+            <select
+              id="department"
+              name="department"
+              value={filters.department}
+              onChange={handleFilterChange}
+              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+              <option value="">All Departments</option>
+              {departments.map((dept) => (
+                <option key={dept._id} value={dept._id}>
+                  {dept.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Start Date Filter */}
+          <div>
+            <label
+              htmlFor="startDate"
+              class="block text-sm font-medium text-gray-700">
+              Start Date
+            </label>
+            <input
+              type="date"
+              id="startDate"
+              name="startDate"
+              value={filters.startDate}
+              onChange={handleFilterChange}
+              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+            />
+          </div>
+
+          {/* End Date Filter */}
+          <div>
+            <label
+              htmlFor="endDate"
+              class="block text-sm font-medium text-gray-700">
+              End Date
+            </label>
+            <input
+              type="date"
+              id="endDate"
+              name="endDate"
+              value={filters.endDate}
+              onChange={handleFilterChange}
+              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+            />
+          </div>
+        </div>
+
+        {/* Search Input */}
+        <div className="mb-4">
+          <label
+            htmlFor="search"
+            class="block text-sm font-medium text-gray-700">
+            Search
+          </label>
+          <input
+            type="text"
+            id="search"
+            name="search"
+            value={filters.search}
+            onChange={handleSearchChange}
+            placeholder="Search by description or address..."
+            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+          />
+        </div>
+
+        {/* Items per page */}
+        <div className="flex justify-end items-center gap-2">
+          <label
+            htmlFor="itemsPerPage"
+            className="text-sm font-medium text-gray-700">
+            Items per page:
+          </label>
+          <select
+            id="itemsPerPage"
+            name="itemsPerPage"
+            value={itemsPerPage}
+            onChange={handleItemsPerPageChange}
+            className="mt-1 block w-24 pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+          </select>
+        </div>
+      </div>
 
       <div className="flex flex-col gap-6">
         {complaints.length > 0 ? (
@@ -441,8 +495,9 @@ export default function ComplaintsList() {
               onStatusChange={(newStatus) =>
                 handleStatusChange(complaint._id, newStatus)
               }
-              onAssignClick={() => handleAssign(complaint._id)}
+              // onAssignClick={() => handleAssign(complaint._id)}
               isUpdating={updatingId === complaint._id}
+              onCardClick={() => handleCardClick(complaint._id)}
             />
           ))
         ) : (
@@ -452,14 +507,37 @@ export default function ComplaintsList() {
         )}
       </div>
 
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-4 mt-6">
+          <button
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+            className="px-4 py-2 bg-gray-300 rounded-md text-gray-800 hover:bg-gray-400 disabled:opacity-50">
+            Previous
+          </button>
+          <span className="text-gray-700">
+            Page {currentPage} of {totalPages} ({totalComplaints} complaints)
+          </span>
+          <button
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+            }
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 bg-gray-300 rounded-md text-gray-800 hover:bg-gray-400 disabled:opacity-50">
+            Next
+          </button>
+        </div>
+      )}
+
       {/* Worker assignment modal */}
-      <WorkerAssignmentModal
+      {/* <WorkerAssignmentModal
         isOpen={isModalOpen}
         workers={eligibleWorkers}
         onClose={() => setIsModalOpen(false)}
         onConfirm={handleConfirmAssignment}
         filterCriteria={filterCriteria}
-      />
+      /> */}
     </div>
   );
 }

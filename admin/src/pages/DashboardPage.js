@@ -20,6 +20,7 @@ import WorkerDetails from "./WorkerDetails";
 import AdminComplaintTypePage from "./AdminComplaintTypePage";
 import AdminDepartmentPage from "./AdminDepartmentPage";
 import ActivityLogPage from "./ActivityLogPage";
+import ComplaintDetails from "./ComplaintDetails";
 
 const Sidebar = () => {
   const location = useLocation();
@@ -37,6 +38,7 @@ const Sidebar = () => {
     { to: "/addcomplaintstypes", text: "Complaint Types" },
     { to: "/departments", text: "Departments" },
     { to: "/activity", text: "Activity Logs" },
+    //{ to: "/complaintdetails", text: "Complaint Details" },
     //{ to: "/showadmin", text: "Admin" },
   ];
 
@@ -109,6 +111,7 @@ const DashboardPage = () => {
           />
           <Route path="/departments" element={<AdminDepartmentPage />} />
           <Route path="/activity" element={<ActivityLogPage />} />
+          <Route path="/complaintdetails/:id" element={<ComplaintDetails />} />
         </Routes>
       </main>
     </div>

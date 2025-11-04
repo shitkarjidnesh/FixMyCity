@@ -78,6 +78,17 @@ const UserComplaintSchema = new mongoose.Schema(
       resolvedAt: { type: Date },
       resolutionNotes: { type: String },
       resolutionPhotos: { type: [String], default: [] },
+      resolutionLocation: {
+        type: {
+          type: String,
+          enum: ["Point"],
+          default: "Point",
+        },
+        coordinates: {
+          type: [Number], // [longitude, latitude]
+          required: false, // ← fix
+        },
+      },
     },
 
     // Audit tracking
