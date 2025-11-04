@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { handleResponseToast } from "../utils/toastUtils";
 
 export default function AdminProfile() {
   const [admin, setAdmin] = useState(null);
@@ -16,8 +17,10 @@ export default function AdminProfile() {
         });
 
         if (res.data.success) {
+          console.log(res.data.admin);
           setAdmin(res.data.admin);
         } else {
+          handleResponseToast(res.data.message);
           toast.error(res.data.message || "Failed to fetch admin data");
         }
       } catch (err) {

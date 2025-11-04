@@ -260,4 +260,71 @@ router.post(
     }
   }
 );
+
+// ===================== FETCH COMPLAINTS FOR MAP VIEW =====================
+// ===================== FETCH COMPLAINTS FOR MAP VIEW =====================
+router.get("/complaints/map", async (req, res) => {
+  try {
+    const workerId = req.auth.id;
+    const { status } = req.query; // 👈 optional query param
+
+    // ✅ Build base filter
+    const filter = { assignedTo: workerId };
+
+    // ✅ Add status filter if provided (case-insensitive)
+    if (status && typeof status === "string") {
+      filter.status = new RegExp(`^${status}$`, "i");
+    }
+
+    // 🔍 Find assigned complaints with valid projection
+    const complaints = await UserComplaints.find(filter, {
+      type: 1,
+      status: 1,
+      location: 1,
+    })
+      .populate("type", "name")
+      .lean();
+
+    if (!complaints || complaints.length === 0) {
+      return res.status(200).json({
+        success: true,
+        message:
+          status && status.length
+            ? `No '${status}' complaints found for this worker.`
+            : "No assigned complaints found for this worker.",
+        data: [],
+      });
+    }
+
+    // ✅ Convert coordinates array → lat/lng
+    const formatted = complaints
+      .filter(
+        (c) =>
+          Array.isArray(c.location?.coordinates) &&
+          c.location.coordinates.length === 2
+      )
+      .map((c) => ({
+        _id: c._id,
+        type: c.type,
+        status: c.status,
+        latitude: c.location.coordinates[1],
+        longitude: c.location.coordinates[0],
+      }));
+
+    return res.status(200).json({
+      success: true,
+      message: "Complaints for map view fetched successfully",
+      count: formatted.length,
+      data: formatted,
+    });
+  } catch (error) {
+    console.error("❌ Worker map complaints fetch error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch complaints for map view",
+      error: error.message,
+    });
+  }
+});
+
 module.exports = router;

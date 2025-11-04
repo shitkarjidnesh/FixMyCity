@@ -7,14 +7,10 @@ import {
   SafeAreaView,
   Platform,
   StatusBar,
+  Image,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import {
-  ExternalPathString,
-  RelativePathString,
-  UnknownInputParams,
-  useRouter,
-} from "expo-router";
+import { useRouter } from "expo-router";
 
 export default function TopNav() {
   const router = useRouter();
@@ -33,43 +29,33 @@ export default function TopNav() {
     }
   };
 
-  const handleNavigate = (
-    e:
-      | string
-      | { pathname: RelativePathString; params?: UnknownInputParams }
-      | { pathname: ExternalPathString; params?: UnknownInputParams }
-      | { pathname: `/about`; params?: UnknownInputParams }
-      | { pathname: `/`; params?: UnknownInputParams }
-      | { pathname: `/login`; params?: UnknownInputParams }
-      | { pathname: `/register`; params?: UnknownInputParams }
-      | { pathname: `/home/community`; params?: UnknownInputParams }
-      | { pathname: `/_sitemap`; params?: UnknownInputParams }
-      | { pathname: `/home/camera`; params?: UnknownInputParams }
-      | { pathname: `/home/complaint`; params?: UnknownInputParams }
-      | { pathname: `/home/cummunity`; params?: UnknownInputParams }
-      | { pathname: `/home/help`; params?: UnknownInputParams }
-      | { pathname: `/home`; params?: UnknownInputParams }
-      | { pathname: `/home/profile`; params?: UnknownInputParams }
-      | { pathname: `/home/setting`; params?: UnknownInputParams }
-      | { pathname: `/home/reportProblem`; params?: UnknownInputParams }
-      | { pathname: `/home/workerComplaintList`; params?: UnknownInputParams }
-  ) => {
+  const handleNavigate = (path: string) => {
     setMenuVisible(false);
-    router.push(e);
+    router.push(path);
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerText}>Public Grievance System</Text>
+        {/* 🔹 Left side logo + title */}
+        <View style={styles.leftSection}>
+          <Image
+            source={require("../assets/logo.png")} // ✅ adjust path as per your folder
+            style={styles.logo}
+          />
+          <Text style={styles.headerText}>Public Grievance System</Text>
+        </View>
+
+        {/* 🔹 Right side menu button */}
         <TouchableOpacity onPress={toggleMenu} style={styles.menuButton}>
           <Text style={styles.menuIcon}>☰</Text>
         </TouchableOpacity>
       </View>
 
+      {/* 🔹 Dropdown menu */}
       {menuVisible && (
         <>
-          {/* Overlay for click outside */}
+          {/* Overlay to close menu when tapping outside */}
           <TouchableOpacity
             style={styles.overlay}
             activeOpacity={1}
@@ -77,59 +63,25 @@ export default function TopNav() {
           />
 
           <View style={styles.menuContainer}>
-            <TouchableOpacity
-              style={styles.menuItem}
-              onPress={() => handleNavigate("/")}>
-              <Text style={styles.menuText}>Home</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.menuItem}
-              onPress={() => handleNavigate("/home/profile")}>
-              <Text style={styles.menuText}>Profile</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.menuItem}
-              onPress={() => handleNavigate("/home/help")}>
-              <Text style={styles.menuText}>Help</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.menuItem}
-              onPress={() => handleNavigate("/home/reportProblem")}>
-              <Text style={styles.menuText}>Report a Problem</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.menuItem}
-              onPress={() => handleNavigate("/home/camera")}>
-              <Text style={styles.menuText}>camera</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.menuItem}
-              onPress={() => handleNavigate("/home/about")}>
-              <Text style={styles.menuText}>About</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.menuItem}
-              onPress={() => handleNavigate("/home/setting")}>
-              <Text style={styles.menuText}>setting</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.menuItem}
-              onPress={() => handleNavigate("/home/community")}>
-              <Text style={styles.menuText}>Community</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.menuItem}
-              onPress={() => handleNavigate("/home/workerComplaintList")}>
-              <Text style={styles.menuText}>View Complaints</Text>
-            </TouchableOpacity>
+            {[
+              { label: "Home", route: "home/" },
+              { label: "Profile", route: "/home/profile" },
+              { label: "Help", route: "/home/help" },
+              { label: "Report a Problem", route: "/home/reportProblem" },
+              { label: "Camera", route: "/home/camera" },
+              { label: "About", route: "/home/about" },
+              { label: "Settings", route: "/home/setting" },
+              { label: "Community", route: "/home/community" },
+              { label: "View Complaints", route: "/home/workerComplaintList" },
+              { label: "View On Map", route: "/home/workerComplaintsMap" },
+            ].map((item) => (
+              <TouchableOpacity
+                key={item.route}
+                style={styles.menuItem}
+                onPress={() => handleNavigate(item.route)}>
+                <Text style={styles.menuText}>{item.label}</Text>
+              </TouchableOpacity>
+            ))}
 
             <TouchableOpacity
               style={[
@@ -160,10 +112,23 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     zIndex: 100,
   },
+  leftSection: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  logo: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    marginRight: 10,
+    resizeMode: "contain",
+    backgroundColor: "white",
+  },
   headerText: {
     color: "#fff",
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: "bold",
+    flexShrink: 1,
   },
   menuButton: {
     padding: 8,
@@ -183,7 +148,7 @@ const styles = StyleSheet.create({
   },
   menuContainer: {
     position: "absolute",
-    top: Platform.OS === "android" ? StatusBar.currentHeight + 70 : 10,
+    top: Platform.OS === "android" ? StatusBar.currentHeight + 70 : 70,
     right: 10,
     backgroundColor: "#fff",
     borderRadius: 8,
@@ -192,7 +157,7 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 8,
     paddingVertical: 10,
-    width: 180,
+    width: 200,
     zIndex: 20,
   },
   menuItem: {

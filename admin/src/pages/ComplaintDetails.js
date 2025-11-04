@@ -5,6 +5,8 @@ import toast from "react-hot-toast";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import { ArrowLeft, X } from "lucide-react";
+import { handleErrorToast } from "../utils/toastUtils";
+import { handleResponseToast } from "../utils/toastUtils";
 
 // Make sure you import your CSS file that has the map marker styles
 
@@ -29,9 +31,10 @@ export default function ComplaintDetails() {
           `http://localhost:5000/api/admin/complaints/${id}`,
           { headers }
         );
+        console.log(res.data.data);
         setComplaint(res.data.data);
-      } catch {
-        toast.error("Failed to fetch complaint details");
+      } catch (error) {
+        handleErrorToast(error);
       } finally {
         setLoading(false);
       }
@@ -39,19 +42,42 @@ export default function ComplaintDetails() {
     fetchComplaint();
   }, [id]);
 
+  // const handleStatusChange = async (status) => {
+  //   try {
+  //     const token = localStorage.getItem("admintoken");
+  //     const headers = { Authorization: `Bearer ${token}` };
+  //     const res = await axios.put(
+  //       `http://localhost:5000/api/admin/complaints/${id}`,
+  //       { status },
+  //       { headers }
+  //     );
+  //     setComplaint(res.data.data); // Update with the full data from response
+  //     toast.success("Status updated successfully");
+  //   } catch {
+  //     toast.error("Failed to update status");
+  //   }
+  // };
   const handleStatusChange = async (status) => {
     try {
       const token = localStorage.getItem("admintoken");
       const headers = { Authorization: `Bearer ${token}` };
+
       const res = await axios.put(
         `http://localhost:5000/api/admin/complaints/${id}`,
         { status },
         { headers }
       );
-      setComplaint(res.data.data); // Update with the full data from response
-      toast.success("Status updated successfully");
-    } catch {
-      toast.error("Failed to update status");
+
+      handleResponseToast(res, "Status updated successfully.");
+
+      // ✅ Refetch the full complaint after update
+      const refreshed = await axios.get(
+        `http://localhost:5000/api/admin/complaints/${id}`,
+        { headers }
+      );
+      setComplaint(refreshed.data.data);
+    } catch (error) {
+      handleErrorToast(error, "Failed to update status.");
     }
   };
 
@@ -63,11 +89,18 @@ export default function ComplaintDetails() {
         `http://localhost:5000/api/admin/eligible/${id}`,
         { headers }
       );
-      setEligibleWorkers(res.data.eligibleWorkers);
-      setSelectedWorker(complaint?.assignedTo?._id || null); // Pre-select current worker
-      setIsModalOpen(true);
-    } catch {
-      toast.error("Failed to fetch eligible workers");
+
+      if (res.data?.success) {
+        handleResponseToast(res, "Eligible workers loaded.");
+        setEligibleWorkers(res.data.eligibleWorkers);
+        setSelectedWorker(complaint?.assignedTo?._id || null);
+
+        setIsModalOpen(true);
+      } else {
+        handleResponseToast(res, "No eligible workers found.");
+      }
+    } catch (error) {
+      handleErrorToast(error, "Failed to fetch eligible workers.");
     }
   };
 
@@ -121,9 +154,11 @@ export default function ComplaintDetails() {
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900 truncate">
-            {complaint.type || complaint.subtype || "Complaint Details"}
+            {complaint.type?.name || complaint.subtype || "Complaint Details"}
           </h1>
-          <p className="text-lg text-gray-600 mt-1">{complaint.description}</p>
+          <p className="text-lg text-gray-600 mt-1">
+            description : {complaint.description}
+          </p>
         </div>
 
         {/* Dashboard Grid */}
@@ -156,7 +191,7 @@ export default function ComplaintDetails() {
                         key={i}
                         src={photo}
                         alt="Resolution proof"
-                        className="w-24 h-24 sm:w-32 sm:h-32 object-cover rounded-lg border border-gray-200"
+                        className="w-full h-64 object-cover rounded-lg border border-gray-200"
                       />
                     ))}
                   </div>
@@ -175,10 +210,11 @@ export default function ComplaintDetails() {
                 {address && (
                   <p className="text-gray-700 mb-4">
                     {[
-                      address.houseNo,
                       address.street,
+                      address.landmark,
                       address.area,
                       address.city,
+                      address.pincode,
                     ]
                       .filter(Boolean)
                       .join(", ")}
@@ -271,9 +307,7 @@ export default function ComplaintDetails() {
                   <p className="text-gray-700 mt-1">
                     <strong>Email:</strong> {reportedBy.email}
                   </p>
-                  <p className="text-gray-700 mt-1">
-                    <strong>Phone:</strong> {reportedBy.phone}
-                  </p>
+
                   <p className="text-gray-700 mt-1">
                     <strong>Role:</strong> {reportedBy.role}
                   </p>

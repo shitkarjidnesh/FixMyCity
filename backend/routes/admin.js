@@ -786,6 +786,7 @@ router.get("/complaints/:id", adminAuth, async (req, res) => {
       department: complaint.department?.name || "N/A",
       priority: complaint.priority || "Medium",
       status: complaint.status,
+      imageUrls: complaint.imageUrls || [],
       createdAt: complaint.createdAt,
       updatedAt: complaint.updatedAt,
 
@@ -1099,6 +1100,11 @@ router.get("/eligible/:complaintId", async (req, res) => {
         noDepartmentMatch: deptMatch === 0,
         noRegionMatch: regionMatch === 0,
         noActiveWorkers: activeMatch === 0,
+      });
+
+      return res.status(404).json({
+        success: false,
+        message: "no worker found",
       });
     }
 
