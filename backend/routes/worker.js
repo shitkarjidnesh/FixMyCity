@@ -9,6 +9,7 @@ const jwt = require("jsonwebtoken");
 const Worker = require("../models/Worker");
 const workerAuth = require("../middleware/workerAuth");
 const uploadMiddleware = require("../middleware/uploadMiddleware");
+const { generateWorkerOTP, verifyWorkerOTP } = require("../otp/otpController");
 // ===================== LOGIN =====================
 router.post("/login", async (req, res) => {
   try {
@@ -61,6 +62,37 @@ router.post("/login", async (req, res) => {
   }
 });
 
+router.post("/verify-reset-otp", async (req, res) => {
+  const { email, otp, password, confirmPassword } = req.body;
+
+  if (!email || !otp || !password || !confirmPassword)
+    return res
+      .status(400)
+      .json({ success: false, message: "All fields required" });
+
+  if (password !== confirmPassword)
+    return res
+      .status(400)
+      .json({ success: false, message: "Passwords do not match" });
+
+  const valid = verifyWorkerOTP(email, otp);
+  if (!valid)
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid/expired OTP" });
+
+  const worker = await Worker.findOne({ email });
+  if (!worker)
+    return res
+      .status(404)
+      .json({ success: false, message: "Worker not found" });
+
+  const hashed = await bcrypt.hash(password, 10);
+  worker.password = hashed;
+  await worker.save();
+
+  return res.json({ success: true, message: "Password reset" });
+});
 // All routes require worker auth
 router.use(workerAuth);
 

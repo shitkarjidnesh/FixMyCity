@@ -22,7 +22,7 @@ export default function TopNav() {
 
   const handleLogout = async () => {
     try {
-      await AsyncStorage.removeItem("token");
+      await AsyncStorage.removeItem("workerData");
       router.replace("/login");
     } catch (error) {
       console.error("Logout Error:", error);

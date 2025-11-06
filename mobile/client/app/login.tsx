@@ -99,7 +99,7 @@ const handleLogin = async () => {
     }
     try {
       const res = await axios.post(
-        "http://192.168.68.44:5000/api/otp/request-otp",
+        "http://192.168.68.44:5000/api/otp/requestuser-otp",
         { email }
       );
       if (res.data.success) {

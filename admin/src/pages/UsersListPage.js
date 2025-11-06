@@ -233,7 +233,7 @@ export default function UsersList() {
 
                     {/* Phone */}
                     <td className="px-5 py-3 text-gray-700">
-                      {user.phone || "N/A"}
+                      {user.phoneNo || "N/A"}
                     </td>
 
                     {/* Address */}

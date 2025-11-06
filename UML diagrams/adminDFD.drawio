@@ -1,0 +1,67 @@
+<mxfile host="65bd71144e">
+    <diagram name="ERD" id="0">
+        <mxGraphModel dx="2508" dy="2049" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="15" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="-60" y="-220" width="1520" height="1260" as="geometry"/>
+                </mxCell>
+                <mxCell id="Admin" value="Admin&#xa;_id:ObjectId&#xa;name:String&#xa;email:String&#xa;phone:String&#xa;governmentId:String&#xa;employeeId:String&#xa;address:String&#xa;blockOrRegion:String&#xa;idProof:String&#xa;passwordHash:String&#xa;createdAt:Date&#xa;updatedAt:Date" style="shape=rectangle;rounded=1;whiteSpace=wrap;fontSize=15;align=left;spacingLeft=32;fontStyle=1" parent="1" vertex="1">
+                    <mxGeometry x="20" y="-130" width="260" height="290" as="geometry"/>
+                </mxCell>
+                <mxCell id="User" value="User&#xa;_id:ObjectId&#xa;name:String&#xa;email:String&#xa;phone:String&#xa;address:String&#xa;role:String&#xa;passwordHash:String&#xa;createdAt:Date" style="shape=rectangle;rounded=1;whiteSpace=wrap;fontSize=15;align=left;spacingLeft=32;fontStyle=1" parent="1" vertex="1">
+                    <mxGeometry x="80" y="600" width="250" height="240" as="geometry"/>
+                </mxCell>
+                <mxCell id="Worker" value="Worker&#xa;_id:ObjectId&#xa;name:String&#xa;middleName:String&#xa;surname:String&#xa;email:String&#xa;phone:String&#xa;street:String&#xa;city:String&#xa;state:String&#xa;pincode:String&#xa;departmentId:ObjectId&#xa;experience:Number&#xa;blockOrRegion:String&#xa;createdByAdmin:ObjectId&#xa;passwordHash:String&#xa;createdAt:Date" style="shape=rectangle;rounded=1;whiteSpace=wrap;fontSize=15;align=left;spacingLeft=32;fontStyle=1" parent="1" vertex="1">
+                    <mxGeometry x="1120" y="-170" width="300" height="430" as="geometry"/>
+                </mxCell>
+                <mxCell id="Department" value="Department&#xa;_id:ObjectId&#xa;name:String&#xa;description:String&#xa;createdBy:Objectid" style="shape=rectangle;rounded=1;whiteSpace=wrap;fontSize=15;align=left;spacingLeft=32;fontStyle=1" parent="1" vertex="1">
+                    <mxGeometry x="730" y="160" width="240" height="140" as="geometry"/>
+                </mxCell>
+                <mxCell id="Complaint" value="UserComplaint&#xa;_id:ObjectId&#xa;userId:ObjectId&#xa;adminId:ObjectId&#xa;workerId:ObjectId&#xa;departmentId:ObjectId&#xa;type:ObjectId&#xa;subType:String&#xa;description:String&#xa;houseNo:String&#xa;street:String&#xa;area:String&#xa;city:String&#xa;district:String&#xa;state:String&#xa;pincode:String&#xa;landmark:String&#xa;latitude:Number&#xa;longitude:Number&#xa;image:String&#xa;assignedAt:Date&#xa;resolvedAt:Date&#xa;status:String&#xa;priority:String&#xa;createdAt:Date" style="shape=rectangle;rounded=1;whiteSpace=wrap;fontSize=15;align=left;spacingLeft=32;fontStyle=1" parent="1" vertex="1">
+                    <mxGeometry x="510" y="440" width="270" height="500" as="geometry"/>
+                </mxCell>
+                <mxCell id="2" value="1 to many" style="fontSize=15;fontStyle=1" parent="1" source="Admin" target="Worker" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="3" value="1 to many" style="fontSize=15;fontStyle=1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;" parent="1" source="Admin" target="Complaint" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="4" value="1 to many" style="fontSize=15;fontStyle=1" parent="1" source="User" target="Complaint" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="5" value="1 to many" style="fontSize=15;fontStyle=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" parent="1" source="Worker" target="Complaint" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="6" value="1 to many" style="fontSize=15;fontStyle=1" parent="1" source="Department" target="Worker" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="7" value="1 to many" style="fontSize=15;fontStyle=1" parent="1" source="Department" target="Complaint" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="11" value="Complainttype&#xa;_id:ObjectId&#xa;name:String&#xa;subtype:Array&#xa;createdby:ObjectId&#xa;Deparment:objectId" style="shape=rectangle;rounded=1;whiteSpace=wrap;fontSize=15;align=left;spacingLeft=32;fontStyle=1" vertex="1" parent="1">
+                    <mxGeometry x="370" y="150" width="200" height="150" as="geometry"/>
+                </mxCell>
+                <mxCell id="12" value="1 to many" style="fontSize=15;fontStyle=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="Admin" target="11">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="354" y="210" as="sourcePoint"/>
+                        <mxPoint x="497" y="490" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="13" value="1 to many" style="fontSize=15;fontStyle=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="11" target="Complaint">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="781" y="370" as="sourcePoint"/>
+                        <mxPoint x="730" y="490" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="14" value="1 to many" style="fontSize=15;fontStyle=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="11" target="Department">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="480" y="310" as="sourcePoint"/>
+                        <mxPoint x="625" y="490" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

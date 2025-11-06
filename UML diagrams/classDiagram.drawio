@@ -1,0 +1,64 @@
+<mxfile host="65bd71144e">
+    <diagram name="Class Diagram" id="EdTeNQohZFgm-Wflu8Jg">
+        <mxGraphModel dx="1492" dy="1954" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="kteL9m3osJTxJzy7lAxc-13" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="10" y="-80" width="1270" height="1270" as="geometry"/>
+                </mxCell>
+                <mxCell id="Admin" value="Admin&lt;br&gt;- _id:ObjectId&lt;br&gt;- name:String&lt;br&gt;- email:String&lt;br&gt;- phone:String&lt;br&gt;- governmentId:String&lt;br&gt;- employeeId:String&lt;br&gt;- address:String&lt;br&gt;- blockOrRegion:String&lt;br&gt;- idProof:String&lt;br&gt;- passwordHash:String&lt;br&gt;- createdAt:Date&lt;br&gt;- updatedAt:Date&lt;br&gt;--&lt;br&gt;+ register()&lt;br&gt;+ login()&lt;br&gt;+ assignComplaint()&lt;br&gt;+ verifyComplaint()&lt;br&gt;+ viewLogs()" style="shape=rectangle;whiteSpace=wrap;rounded=1;html=1;align=left;textDirection=ltr;verticalAlign=middle;fontSize=13;spacingLeft=41;" parent="1" vertex="1">
+                    <mxGeometry x="80" y="130" width="210" height="330" as="geometry"/>
+                </mxCell>
+                <mxCell id="User" value="User&lt;br&gt;- _id:ObjectId&lt;br&gt;- name:String&lt;br&gt;- email:String&lt;br&gt;- phone:String&lt;br&gt;- address:String&lt;br&gt;- role:String&lt;br&gt;- passwordHash:String&lt;br&gt;- createdAt:Date&lt;br&gt;--&lt;br&gt;+ register()&lt;br&gt;+ login()&lt;br&gt;+ submitComplaint()&lt;br&gt;+ viewStatus()" style="shape=rectangle;whiteSpace=wrap;rounded=1;html=1;align=left;textDirection=ltr;verticalAlign=middle;fontSize=13;spacingLeft=41;" parent="1" vertex="1">
+                    <mxGeometry x="460" y="800" width="210" height="320" as="geometry"/>
+                </mxCell>
+                <mxCell id="Worker" value="Worker&lt;br&gt;- _id:ObjectId&lt;br&gt;- name:String&lt;br&gt;- middleName:String&lt;br&gt;- surname:String&lt;br&gt;- email:String&lt;br&gt;- phone:String&lt;br&gt;- street:String&lt;br&gt;- city:String&lt;br&gt;- state:String&lt;br&gt;- pincode:String&lt;br&gt;- departmentId:ObjectId&lt;br&gt;- experience:Number&lt;br&gt;- blockOrRegion:String&lt;br&gt;- createdByAdmin:ObjectId&lt;br&gt;- passwordHash:String&lt;br&gt;- createdAt:Date&lt;br&gt;--&lt;br&gt;+ login()&lt;br&gt;+ updateStatus()&lt;br&gt;+ uploadResolution()" style="shape=rectangle;whiteSpace=wrap;rounded=1;html=1;align=left;textDirection=ltr;verticalAlign=middle;fontSize=13;spacingLeft=41;" parent="1" vertex="1">
+                    <mxGeometry x="780" y="40" width="220" height="370" as="geometry"/>
+                </mxCell>
+                <mxCell id="Department" value="Department&lt;br&gt;- _id:ObjectId&lt;br&gt;- name:String&lt;br&gt;- description:String&lt;br&gt;--&lt;br&gt;+ addDepartment()&lt;br&gt;+ updateDepartment()" style="shape=rectangle;whiteSpace=wrap;rounded=1;html=1;align=left;textDirection=ltr;verticalAlign=middle;fontSize=13;spacingLeft=41;" parent="1" vertex="1">
+                    <mxGeometry x="790" y="810" width="200" height="170" as="geometry"/>
+                </mxCell>
+                <mxCell id="UserComplaint" value="UserComplaint&lt;br&gt;- _id:ObjectId&lt;br&gt;- userId:ObjectId&lt;br&gt;- adminId:ObjectId&lt;br&gt;- workerId:ObjectId&lt;br&gt;- departmentId:ObjectId&lt;br&gt;- category:String&lt;br&gt;- subCategory:String&lt;br&gt;- description:String&lt;br&gt;- latitude:Number&lt;br&gt;- longitude:Number&lt;br&gt;- image:String&lt;br&gt;- assignedAt:Date&lt;br&gt;- resolvedAt:Date&lt;br&gt;- status:String&lt;br&gt;- priority:String&lt;br&gt;- createdAt:Date&lt;br&gt;--&lt;br&gt;+ createComplaint()&lt;br&gt;+ assignWorker()&lt;br&gt;+ markResolved()&lt;br&gt;+ verifyResolution()" style="shape=rectangle;whiteSpace=wrap;rounded=1;html=1;align=left;textDirection=ltr;verticalAlign=middle;fontSize=13;spacingLeft=41;" parent="1" vertex="1">
+                    <mxGeometry x="460" y="310" width="220" height="410" as="geometry"/>
+                </mxCell>
+                <mxCell id="AdminLog" value="AdminLog&lt;br&gt;- _id:ObjectId&lt;br&gt;- adminId:ObjectId&lt;br&gt;- action:String&lt;br&gt;- targetEntity:String&lt;br&gt;- targetId:ObjectId&lt;br&gt;- timestamp:Date&lt;br&gt;- details:String" style="shape=rectangle;whiteSpace=wrap;rounded=1;html=1;align=left;textDirection=ltr;verticalAlign=middle;fontSize=13;spacingLeft=41;" parent="1" vertex="1">
+                    <mxGeometry x="90" y="530" width="200" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="WorkerLog" value="WorkerLog&lt;br&gt;- _id:ObjectId&lt;br&gt;- workerId:ObjectId&lt;br&gt;- action:String&lt;br&gt;- targetComplaint:ObjectId&lt;br&gt;- timestamp:Date&lt;br&gt;- notes:String" style="shape=rectangle;whiteSpace=wrap;rounded=1;html=1;align=left;textDirection=ltr;verticalAlign=middle;fontSize=13;spacingLeft=41;" parent="1" vertex="1">
+                    <mxGeometry x="920" y="560" width="210" height="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="UserLog" value="UserLog&lt;br&gt;- _id:ObjectId&lt;br&gt;- userId:ObjectId&lt;br&gt;- action:String&lt;br&gt;- targetComplaint:ObjectId&lt;br&gt;- timestamp:Date&lt;br&gt;- notes:String" style="shape=rectangle;whiteSpace=wrap;rounded=1;html=1;align=left;textDirection=ltr;verticalAlign=middle;fontSize=13;spacingLeft=41;" parent="1" vertex="1">
+                    <mxGeometry x="100" y="790" width="220" height="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="2" value="creates" parent="1" source="Admin" target="Worker" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="3" value="manages" parent="1" source="Admin" target="UserComplaint" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="4" value="submits" parent="1" source="User" target="UserComplaint" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="5" value="resolves" parent="1" source="Worker" target="UserComplaint" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="6" value="has" style="entryX=0.25;entryY=1;entryDx=0;entryDy=0;" parent="1" source="Department" target="Worker" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="7" value="handles" parent="1" source="Department" target="UserComplaint" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="8" value="performs" parent="1" source="Admin" target="AdminLog" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="9" value="records" parent="1" source="Worker" target="WorkerLog" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="10" value="records" parent="1" source="User" target="UserLog" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

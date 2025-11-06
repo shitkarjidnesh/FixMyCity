@@ -356,7 +356,7 @@ export default function AdminDetails() {
                   />
 
                   {/* === ID Proof Group === */}
-                  <h4 className="text-md font-semibold text-gray-700 pt-2">
+                  {/* <h4 className="text-md font-semibold text-gray-700 pt-2">
                     ID Proof
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -383,7 +383,7 @@ export default function AdminDetails() {
                       }
                       onChange={handleInputChange}
                     />
-                  </div>
+                  </div> */}
 
                   {/* === Address Group === */}
                   <h4 className="text-md font-semibold text-gray-700 pt-2">
@@ -453,7 +453,7 @@ export default function AdminDetails() {
                     label="Government Employee ID"
                     value={admin.governmentEmployeeId}
                   />
-                  <ProfileField
+                  {/* <ProfileField
                     icon={Shield}
                     label="ID Proof Type"
                     value={admin.idProof?.type || "N/A"}
@@ -462,7 +462,7 @@ export default function AdminDetails() {
                     icon={Shield}
                     label="ID Proof Number"
                     value={admin.idProof?.number || "N/A"}
-                  />
+                  /> */}
                   {admin.idProofImage && (
                     <div>
                       <dt className="text-sm font-medium text-gray-500">

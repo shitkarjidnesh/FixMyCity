@@ -108,17 +108,24 @@ export default function ComplaintDetails() {
     try {
       const token = localStorage.getItem("admintoken");
       const headers = { Authorization: `Bearer ${token}` };
-      const res = await axios.post(
+
+      await axios.post(
         `http://localhost:5000/api/admin/complaints/assign/${id}`,
         { workerId: selectedWorker },
         { headers }
       );
-      // Update complaint state with new assignment data
-      setComplaint(res.data.data);
+
       toast.success("Worker assigned successfully");
       setIsModalOpen(false);
-    } catch {
-      toast.error("Failed to assign worker");
+
+      // refetch fresh complaint state
+      const refreshed = await axios.get(
+        `http://localhost:5000/api/admin/complaints/${id}`,
+        { headers }
+      );
+      setComplaint(refreshed.data.data);
+    } catch (err) {
+      handleErrorToast(err);
     }
   };
 
@@ -235,15 +242,74 @@ export default function ComplaintDetails() {
                 </span>
                 <StatusBadge status={complaint.status} />
               </div>
-              <select
-                value={complaint.status}
-                onChange={(e) => handleStatusChange(e.target.value)}
-                className="mt-4 w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500">
-                <option>Pending</option>
-                <option>In Progress</option>
-                <option>Resolved</option>
-                <option>Rejected</option>
-              </select>
+              <div className="mt-4 space-y-2">
+                {/* PENDING → admin can Reject or Assign */}
+                {complaint.status === "Pending" && (
+                  <>
+                    <button
+                      onClick={handleOpenAssignModal}
+                      className="w-full bg-blue-600 text-white px-3 py-2 rounded-md hover:bg-blue-700">
+                      Assign Worker
+                    </button>
+
+                    <button
+                      onClick={() => handleStatusChange("Rejected")}
+                      className="w-full bg-red-600 text-white px-3 py-2 rounded-md hover:bg-red-700">
+                      Reject Complaint
+                    </button>
+                  </>
+                )}
+
+                {/* ASSIGNED or IN_PROGRESS → only view / no direct resolve */}
+                {(complaint.status === "Assigned" ||
+                  complaint.status === "In Progress") && (
+                  <p className="text-gray-600 text-sm italic">
+                    Worker handling complaint…
+                  </p>
+                )}
+
+                {/* worker submitted resolution → admin must verify */}
+                {complaint.status === "Awaiting Verification" && (
+                  <>
+                    <button
+                      onClick={() => handleStatusChange("Resolved")}
+                      className="w-full bg-green-600 text-white px-3 py-2 rounded-md hover:bg-green-700">
+                      Approve & Mark Resolved
+                    </button>
+
+                    <button
+                      onClick={() => handleStatusChange("In Progress")}
+                      className="w-full bg-yellow-600 text-white px-3 py-2 rounded-md hover:bg-yellow-700">
+                      Reject Resolution & Send Back
+                    </button>
+                  </>
+                )}
+
+                {/* user complained after resolution */}
+                {complaint.status === "Post Resolved Review" && (
+                  <>
+                    <button
+                      onClick={handleOpenAssignModal}
+                      className="w-full bg-blue-600 text-white px-3 py-2 rounded-md hover:bg-blue-700">
+                      Reassign Worker
+                    </button>
+
+                    <button
+                      onClick={() => handleStatusChange("Rejected")}
+                      className="w-full bg-red-600 text-white px-3 py-2 rounded-md hover:bg-red-700">
+                      Reject User Appeal
+                    </button>
+                  </>
+                )}
+
+                {/* End states */}
+                {(complaint.status === "Resolved" ||
+                  complaint.status === "Rejected") && (
+                  <p className="text-gray-600 text-sm italic">
+                    No further actions. Complaint closed.
+                  </p>
+                )}
+              </div>
             </InfoCard>
 
             {/* Assignment Card */}
@@ -256,7 +322,7 @@ export default function ComplaintDetails() {
                   </p>
                   <p className="text-gray-700 mt-1">
                     <strong>Department:</strong>{" "}
-                    {complaint.assignedTo.department?.name || "N/A"}
+                    {complaint.assignedTo.department || "N/A"}
                   </p>
                   <p className="text-gray-700 mt-1">
                     <strong>Assigned By:</strong>{" "}
@@ -311,6 +377,22 @@ export default function ComplaintDetails() {
                   <p className="text-gray-700 mt-1">
                     <strong>Role:</strong> {reportedBy.role}
                   </p>
+                  {complaint.userNote && complaint.userNote.length > 0 && (
+                    <div className="mt-3">
+                      <strong>User Notes:</strong>
+                      <ul className="mt-1 space-y-1">
+                        {complaint.userNote.map((n, i) => (
+                          <li key={i} className="text-sm text-gray-700">
+                            • {n.text}
+                            <span className="text-xs text-gray-500">
+                              {" "}
+                              ({new Date(n.addedAt).toLocaleString()})
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </>
               ) : (
                 <p>N/A</p>
@@ -412,10 +494,33 @@ function AssignWorkerModal({
                     : "border-gray-200 hover:bg-gray-100"
                 }`}
                 onClick={() => onSelectWorker(w._id)}>
-                <p className="font-medium">
-                  {w.name} {w.surname}
-                </p>
-                <p className="text-sm text-gray-600">{w.department?.name}</p>
+                <div className="flex items-center gap-3 mb-2">
+                  {w.profilePhoto ? (
+                    <img
+                      src={w.profilePhoto}
+                      alt={`${w.name} ${w.surname}`}
+                      className="w-12 h-12 rounded-full object-cover border border-gray-300 shrink-0"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center border border-gray-300 shrink-0">
+                      <span className="text-xs text-white font-bold">
+                        {w.name?.[0]}
+                      </span>
+                    </div>
+                  )}
+
+                  <div>
+                    <p className="font-medium leading-tight">
+                      {w.name} {w.surname}
+                    </p>
+                    <p className="text-sm text-gray-600 leading-tight">
+                      {w.department?.name}
+                    </p>
+                    <p className="text-sm text-gray-600 leading-tight">
+                      {w.blockOrRegion}
+                    </p>
+                  </div>
+                </div>
               </div>
             ))
           ) : (

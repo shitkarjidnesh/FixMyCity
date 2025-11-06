@@ -309,8 +309,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-
-router.post("/note/:complaintId",  async (req, res) => {
+router.post("/note/:complaintId", async (req, res) => {
   const { complaintId } = req.params;
   const { note } = req.body;
   const userId = req.auth?.id;
@@ -330,5 +329,7 @@ router.post("/note/:complaintId",  async (req, res) => {
     data: complaint.notes,
   });
 });
+
+
 
 module.exports = router;

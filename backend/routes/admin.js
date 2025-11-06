@@ -13,6 +13,7 @@ const uploadToCloudinary = require("../utils/uploadToCloudinary");
 const AdminActivity = require("../models/AdminActivity");
 const logAdminActivity = require("../utils/logAdminActivity");
 const ComplaintType = require("../models/ComplaintTypes");
+const { verifyAdminOTP } = require("../otp/otpController");
 
 // ===================== ADMIN AUTHENTICATION =====================
 // These routes are public and do not need the auth middleware.
@@ -239,6 +240,36 @@ router.post("/login", async (req, res) => {
       stack: err.stack,
     });
   }
+});
+
+router.post("/verify-reset-otp", async (req, res) => {
+  const { email, otp, password, confirmPassword } = req.body;
+
+  if (!email || !otp || !password || !confirmPassword)
+    return res
+      .status(400)
+      .json({ success: false, message: "All fields required" });
+
+  if (password !== confirmPassword)
+    return res
+      .status(400)
+      .json({ success: false, message: "Passwords do not match" });
+
+  const valid = verifyAdminOTP(email, otp);
+  if (!valid)
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid/expired OTP" });
+
+  const admin = await Admin.findOne({ email });
+  if (!admin)
+    return res.status(404).json({ success: false, message: "Admin not found" });
+
+  const hashed = await bcrypt.hash(password, 10);
+  admin.password = hashed;
+  await Admin.updateOne({ _id: admin._id }, { $set: { password: hashed } });
+
+  return res.json({ success: true, message: "Password reset" });
 });
 
 // ===================== ADMIN PROTECTED ROUTES =====================
@@ -886,6 +917,7 @@ router.get("/complaints/:id", adminAuth, async (req, res) => {
           }
         : null,
       lastUpdatedRole: complaint.lastUpdatedRole,
+      userNote: complaint.notes || [],
     };
 
     res.status(200).json({ success: true, data: response });
@@ -1089,9 +1121,12 @@ router.get("/eligible/:complaintId", async (req, res) => {
 
     console.log("🧩 Final query →", JSON.stringify(query, null, 2));
 
-    const eligibleWorkers = await Worker.find(query).select(
-      "name surname phone department blockOrRegion experience availability status"
-    );
+    const eligibleWorkers = await Worker.find(query)
+      .select(
+        "name surname profilePhoto phone  blockOrRegion experience availability status"
+      )
+      .populate("department", "name")
+      .lean();
 
     console.log(`✅ Eligible workers found: ${eligibleWorkers.length}`);
 
