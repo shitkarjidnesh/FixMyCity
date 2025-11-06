@@ -10,10 +10,10 @@ import {
   Alert,
   Image,
   Dimensions,
+  TextInput,
 } from "react-native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import MapView, { Marker } from "react-native-maps";
 import TopNav from "@/components/TopNav";
 import BottomNav from "@/components/BottomNav";
 import AuthGuard from "@/components/AuthGuard";
@@ -31,7 +31,10 @@ interface Complaint {
   address: string;
   status: "Pending" | "In Progress" | "Resolved";
   dateTime: string;
-  imageUrls?: string[];
+  userImages?: string[]; // user uploaded
+  resolutionImages?: string[]; // resolved by worker
+  workerName?: string;
+  workerDepartment?: string;
   latitude?: number | null;
   longitude?: number | null;
 }
@@ -52,7 +55,10 @@ const DisplayComplaints: React.FC = () => {
   const [selectedComplaint, setSelectedComplaint] = useState<Complaint | null>(
     null
   );
+  const [note, setNote] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
+  // 🧩 Fetch complaints
   useEffect(() => {
     (async () => {
       try {
@@ -62,6 +68,7 @@ const DisplayComplaints: React.FC = () => {
           router.replace("/login");
           return;
         }
+
         const parsedData = JSON.parse(userData);
         const token = parsedData.token;
         if (!token) {
@@ -69,6 +76,7 @@ const DisplayComplaints: React.FC = () => {
           router.replace("/login");
           return;
         }
+
         const decoded: any = jwtDecode(token);
         const now = Date.now() / 1000;
         if (decoded.exp < now) {
@@ -95,6 +103,23 @@ const DisplayComplaints: React.FC = () => {
             latitude = c.location.coordinates[1];
           }
 
+          // Normalize user-uploaded and resolution images
+          const userImages = Array.isArray(c.imageUrls)
+            ? c.imageUrls.map((url: string) =>
+                url.startsWith("http")
+                  ? url
+                  : `${BASE_URL}${url.startsWith("/") ? "" : "/"}${url}`
+              )
+            : [];
+
+          const resolutionImages = Array.isArray(c.resolution?.photos)
+            ? c.resolution.photos.map((url: string) =>
+                url.startsWith("http")
+                  ? url
+                  : `${BASE_URL}${url.startsWith("/") ? "" : "/"}${url}`
+              )
+            : [];
+
           return {
             id: c._id,
             type: c.type?.name || "Unknown",
@@ -104,10 +129,18 @@ const DisplayComplaints: React.FC = () => {
               typeof c.address === "object" && c.address !== null
                 ? `${c.address.street || ""} ${c.address.landmark || ""}, ${c.address.area || ""}, ${c.address.city || ""}`.trim()
                 : c.address || "",
-
             status: c.status || "Pending",
             dateTime: new Date(c.createdAt).toLocaleString(),
-            imageUrls: c.imageUrls || [],
+            userImages,
+            resolutionImages,
+            workerName:
+              c.assignedWorker?.name ||
+              c.resolution?.by?.name ||
+              "Not Assigned",
+            workerDepartment:
+              c.assignedWorker?.department ||
+              c.resolution?.by?.department ||
+              "No Department",
             latitude,
             longitude,
           };
@@ -117,7 +150,6 @@ const DisplayComplaints: React.FC = () => {
         setFilteredComplaints(data);
       } catch (err) {
         console.error("AuthGuard/Complaint error:", err);
-        await AsyncStorage.removeItem("userData");
         router.replace("/login");
       } finally {
         setLoading(false);
@@ -129,6 +161,31 @@ const DisplayComplaints: React.FC = () => {
     setFilter(status);
     if (status === "All") setFilteredComplaints(complaints);
     else setFilteredComplaints(complaints.filter((c) => c.status === status));
+  };
+
+  // 🧩 Submit Note
+  const handleNoteSubmit = async () => {
+    if (!selectedComplaint) return;
+    if (!note.trim()) {
+      Alert.alert("Empty Note", "Please write a note before submitting.");
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      await axios.post(
+        `${BASE_URL}/api/complaints/note/${selectedComplaint.id}`,
+        { note },
+        { headers: { Authorization: `Bearer ${userData?.token}` } }
+      );
+      Alert.alert("Success", "Your note has been submitted.");
+      setNote("");
+    } catch (error) {
+      console.error("Error submitting note:", error);
+      Alert.alert("Error", "Failed to submit note. Try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (loading)
@@ -173,7 +230,6 @@ const DisplayComplaints: React.FC = () => {
                 style={styles.card}
                 onPress={() => setSelectedComplaint(c)}>
                 <Text style={styles.type}>{c.type}</Text>
-
                 <Text style={styles.detailLine}>
                   <Text style={styles.label}>Sub-Type:</Text> {c.subType}
                 </Text>
@@ -184,33 +240,62 @@ const DisplayComplaints: React.FC = () => {
                   <Text style={styles.label}>Address:</Text> {c.address}
                 </Text>
 
-                {/* Map Preview */}
-                {c.latitude && c.longitude && (
-                  <View style={styles.mapContainer}>
-                    <MapView
-                      style={{ flex: 1 }}
-                      initialRegion={{
-                        latitude: c.latitude,
-                        longitude: c.longitude,
-                        latitudeDelta: 0.005,
-                        longitudeDelta: 0.005,
-                      }}
-                      pointerEvents="none">
-                      <Marker
-                        coordinate={{
-                          latitude: c.latitude,
-                          longitude: c.longitude,
-                        }}
-                        title={c.type}
-                        description={c.address}
-                      />
-                    </MapView>
+                {/* Worker info */}
+                <Text style={styles.detailLine}>
+                  <Text style={styles.label}>Worker:</Text> {c.workerName}
+                </Text>
+                <Text style={styles.detailLine}>
+                  <Text style={styles.label}>Department:</Text>{" "}
+                  {c.workerDepartment}
+                </Text>
+
+                {/* 🧩 User Uploaded Photos */}
+                {c.userImages && c.userImages.length > 0 && (
+                  <View style={{ marginTop: 10 }}>
+                    <Text style={styles.label}>Your Uploaded Photo(s):</Text>
+                    <ScrollView
+                      horizontal
+                      showsHorizontalScrollIndicator={false}>
+                      {c.userImages.map((url, idx) => (
+                        <Image
+                          key={idx}
+                          source={{ uri: url }}
+                          style={{
+                            width: width * 0.7,
+                            height: 180,
+                            borderRadius: 10,
+                            marginRight: 10,
+                          }}
+                          resizeMode="cover"
+                        />
+                      ))}
+                    </ScrollView>
                   </View>
                 )}
 
-                <Text style={styles.detailLine}>
-                  <Text style={styles.label}>Complaint ID:</Text> {c.id}
-                </Text>
+                {/* 🧩 Resolution Photos */}
+                {c.resolutionImages && c.resolutionImages.length > 0 && (
+                  <View style={{ marginTop: 10 }}>
+                    <Text style={styles.label}>After Resolution:</Text>
+                    <ScrollView
+                      horizontal
+                      showsHorizontalScrollIndicator={false}>
+                      {c.resolutionImages.map((url, idx) => (
+                        <Image
+                          key={idx}
+                          source={{ uri: url }}
+                          style={{
+                            width: width * 0.7,
+                            height: 180,
+                            borderRadius: 10,
+                            marginRight: 10,
+                          }}
+                          resizeMode="cover"
+                        />
+                      ))}
+                    </ScrollView>
+                  </View>
+                )}
 
                 <Text style={styles.detailLine}>
                   <Text style={styles.label}>Status:</Text>{" "}
@@ -227,37 +312,15 @@ const DisplayComplaints: React.FC = () => {
                     {c.status}
                   </Text>
                 </Text>
-
-                <Text style={styles.detailLine}>
-                  <Text style={styles.label}>Date & Time:</Text> {c.dateTime}
-                </Text>
-
-                {c.imageUrls && c.imageUrls.length > 0 && (
-                  <ScrollView horizontal style={{ marginTop: 8 }}>
-                    {c.imageUrls.map((url, idx) => (
-                      <Image
-                        key={idx}
-                        source={{ uri: url }}
-                        style={{
-                          width: 180,
-                          height: 180,
-                          borderRadius: 8,
-                          marginRight: 8,
-                        }}
-                        resizeMode="cover"
-                      />
-                    ))}
-                  </ScrollView>
-                )}
               </TouchableOpacity>
             ))
           )}
         </ScrollView>
 
-        {/* Modal Detail */}
+        {/* Modal */}
         <Modal
           visible={selectedComplaint !== null}
-          transparent={true}
+          transparent
           animationType="slide"
           onRequestClose={() => setSelectedComplaint(null)}>
           <View style={styles.modalBackground}>
@@ -274,80 +337,76 @@ const DisplayComplaints: React.FC = () => {
                     {selectedComplaint.subType}
                   </Text>
                   <Text style={styles.modalText}>
-                    <Text style={styles.label}>Description:</Text>{" "}
-                    {selectedComplaint.description}
+                    <Text style={styles.label}>Worker:</Text>{" "}
+                    {selectedComplaint.workerName}
                   </Text>
                   <Text style={styles.modalText}>
-                    <Text style={styles.label}>Address:</Text>{" "}
-                    {selectedComplaint.address}
+                    <Text style={styles.label}>Department:</Text>{" "}
+                    {selectedComplaint.workerDepartment}
                   </Text>
 
-                  {/* Full Map */}
-                  {selectedComplaint.latitude &&
-                    selectedComplaint.longitude && (
-                      <View style={styles.modalMapContainer}>
-                        <MapView
-                          style={{ flex: 1 }}
-                          initialRegion={{
-                            latitude: selectedComplaint.latitude,
-                            longitude: selectedComplaint.longitude,
-                            latitudeDelta: 0.005,
-                            longitudeDelta: 0.005,
-                          }}>
-                          <Marker
-                            coordinate={{
-                              latitude: selectedComplaint.latitude,
-                              longitude: selectedComplaint.longitude,
-                            }}
-                            title={selectedComplaint.type}
-                            description={selectedComplaint.address}
-                          />
-                        </MapView>
-                      </View>
-                    )}
-
-                  <Text style={styles.modalText}>
-                    <Text style={styles.label}>Complaint ID:</Text>{" "}
-                    {selectedComplaint.id}
-                  </Text>
-                  <Text style={styles.modalText}>
-                    <Text style={styles.label}>Status:</Text>{" "}
-                    <Text
-                      style={{
-                        color:
-                          selectedComplaint.status === "Resolved"
-                            ? "green"
-                            : selectedComplaint.status === "Pending"
-                              ? "orange"
-                              : "blue",
-                        fontWeight: "bold",
-                      }}>
-                      {selectedComplaint.status}
-                    </Text>
-                  </Text>
-                  <Text style={styles.modalText}>
-                    <Text style={styles.label}>Date:</Text>{" "}
-                    {selectedComplaint.dateTime}
-                  </Text>
-
-                  {selectedComplaint.imageUrls &&
-                    selectedComplaint.imageUrls.length > 0 && (
-                      <ScrollView horizontal style={{ marginTop: 10 }}>
-                        {selectedComplaint.imageUrls.map((url, idx) => (
+                  {/* User Uploaded Photos */}
+                  {selectedComplaint?.userImages?.length > 0 && (
+                    <>
+                      <Text style={styles.label}>Your Uploaded Photos:</Text>
+                      <ScrollView horizontal>
+                        {selectedComplaint.userImages.map((url, idx) => (
                           <Image
                             key={idx}
                             source={{ uri: url }}
                             style={{
-                              width: 200,
-                              height: 200,
-                              borderRadius: 8,
-                              marginRight: 8,
+                              width: width * 0.7,
+                              height: 180,
+                              borderRadius: 10,
+                              marginRight: 10,
                             }}
-                            resizeMode="cover"
                           />
                         ))}
                       </ScrollView>
-                    )}
+                    </>
+                  )}
+
+                  {/* Resolution Photos */}
+                  {selectedComplaint?.resolutionImages?.length > 0 && (
+                    <>
+                      <Text style={[styles.label, { marginTop: 10 }]}>
+                        After Resolution:
+                      </Text>
+                      <ScrollView horizontal>
+                        {selectedComplaint.resolutionImages.map((url, idx) => (
+                          <Image
+                            key={idx}
+                            source={{ uri: url }}
+                            style={{
+                              width: width * 0.7,
+                              height: 180,
+                              borderRadius: 10,
+                              marginRight: 10,
+                            }}
+                          />
+                        ))}
+                      </ScrollView>
+                    </>
+                  )}
+
+                  {/* Note input */}
+                  <TextInput
+                    placeholder="Add a note about this complaint..."
+                    value={note}
+                    onChangeText={setNote}
+                    multiline
+                    numberOfLines={3}
+                    style={styles.noteInput}
+                  />
+
+                  <TouchableOpacity
+                    style={styles.submitBtn}
+                    disabled={submitting}
+                    onPress={handleNoteSubmit}>
+                    <Text style={styles.submitBtnText}>
+                      {submitting ? "Submitting..." : "Submit Note"}
+                    </Text>
+                  </TouchableOpacity>
 
                   <TouchableOpacity
                     style={styles.closeButton}
@@ -402,18 +461,6 @@ const styles = StyleSheet.create({
   description: { fontSize: 14, marginBottom: 4, color: "#555" },
   detailLine: { fontSize: 13, marginBottom: 4, color: "#666" },
   label: { fontWeight: "bold", color: "#333" },
-  mapContainer: {
-    height: 150,
-    borderRadius: 8,
-    overflow: "hidden",
-    marginTop: 8,
-  },
-  modalMapContainer: {
-    height: 250,
-    borderRadius: 8,
-    overflow: "hidden",
-    marginTop: 12,
-  },
   modalBackground: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",
@@ -425,11 +472,6 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 16,
     width: "85%",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 4,
   },
   modalHeading: {
     fontSize: 18,
@@ -438,8 +480,25 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   modalText: { fontSize: 14, color: "#333", marginBottom: 8 },
+  noteInput: {
+    borderColor: "#ccc",
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 10,
+    minHeight: 80,
+    textAlignVertical: "top",
+    marginTop: 10,
+    marginBottom: 10,
+  },
+  submitBtn: {
+    backgroundColor: "#28A745",
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  submitBtnText: { color: "#fff", fontWeight: "bold", fontSize: 15 },
   closeButton: {
-    marginTop: 15,
+    marginTop: 10,
     backgroundColor: "#007BFF",
     paddingVertical: 10,
     borderRadius: 8,

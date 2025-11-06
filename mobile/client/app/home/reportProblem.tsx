@@ -256,6 +256,7 @@ export default function ReportProblem() {
         form.append(`photos_meta[${idx}][longitude]`, String(p.longitude));
         form.append(`photos_meta[${idx}][timestamp]`, p.timestamp);
       });
+      console.log("Submitting form:", form);
 
       await axios.post(`${BASE_URL}/api/complaints`, form, {
         headers: {

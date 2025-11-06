@@ -1,0 +1,164 @@
+<mxfile host="65bd71144e">
+    <diagram id="backend-structure" name="Backend Folder Structure - Base">
+        <mxGraphModel dx="426" dy="244" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1800" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="15" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="10" y="10" width="630" height="950" as="geometry"/>
+                </mxCell>
+                <mxCell id="root" value="Backend/" style="shape=folder;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="30" y="20" width="240" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="models" value="models/" style="shape=folder;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="260" y="150" width="200" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="user" value="User.js" style="shape=note;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="400" y="190" width="90" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="worker" value="Worker.js" style="shape=note;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="380" y="215" width="180" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="complaint" value="Complaint.js" style="shape=note;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="360" y="250" width="180" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="department" value="Department.js" style="shape=note;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="300" y="340" width="180" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="activity" value="ActivityLog.js" style="shape=note;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="280" y="375" width="180" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="routes" value="routes/" style="shape=folder;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="200" y="440" width="200" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="userRoutes" value="userRoutes.js" style="shape=note;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="280" y="490" width="180" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="workerRoutes" value="workerRoutes.js" style="shape=note;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="260" y="525" width="180" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="adminRoutes" value="adminRoutes.js" style="shape=note;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="240" y="555" width="180" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="complaintRoutes" value="complaintRoutes.js" style="shape=note;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="220" y="590" width="180" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="middleware" value="middleware/" style="shape=folder;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="170" y="650" width="200" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="auth" value="auth.js" style="shape=note;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="190" y="700" width="180" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="uploads" value="uploads/" style="shape=folder;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="120" y="730" width="200" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="complaintImages" value="complaintImages/" style="shape=note;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="160" y="770" width="180" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="resolutionImages" value="resolutionImages/" style="shape=note;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="140" y="800" width="180" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="server" value="server.js" style="shape=note;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="80" y="860" width="200" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="package" value="package.json" style="shape=note;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="20" y="900" width="200" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge3" style="exitX=0.952;exitY=0.995;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0;entryDx=0;entryDy=22.5;entryPerimeter=0;" parent="1" source="root" target="models" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="260" y="150"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge4" style="entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.7;exitY=1.019;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="models" target="user" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge5" style="entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.602;exitY=0.994;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="models" target="worker" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="448" y="215" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge6" style="entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="models" target="complaint" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge7" style="entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.197;exitY=0.981;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="models" target="department" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge8" style="exitX=0.1;exitY=0.994;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="models" target="activity" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge9" style="entryX=0.102;entryY=0.673;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" target="routes" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="220" y="61" as="sourcePoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge10" style="entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.403;exitY=1.054;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="routes" target="userRoutes" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="352" y="490" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge11" style="entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.297;exitY=1.029;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="routes" target="workerRoutes" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="403" y="530" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge12" style="exitX=0.194;exitY=1.016;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="routes" target="adminRoutes" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge13" style="entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.097;exitY=0.978;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="routes" target="complaintRoutes" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="220" y="510"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge14" style="entryX=0.057;entryY=0.667;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.629;exitY=0.995;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="root" target="middleware" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge15" style="entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.102;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="middleware" target="auth" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge16" style="entryX=0.093;entryY=0.756;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.459;exitY=1.005;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="root" target="uploads" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="180" y="720" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge17" style="entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.201;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="uploads" target="complaintImages" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge18" style="entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.1;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="uploads" target="resolutionImages" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge19" style="entryX=0.103;entryY=0.187;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.294;exitY=0.967;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="root" target="server" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="110" y="70" as="sourcePoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge20" style="entryX=0.203;entryY=0.133;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" target="package" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="61" y="60" as="sourcePoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="11" value="ActivityLog.js" style="shape=note;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="320" y="310" width="180" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="12" value="Department.js" style="shape=note;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="340" y="280" width="180" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="13" style="exitX=0.296;exitY=1.006;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="models" target="11">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="387" y="190" as="sourcePoint"/>
+                        <mxPoint x="476" y="270" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="14" style="exitX=0.399;exitY=0.994;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="models" target="12">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="387" y="190" as="sourcePoint"/>
+                        <mxPoint x="476" y="270" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

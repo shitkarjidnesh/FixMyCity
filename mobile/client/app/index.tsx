@@ -1,17 +1,5 @@
-// import { View, Text } from "react-native";
-// import BottomNav from "../components/BottomNav";
-
-// export default function Home() {
-//   return (
-//     <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-//       <Text>Welcome to FixMyCity</Text>
-//       <BottomNav></BottomNav>
-//     </View>
-//   );
-// }
-
 import { useEffect } from "react";
-import { View, Text, ActivityIndicator } from "react-native";
+import { View, ActivityIndicator, StyleSheet, Image } from "react-native";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -19,15 +7,53 @@ export default function Splash() {
   const router = useRouter();
 
   useEffect(() => {
-    setTimeout(async () => {
-      const token = await AsyncStorage.getItem("token");
-      if (token) router.replace("/home");
-      else router.replace("/login");
-    }, 2000);
+    const checkAuth = async () => {
+      try {
+        const token = await AsyncStorage.getItem("userData");
+
+        // ✅ Navigate based on token existence
+        if (token) {
+          router.replace("/home");
+        } else {
+          router.replace("/login");
+        }
+      } catch (err) {
+        console.error("Error checking token:", err);
+        router.replace("/login");
+      }
+    };
+
+    // Add small splash delay (optional)
+    const timer = setTimeout(() => {
+      checkAuth();
+    }, 2000); // 2 seconds splash
+
+    return () => clearTimeout(timer);
   }, []);
 
   return (
-    <View >
+    <View style={styles.container}>
+      {/* Optional Splash Logo */}
+      <Image
+        source={require("../assets/logo.png")} // or remove this line if no logo
+        style={styles.logo}
+      />
+      <ActivityIndicator size="large" color="#1e90ff" />
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#ffffff",
+  },
+  logo: {
+    width: 150,
+    height: 150,
+    marginBottom: 20,
+    resizeMode: "contain",
+  },
+});

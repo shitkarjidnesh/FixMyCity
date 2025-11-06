@@ -1,0 +1,227 @@
+<mxfile host="65bd71144e">
+    <diagram id="admin-activity" name="Activity Diagram - Admin Workflow">
+        <mxGraphModel dx="2509" dy="610" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="adminLane" value="Admin" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="-493" y="148" width="1100" height="1750" as="geometry"/>
+                </mxCell>
+                <mxCell id="10" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="adminLane" source="start" target="a1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="start" value="" style="ellipse;fillColor=#000000;strokeColor=#000000;" parent="adminLane" vertex="1">
+                    <mxGeometry x="755" y="20" width="30" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="11" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="adminLane" source="a1" target="d1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="a1" value="Admin logs in" style="rounded=1;whiteSpace=wrap;html=1;" parent="adminLane" vertex="1">
+                    <mxGeometry x="710" y="95" width="120" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="12" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="adminLane" source="d1" target="a17">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="952" y="205"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="13" style="edgeStyle=none;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="adminLane" source="d1" target="a2">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="620" y="205"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="d1" value="Login successful?" style="rhombus;whiteSpace=wrap;html=1;" parent="adminLane" vertex="1">
+                    <mxGeometry x="710" y="165" width="120" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="a2" value="Display Admin Dashboard" style="rounded=1;whiteSpace=wrap;html=1;" parent="adminLane" vertex="1">
+                    <mxGeometry x="540" y="280" width="160" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="15" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="adminLane" source="a3" target="d2">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="a3" value="Fetch new complaints from DB" style="rounded=1;whiteSpace=wrap;html=1;" parent="adminLane" vertex="1">
+                    <mxGeometry x="530" y="370" width="180" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="16" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="adminLane" source="d2" target="a16">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="450" y="480" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="880" y="500"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="17" style="edgeStyle=none;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="adminLane" source="d2" target="a4">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="420" y="500"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="d2" value="New complaints exist?" style="rhombus;whiteSpace=wrap;html=1;" parent="adminLane" vertex="1">
+                    <mxGeometry x="545" y="460" width="150" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="18" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="adminLane" source="a4" target="a5">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="a4" value="Review complaint details" style="rounded=1;whiteSpace=wrap;html=1;" parent="adminLane" vertex="1">
+                    <mxGeometry x="340" y="550" width="160" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="19" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="adminLane" source="a5" target="a6">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="a5" value="Check department and eligible workers" style="rounded=1;whiteSpace=wrap;html=1;" parent="adminLane" vertex="1">
+                    <mxGeometry x="310" y="650" width="220" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="20" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="adminLane" source="a6" target="a7">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="a6" value="Assign complaint to worker" style="rounded=1;whiteSpace=wrap;html=1;" parent="adminLane" vertex="1">
+                    <mxGeometry x="330" y="750" width="180" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="a7" value="Update status to &#39;Assigned&#39;" style="rounded=1;whiteSpace=wrap;html=1;" parent="adminLane" vertex="1">
+                    <mxGeometry x="340" y="850" width="160" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="a8" value="Record activity in AdminLog" style="rounded=1;whiteSpace=wrap;html=1;" parent="adminLane" vertex="1">
+                    <mxGeometry x="330" y="940" width="180" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="a9" value="Notify worker about assignment" style="rounded=1;whiteSpace=wrap;html=1;" parent="adminLane" vertex="1">
+                    <mxGeometry x="320" y="1030" width="200" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="24" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="adminLane" source="a10" target="a11">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="a10" value="System stores resolution" style="rounded=1;whiteSpace=wrap;html=1;" parent="adminLane" vertex="1">
+                    <mxGeometry x="330" y="1120" width="180" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="25" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="adminLane" source="a11" target="d3">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="a11" value="Admin verifies proof" style="rounded=1;whiteSpace=wrap;html=1;" parent="adminLane" vertex="1">
+                    <mxGeometry x="340" y="1210" width="160" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="36" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="adminLane" source="d3" target="a15">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="660" y="1330"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="d3" value="Resolution verified?" style="rhombus;whiteSpace=wrap;html=1;" parent="adminLane" vertex="1">
+                    <mxGeometry x="350" y="1290" width="140" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="a16" value="Display &#39;No pending complaints&#39;" style="rounded=1;whiteSpace=wrap;html=1;" parent="adminLane" vertex="1">
+                    <mxGeometry x="780" y="550" width="200" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="a17" value="Display login error" style="rounded=1;whiteSpace=wrap;html=1;" parent="adminLane" vertex="1">
+                    <mxGeometry x="860" y="280" width="183" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="end" value="" style="ellipse;fillColor=#000000;strokeColor=#000000;" parent="adminLane" vertex="1">
+                    <mxGeometry x="185" y="1640" width="30" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="14" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="adminLane" source="a2" target="a3">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="21" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="adminLane" source="a7" target="a8">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="22" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="adminLane" source="a8" target="a9">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="23" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="adminLane" source="a9" target="a10">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="a15" value="Send back to worker for rework" style="rounded=1;whiteSpace=wrap;html=1;" parent="adminLane" vertex="1">
+                    <mxGeometry x="561" y="1359" width="200" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="a14" value="Record verification in AdminLog" style="rounded=1;whiteSpace=wrap;html=1;" parent="adminLane" vertex="1">
+                    <mxGeometry x="100" y="1540" width="200" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="31" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="adminLane" source="a14" target="end">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="a13" value="Notify user of resolution" style="rounded=1;whiteSpace=wrap;html=1;" parent="adminLane" vertex="1">
+                    <mxGeometry x="110" y="1450" width="180" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="29" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="adminLane" source="a13" target="a14">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="a12" value="Mark complaint &#39;Verified&#39;" style="rounded=1;whiteSpace=wrap;html=1;" parent="adminLane" vertex="1">
+                    <mxGeometry x="110" y="1360" width="180" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="28" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="adminLane" source="a12" target="a13">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="39" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="adminLane" source="d3" target="a12">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="42" value="Yes" style="text;strokeColor=none;align=center;fillColor=none;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="adminLane">
+                    <mxGeometry x="631" y="172" width="60" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="44" value="Yes" style="text;strokeColor=none;align=center;fillColor=none;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="adminLane">
+                    <mxGeometry x="440" y="460" width="60" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="45" value="Yes" style="text;strokeColor=none;align=center;fillColor=none;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="adminLane">
+                    <mxGeometry x="230" y="1290" width="60" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="46" value="No" style="text;strokeColor=none;align=center;fillColor=none;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="adminLane">
+                    <mxGeometry x="555" y="1290" width="60" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="48" value="No" style="text;strokeColor=none;align=center;fillColor=none;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="adminLane">
+                    <mxGeometry x="770" y="460" width="60" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="49" value="No" style="text;strokeColor=none;align=center;fillColor=none;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="adminLane">
+                    <mxGeometry x="850" y="165" width="60" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="workerLane" value="Worker" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="620" y="610" width="280" height="400" as="geometry"/>
+                </mxCell>
+                <mxCell id="33" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="workerLane" source="w1" target="w2">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="w1" value="Worker logs in" style="rounded=1;whiteSpace=wrap;html=1;" parent="workerLane" vertex="1">
+                    <mxGeometry x="70" y="90" width="140" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="34" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="workerLane" source="w2" target="w3">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="w2" value="Views assigned complaints" style="rounded=1;whiteSpace=wrap;html=1;" parent="workerLane" vertex="1">
+                    <mxGeometry x="60" y="180" width="160" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="w3" value="Resolves issue &amp; uploads proof" style="rounded=1;whiteSpace=wrap;html=1;" parent="workerLane" vertex="1">
+                    <mxGeometry x="50" y="250" width="180" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="32" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.25;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="a6">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="14" y="923" as="sourcePoint"/>
+                        <mxPoint x="734" y="700" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="579" y="923"/>
+                            <mxPoint x="579" y="670"/>
+                            <mxPoint x="734" y="670"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="35" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="w3" target="a10">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="770" y="1300"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="37" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="a15" target="w1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="740" y="710" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="1020" y="1530"/>
+                            <mxPoint x="1010" y="550"/>
+                            <mxPoint x="760" y="550"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

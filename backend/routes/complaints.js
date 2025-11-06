@@ -207,49 +207,128 @@ router.get("/", async (req, res) => {
       return res.status(401).json({ success: false, error: "Unauthorized" });
     }
 
+    // Fetch complaints with type + worker + department info
     const complaints = await UserComplaints.find({ userId })
       .sort({ createdAt: -1 })
-      .populate("type", "name subComplaints");
+      .populate("type", "name subComplaints")
+      .populate({
+        path: "assignedTo",
+        select: "name department",
+        populate: { path: "department", select: "name" },
+      });
 
     const normalizedComplaints = complaints.map((c) => {
+      // 🔹 Subtype resolver (handles both index & name)
       let subtypeName = "N/A";
-      if (c.subtype !== undefined && c.type?.subComplaints) {
+      if (typeof c.subtype === "string" && c.type?.subComplaints) {
         const index = parseInt(c.subtype, 10);
-        subtypeName = c.type.subComplaints[index] || "N/A";
+        if (!isNaN(index) && c.type.subComplaints[index]) {
+          // Case 1: stored as index
+          subtypeName = c.type.subComplaints[index];
+        } else {
+          // Case 2: stored as actual name already
+          subtypeName = c.subtype;
+        }
       }
 
-      const imageUrls = c.imageUrls || (c.imageUrl ? [c.imageUrl] : []);
-
+      // 🔹 Location handling
       let latitude = null;
       let longitude = null;
-      if (c.location && Array.isArray(c.location.coordinates)) {
+      if (c.location?.coordinates?.length === 2) {
         longitude = c.location.coordinates[0];
         latitude = c.location.coordinates[1];
       }
+
+      // 🔹 Normalize image URLs
+      const imageUrls = Array.isArray(c.imageUrls)
+        ? c.imageUrls.map((url) =>
+            url.startsWith("http")
+              ? url
+              : `${process.env.BASE_URL || "http://192.168.68.44:5000"}${
+                  url.startsWith("/") ? "" : "/"
+                }${url}`
+          )
+        : [];
+
+      // 🔹 Normalize resolution photos
+      const resolutionImages = Array.isArray(c.resolution?.photos)
+        ? c.resolution.photos.map((url) =>
+            url.startsWith("http")
+              ? url
+              : `${process.env.BASE_URL || "http://192.168.68.44:5000"}${
+                  url.startsWith("/") ? "" : "/"
+                }${url}`
+          )
+        : [];
+
+      // 🔹 Worker info
+      const assignedWorker = c.assignedTo
+        ? {
+            name: c.assignedTo.name,
+            department: c.assignedTo.department?.name || "N/A",
+          }
+        : c.resolution?.by
+        ? {
+            name: c.resolution.by.name,
+            department: c.resolution.by.department || "N/A",
+          }
+        : null;
 
       return {
         _id: c._id,
         type: c.type || { name: "N/A" },
         subtypeName,
         description: c.description || "",
-        address: c.address || "",
+        address:
+          typeof c.address === "object"
+            ? `${c.address.street || ""} ${c.address.landmark || ""}, ${
+                c.address.area || ""
+              }, ${c.address.city || ""}`.trim()
+            : c.address || "",
         status: c.status || "Pending",
+        priority: c.priority || "Medium",
         createdAt: c.createdAt,
         updatedAt: c.updatedAt,
         userId: c.userId,
         latitude,
         longitude,
         imageUrls,
+        resolutionImages,
+        assignedWorker,
+        resolution: c.resolution || {},
       };
     });
 
     res.json({ success: true, data: normalizedComplaints });
   } catch (err) {
     console.error("❌ Server error:", err);
-    res
-      .status(500)
-      .json({ success: false, error: "Failed to fetch complaints" });
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch complaints",
+    });
   }
+});
+
+
+router.post("/note/:complaintId",  async (req, res) => {
+  const { complaintId } = req.params;
+  const { note } = req.body;
+  const userId = req.auth?.id;
+
+  const complaint = await UserComplaints.findOne({ _id: complaintId, userId });
+  if (!complaint)
+    return res
+      .status(404)
+      .json({ success: false, error: "Complaint not found" });
+
+  complaint.notes.push({ text: note, addedBy: userId });
+  await complaint.save();
+
+  res.json({
+    success: true,
+    message: "Note added successfully",
+    data: complaint.notes,
+  });
 });
 
 module.exports = router;

@@ -1,0 +1,71 @@
+<mxfile host="65bd71144e">
+    <diagram id="frontend-structure" name="Frontend Folder Structure - Base">
+        <mxGraphModel dx="514" dy="294" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1800" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="3" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="40" y="10" width="490" height="510" as="geometry"/>
+                </mxCell>
+                <mxCell id="root" value="Frontend/" style="shape=folder;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="100" y="40" width="200" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="src" value="src/" style="shape=folder;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="220" y="130" width="200" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="components" value="components/" style="shape=note;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="330" y="200" width="180" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="pages" value="pages/" style="shape=note;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="310" y="230" width="180" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="context" value="context/" style="shape=note;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="290" y="260" width="180" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="app" value="App.js" style="shape=note;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="270" y="290" width="180" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="index" value="index.js" style="shape=note;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="240" y="320" width="180" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="public" value="public/" style="shape=folder;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="100" y="380" width="200" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="images" value="images/" style="shape=note;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="110" y="450" width="180" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge1" style="exitX=0.69;exitY=0.983;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.097;entryY=0.711;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="root" target="src" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge2" style="entryX=0.07;entryY=-0.054;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.606;exitY=1.016;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="src" target="components" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge3" style="entryX=0.056;entryY=0.107;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="src" target="pages" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge4" style="entryX=0.044;entryY=0.139;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.392;exitY=1.001;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="src" target="context" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="374" y="260" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge6" style="entryX=0.058;entryY=0.061;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.298;exitY=1.031;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="src" target="app" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge7" style="entryX=0.113;entryY=0.111;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" target="index" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="260" y="160" as="sourcePoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge8" parent="1" source="root" target="public" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge9" parent="1" source="public" target="images" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="4" value="Frontend File structure" style="text;strokeColor=none;align=center;fillColor=none;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+                    <mxGeometry x="160" y="10" width="210" height="30" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

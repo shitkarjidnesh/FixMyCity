@@ -1,5 +1,14 @@
 const mongoose = require("mongoose");
 
+const NoteSchema = new mongoose.Schema(
+  {
+    text: { type: String, required: true },
+    addedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // who added note
+    addedAt: { type: Date, default: Date.now },
+  },
+  { _id: false }
+);
+
 const UserComplaintSchema = new mongoose.Schema(
   {
     // Reporter reference
@@ -86,9 +95,15 @@ const UserComplaintSchema = new mongoose.Schema(
         },
         coordinates: {
           type: [Number], // [longitude, latitude]
-          required: false, // ← fix
+          required: false,
         },
       },
+    },
+
+    // 🆕 Notes submitted by users (feature added)
+    notes: {
+      type: [NoteSchema],
+      default: [],
     },
 
     // Audit tracking

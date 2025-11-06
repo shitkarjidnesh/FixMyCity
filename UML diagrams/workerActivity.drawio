@@ -1,43 +1,43 @@
 <mxfile host="65bd71144e">
     <diagram id="worker-activity" name="Activity Diagram - Worker Module">
-        <mxGraphModel dx="1002" dy="563" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
+        <mxGraphModel dx="576" dy="427" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
-                <mxCell id="start" value="" style="shape=ellipse;fillColor=#000000;strokeColor=#000000;perimeter=ellipsePerimeter;" parent="1" vertex="1">
+                <mxCell id="start" value="" style="shape=ellipse;perimeter=ellipsePerimeter;" parent="1" vertex="1">
                     <mxGeometry x="235" y="10" width="30" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="a1" value="Worker Logs In" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                <mxCell id="a1" value="Worker Logs In" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="160" y="90" width="180" height="50" as="geometry"/>
                 </mxCell>
-                <mxCell id="a2" value="System Verifies Credentials" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                <mxCell id="a2" value="System Verifies Credentials" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="140" y="170" width="220" height="50" as="geometry"/>
                 </mxCell>
-                <mxCell id="a3" value="View Assigned Complaints" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                <mxCell id="a3" value="View Assigned Complaints" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="140" y="250" width="220" height="50" as="geometry"/>
                 </mxCell>
-                <mxCell id="a4" value="Select Complaint to Update" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                <mxCell id="a4" value="Select Complaint to Update" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="140" y="330" width="220" height="50" as="geometry"/>
                 </mxCell>
-                <mxCell id="a5" value="Enter Status &amp; Remarks" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                <mxCell id="a5" value="Enter Status &amp; Remarks" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="140" y="410" width="220" height="50" as="geometry"/>
                 </mxCell>
-                <mxCell id="a6" value="Upload Resolution Image" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                <mxCell id="a6" value="Upload Resolution Image" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="140" y="500" width="220" height="50" as="geometry"/>
                 </mxCell>
-                <mxCell id="a7" value="Submit Update" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                <mxCell id="a7" value="Submit Update" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="140" y="580" width="220" height="50" as="geometry"/>
                 </mxCell>
-                <mxCell id="a8" value="System Notifies Admin &amp; User" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                <mxCell id="a8" value="System Notifies Admin &amp; User" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="130" y="660" width="240" height="50" as="geometry"/>
                 </mxCell>
-                <mxCell id="a9" value="Record Activity Log" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                <mxCell id="a9" value="Record Activity Log" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="140" y="750" width="220" height="50" as="geometry"/>
                 </mxCell>
-                <mxCell id="a10" value="Worker Logs Out" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                <mxCell id="a10" value="Worker Logs Out" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="150" y="830" width="200" height="50" as="geometry"/>
                 </mxCell>
-                <mxCell id="end" value="" style="shape=doubleEllipse;fillColor=#000000;strokeColor=#000000;" parent="1" vertex="1">
+                <mxCell id="end" value="" style="shape=doubleEllipse;" parent="1" vertex="1">
                     <mxGeometry x="235" y="910" width="30" height="30" as="geometry"/>
                 </mxCell>
                 <mxCell id="f1" style="endArrow=classic;rounded=1;" parent="1" source="start" target="a1" edge="1">

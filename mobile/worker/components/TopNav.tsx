@@ -68,10 +68,10 @@ export default function TopNav() {
               { label: "Profile", route: "/home/profile" },
               { label: "Help", route: "/home/help" },
               { label: "Report a Problem", route: "/home/reportProblem" },
-              { label: "Camera", route: "/home/camera" },
+              // { label: "Camera", route: "/home/camera" },
               { label: "About", route: "/home/about" },
-              { label: "Settings", route: "/home/setting" },
-              { label: "Community", route: "/home/community" },
+              // { label: "Settings", route: "/home/setting" },
+              // { label: "Community", route: "/home/community" },
               { label: "View Complaints", route: "/home/workerComplaintList" },
               { label: "View On Map", route: "/home/workerComplaintsMap" },
             ].map((item) => (

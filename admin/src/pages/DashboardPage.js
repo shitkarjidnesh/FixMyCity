@@ -16,7 +16,6 @@ import AdminProfile from "./AdminProfile";
 import AdminList from "./AdminList";
 import AdminDetails from "./AdminDetails";
 import WorkerDetails from "./WorkerDetails";
-
 import AdminComplaintTypePage from "./AdminComplaintTypePage";
 import AdminDepartmentPage from "./AdminDepartmentPage";
 import ActivityLogPage from "./ActivityLogPage";
@@ -38,50 +37,48 @@ const Sidebar = () => {
     { to: "/addcomplaintstypes", text: "Complaint Types" },
     { to: "/departments", text: "Departments" },
     { to: "/activity", text: "Activity Logs" },
-    //{ to: "/complaintdetails", text: "Complaint Details" },
-    //{ to: "/showadmin", text: "Admin" },
   ];
 
   const handleLogout = () => {
-    logout(); // clear auth state & localStorage
-    navigate("/login"); // redirect to login page
+    logout();
+    navigate("/login");
   };
 
   return (
-    <div className="w-64 bg-gray-800 text-white h-screen p-4 flex flex-col justify-between">
-      <div>
-        <h2 className="text-2xl font-bold mb-8">Admin Panel</h2>
-        <nav>
-          <ul>
-            {navLinks.map((link) => (
-              <li key={link.to}>
-                <Link
-                  to={link.to}
-                  className={`block py-2 px-4 rounded-md ${
-                    location.pathname === link.to
-                      ? "bg-gray-700"
-                      : "hover:bg-gray-700"
-                  }`}>
-                  {link.text}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
+    <div className="w-64 bg-gray-800 text-white flex flex-col min-h-screen overflow-y-auto">
+      {/* Sidebar Header */}
+      <div className="p-4 border-b border-gray-700">
+        <h2 className="text-2xl font-bold">Admin Panel</h2>
       </div>
 
-      {/* Logout Section at bottom */}
-      <div className="border-t border-gray-700 pt-4">
+      {/* Navigation Links (scrollable if overflow) */}
+      <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-1">
+        {navLinks.map((link) => (
+          <Link
+            key={link.to}
+            to={link.to}
+            className={`block py-2 px-4 rounded-md transition ${
+              location.pathname === link.to
+                ? "bg-gray-700"
+                : "hover:bg-gray-700"
+            }`}>
+            {link.text}
+          </Link>
+        ))}
+      </nav>
+
+      {/* Logout Section */}
+      <div className="border-t border-gray-700 p-4">
         {auth.token ? (
           <button
             onClick={handleLogout}
-            className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700">
+            className="w-full text-left px-3 py-2 rounded-md text-gray-300 hover:text-white hover:bg-gray-700 transition">
             Logout
           </button>
         ) : (
           <Link
             to="/login"
-            className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700">
+            className="block px-3 py-2 rounded-md text-gray-300 hover:text-white hover:bg-gray-700 transition">
             Login
           </Link>
         )}
@@ -92,9 +89,12 @@ const Sidebar = () => {
 
 const DashboardPage = () => {
   return (
-    <div className="flex">
+    <div className="flex min-h-screen bg-gray-100">
+      {/* Sidebar */}
       <Sidebar />
-      <main className="flex-1 p-8 bg-gray-100">
+
+      {/* Main Content */}
+      <main className="flex-1 p-8 overflow-y-auto">
         <Routes>
           <Route path="/" element={<ComplaintsList />} />
           <Route path="/users" element={<UsersList />} />

@@ -1,0 +1,67 @@
+<mxfile host="65bd71144e">
+    <diagram id="system-architecture" name="System Architecture - FixMyCity">
+        <mxGraphModel dx="1243" dy="712" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="850" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="3" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="30" y="10" width="1100" height="1350" as="geometry"/>
+                </mxCell>
+                <mxCell id="title" value="FixMyCity - System Architecture Overview" style="text;html=1;fontSize=20;fontStyle=1;align=center;" parent="1" vertex="1">
+                    <mxGeometry x="300" y="30" width="600" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="frontend" value="🌐 Frontend Layer (React.js)\n- Handles user interactions\n- Responsive complaint submission UI\n- Communicates via REST APIs" style="rounded=1;whiteSpace=wrap;html=1;fontSize=14;fontStyle=1" parent="1" vertex="1">
+                    <mxGeometry x="370" y="300" width="400" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="backend" value="⚙️ Backend Layer (Node.js + Express.js)\n- RESTful API endpoints\n- Authentication (JWT)\n- Complaint routing and business logic\n- Activity logging" style="rounded=1;whiteSpace=wrap;html=1;fontSize=14;fontStyle=1" parent="1" vertex="1">
+                    <mxGeometry x="370" y="800" width="410" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="database" value="🗄️ Database Layer (MongoDB)\n- Stores complaints, users, departments, and logs\n- Handled via Mongoose ODM\n- Ensures persistent and structured data" style="shape=cylinder;whiteSpace=wrap;html=1;fontSize=14;fontStyle=1" parent="1" vertex="1">
+                    <mxGeometry x="325" y="1080" width="490" height="240" as="geometry"/>
+                </mxCell>
+                <mxCell id="arrow1" value="HTTP Requests / API Calls" parent="1" source="frontend" target="backend" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="arrow2" value="Database Queries / CRUD Operations" parent="1" source="backend" target="database" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="arrow3" value="JSON Responses / Data Exchange" parent="1" source="backend" target="frontend" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="arrow4" value="User Input / Actions" style="exitX=0.018;exitY=1.015;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="6" target="frontend" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="910" y="170.27027027027043" as="sourcePoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="arrow5" value="Complaint Submission / Status Check" style="exitX=0.5;exitY=1;exitDx=0;exitDy=0;" parent="1" source="5" target="frontend" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="570" y="180.0000000000001" as="sourcePoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="arrow6" value="Task Updates / Resolution Feedback" style="exitX=1.032;exitY=1.015;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="8" target="frontend" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="230" y="170.27027027027043" as="sourcePoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="cloud" value="☁️ REST API Layer" style="rounded=1;whiteSpace=wrap;html=1;fontStyle=1" parent="1" vertex="1">
+                    <mxGeometry x="650" y="640" width="200" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="cloudArrow1" value="" parent="1" source="frontend" target="cloud" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="cloudArrow2" value="" parent="1" source="cloud" target="backend" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="5" value="USER" style="shape=actor;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="530" y="70" width="80" height="130" as="geometry"/>
+                </mxCell>
+                <mxCell id="6" value="ADMIN" style="shape=actor;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="900" y="70" width="80" height="130" as="geometry"/>
+                </mxCell>
+                <mxCell id="8" value="WORKER" style="shape=actor;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="160" y="70" width="80" height="130" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

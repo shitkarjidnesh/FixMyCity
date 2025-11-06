@@ -79,7 +79,7 @@ export default function TopNav() {
           <View style={styles.menuContainer}>
             <TouchableOpacity
               style={styles.menuItem}
-              onPress={() => handleNavigate("/")}>
+              onPress={() => handleNavigate("/home")}>
               <Text style={styles.menuText}>Home</Text>
             </TouchableOpacity>
 
@@ -101,11 +101,11 @@ export default function TopNav() {
               <Text style={styles.menuText}>Report a Problem</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={styles.menuItem}
               onPress={() => handleNavigate("/home/camera")}>
               <Text style={styles.menuText}>camera</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
             <TouchableOpacity
               style={styles.menuItem}
@@ -119,17 +119,17 @@ export default function TopNav() {
               <Text style={styles.menuText}>About</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={styles.menuItem}
               onPress={() => handleNavigate("/home/setting")}>
               <Text style={styles.menuText}>setting</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={styles.menuItem}
               onPress={() => handleNavigate("/home/community")}>
               <Text style={styles.menuText}>Community</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
             <TouchableOpacity
               style={[

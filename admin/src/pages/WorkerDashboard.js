@@ -27,7 +27,7 @@ export default function WorkerDashboard() {
           "http://localhost:5000/api/admin/showWorkers",
           { headers: { Authorization: `Bearer ${token}` } }
         );
-
+        console.log(res.data);
         const workersData = res.data.data || [];
         setWorkers(workersData);
         setFilteredWorkers(workersData);
@@ -247,7 +247,7 @@ export default function WorkerDashboard() {
                     </td>
 
                     <td className="px-6 py-4 text-gray-700">
-                      {worker.department?.name || "—"}
+                      {worker.department || "—"}
                     </td>
 
                     <td className="px-6 py-4">
