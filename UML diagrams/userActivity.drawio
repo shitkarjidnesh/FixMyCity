@@ -1,70 +1,124 @@
 <mxfile host="65bd71144e">
-    <diagram id="user-activity" name="Activity Diagram - User Module">
-        <mxGraphModel dx="576" dy="427" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1000" math="0" shadow="0">
+    <diagram id="user-activity-decision" name="Activity Diagram - User Module (Decision)">
+        <mxGraphModel dx="763" dy="427" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
-                <mxCell id="start" value="" style="shape=ellipse;" parent="1" vertex="1">
-                    <mxGeometry x="275" y="30" width="30" height="30" as="geometry"/>
+                <mxCell id="20" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="60" width="690" height="1070" as="geometry"/>
                 </mxCell>
-                <mxCell id="a1" value="User Logs In / Registers" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="180" y="90" width="220" height="50" as="geometry"/>
+                <mxCell id="start" style="shape=ellipse" parent="1" vertex="1">
+                    <mxGeometry x="280" y="20" width="30" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="a2" value="System Verifies Credentials" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="170" y="170" width="240" height="50" as="geometry"/>
+                <mxCell id="a1" value="User Login / Register" style="rounded=1;whiteSpace=wrap" parent="1" vertex="1">
+                    <mxGeometry x="185" y="78" width="220" height="50" as="geometry"/>
                 </mxCell>
-                <mxCell id="a3" value="Dashboard Opens" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="190" y="270" width="200" height="50" as="geometry"/>
+                <mxCell id="d1" value="Credentials Valid?" style="shape=rhombus;whiteSpace=wrap" parent="1" vertex="1">
+                    <mxGeometry x="225" y="157" width="140" height="70" as="geometry"/>
                 </mxCell>
-                <mxCell id="a4" value="Submit New Complaint" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="180" y="360" width="220" height="50" as="geometry"/>
+                <mxCell id="fail" value="Login Failed → Retry" style="rounded=1;whiteSpace=wrap" parent="1" vertex="1">
+                    <mxGeometry x="540" y="170" width="160" height="50" as="geometry"/>
                 </mxCell>
-                <mxCell id="a5" value="System Validates &amp; Stores Complaint" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="160" y="460" width="260" height="50" as="geometry"/>
+                <mxCell id="a3" value="Dashboard Opens" style="rounded=1;whiteSpace=wrap" parent="1" vertex="1">
+                    <mxGeometry x="195" y="255" width="200" height="50" as="geometry"/>
                 </mxCell>
-                <mxCell id="a6" value="System Notifies Admin" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="180" y="560" width="220" height="50" as="geometry"/>
+                <mxCell id="a4" value="Submit New Complaint" style="rounded=1;whiteSpace=wrap" parent="1" vertex="1">
+                    <mxGeometry x="175" y="333" width="240" height="50" as="geometry"/>
                 </mxCell>
-                <mxCell id="a7" value="User Views Complaint Status" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="170" y="650" width="240" height="50" as="geometry"/>
+                <mxCell id="d2" value="Data Valid?" style="shape=rhombus;whiteSpace=wrap" parent="1" vertex="1">
+                    <mxGeometry x="220" y="412" width="150" height="70" as="geometry"/>
                 </mxCell>
-                <mxCell id="a8" value="User Receives Resolution Notification" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="160" y="760" width="260" height="50" as="geometry"/>
+                <mxCell id="retry" value="Re-enter Complaint" style="rounded=1;whiteSpace=wrap" parent="1" vertex="1">
+                    <mxGeometry x="510" y="422" width="160" height="50" as="geometry"/>
                 </mxCell>
-                <mxCell id="a9" value="User Logs Out" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="200" y="860" width="180" height="50" as="geometry"/>
+                <mxCell id="a5" value="System Stores Complaint" style="rounded=1;whiteSpace=wrap" parent="1" vertex="1">
+                    <mxGeometry x="175" y="510" width="240" height="50" as="geometry"/>
                 </mxCell>
-                <mxCell id="end" value="" style="shape=doubleEllipse;" parent="1" vertex="1">
-                    <mxGeometry x="275" y="970" width="30" height="30" as="geometry"/>
+                <mxCell id="a6" value="System Notifies Admin" style="rounded=1;whiteSpace=wrap" parent="1" vertex="1">
+                    <mxGeometry x="195" y="588" width="200" height="50" as="geometry"/>
                 </mxCell>
-                <mxCell id="f1" style="endArrow=classic;rounded=1;" parent="1" source="start" target="a1" edge="1">
+                <mxCell id="a7" value="User Checks Status" style="rounded=1;whiteSpace=wrap" parent="1" vertex="1">
+                    <mxGeometry x="195" y="667" width="200" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="a8" value="Receives Resolution Notification" style="rounded=1;whiteSpace=wrap" parent="1" vertex="1">
+                    <mxGeometry x="155" y="745" width="280" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="d3" value="Logout?" style="shape=rhombus;whiteSpace=wrap" parent="1" vertex="1">
+                    <mxGeometry x="235" y="823" width="120" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="continue" value="Continue Browsing" style="rounded=1;whiteSpace=wrap" parent="1" vertex="1">
+                    <mxGeometry x="510" y="833" width="160" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="a9" value="Log Out" style="rounded=1;whiteSpace=wrap" parent="1" vertex="1">
+                    <mxGeometry x="195" y="922" width="200" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="end" style="shape=doubleEllipse" parent="1" vertex="1">
+                    <mxGeometry x="280" y="1000" width="30" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="2" parent="1" source="start" target="a1" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="f2" style="endArrow=classic;rounded=1;" parent="1" source="a1" target="a2" edge="1">
+                <mxCell id="3" parent="1" source="a1" target="d1" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="f3" style="endArrow=classic;rounded=1;" parent="1" source="a2" target="a3" edge="1">
+                <mxCell id="4" value="No" parent="1" source="d1" target="fail" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="f4" style="endArrow=classic;rounded=1;" parent="1" source="a3" target="a4" edge="1">
+                <mxCell id="5" parent="1" source="fail" target="a1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="620" y="100"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="6" value="Yes" parent="1" source="d1" target="a3" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="f5" style="endArrow=classic;rounded=1;" parent="1" source="a4" target="a5" edge="1">
+                <mxCell id="7" parent="1" source="a3" target="a4" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="f6" style="endArrow=classic;rounded=1;" parent="1" source="a5" target="a6" edge="1">
+                <mxCell id="8" parent="1" source="a4" target="d2" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="f7" style="endArrow=classic;rounded=1;" parent="1" source="a6" target="a7" edge="1">
+                <mxCell id="9" value="No" parent="1" source="d2" target="retry" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="f8" style="endArrow=classic;rounded=1;" parent="1" source="a7" target="a8" edge="1">
+                <mxCell id="10" parent="1" source="retry" target="a4" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="590" y="360"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="11" value="Yes" parent="1" source="d2" target="a5" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="f9" style="endArrow=classic;rounded=1;" parent="1" source="a8" target="a9" edge="1">
+                <mxCell id="12" parent="1" source="a5" target="a6" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="f10" style="endArrow=classic;rounded=1;" parent="1" source="a9" target="end" edge="1">
+                <mxCell id="13" parent="1" source="a6" target="a7" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="14" parent="1" source="a7" target="a8" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="15" parent="1" source="a8" target="d3" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="16" value="No" parent="1" source="d3" target="continue" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="17" parent="1" source="continue" target="a7" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="590" y="692"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="18" value="Yes" parent="1" source="d3" target="a9" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="19" parent="1" source="a9" target="end" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
             </root>

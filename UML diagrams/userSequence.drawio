@@ -1,179 +1,188 @@
 <mxfile host="65bd71144e">
     <diagram id="user-sequence" name="Sequence Diagram - User Module">
-        <mxGraphModel dx="966" dy="563" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1000" math="0" shadow="0">
+        <mxGraphModel dx="3294" dy="2220" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1000" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
-                <mxCell id="actor_user" value="User" style="shape=umlLifeline;participant=1;" parent="1" vertex="1">
-                    <mxGeometry x="20" y="60" width="20" height="930" as="geometry"/>
+                <mxCell id="6" value="" style="group;fontSize=25;" vertex="1" connectable="0" parent="1">
+                    <mxGeometry x="-280" y="-50" width="1990" height="1090" as="geometry"/>
                 </mxCell>
-                <mxCell id="auth" value="Auth Service" style="shape=umlLifeline;participant=1;" parent="1" vertex="1">
-                    <mxGeometry x="290" y="60" width="30" height="900" as="geometry"/>
+                <mxCell id="2" value="" style="rounded=0;whiteSpace=wrap;html=1;fontSize=25;" vertex="1" parent="6">
+                    <mxGeometry width="1990" height="1090" as="geometry"/>
                 </mxCell>
-                <mxCell id="complaint" value="Complaint Service" style="shape=umlLifeline;participant=1;" parent="1" vertex="1">
-                    <mxGeometry x="630" y="60" width="20" height="930" as="geometry"/>
+                <mxCell id="actor_user" value="User" style="shape=umlLifeline;participant=1;fontSize=25;fontStyle=1" parent="6" vertex="1">
+                    <mxGeometry x="101.18644067796609" y="85" width="22.48587570621469" height="930" as="geometry"/>
                 </mxCell>
-                <mxCell id="admin" value="Admin" style="shape=umlLifeline;participant=1;" parent="1" vertex="1">
-                    <mxGeometry x="950" y="50" width="10" height="930" as="geometry"/>
+                <mxCell id="auth" value="Auth Service" style="shape=umlLifeline;participant=1;fontSize=25;fontStyle=1" parent="6" vertex="1">
+                    <mxGeometry x="640.8474576271186" y="110" width="33.728813559322035" height="900" as="geometry"/>
                 </mxCell>
-                <mxCell id="log" value="UserActivity Log" style="shape=umlLifeline;participant=1;" parent="1" vertex="1">
-                    <mxGeometry x="1190" y="60" width="20" height="920" as="geometry"/>
+                <mxCell id="complaint" value="Complaint Service" style="shape=umlLifeline;participant=1;fontSize=25;fontStyle=1" parent="6" vertex="1">
+                    <mxGeometry x="1023.1073446327683" y="110" width="22.48587570621469" height="930" as="geometry"/>
                 </mxCell>
-                <mxCell id="m1" value="1. Login/Register (email, password)" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;html=1;" parent="1" source="actor_user" target="auth" edge="1">
+                <mxCell id="admin" value="Admin" style="shape=umlLifeline;participant=1;fontSize=25;fontStyle=1" parent="6" vertex="1">
+                    <mxGeometry x="1607.7401129943503" y="95" width="11.242937853107344" height="930" as="geometry"/>
+                </mxCell>
+                <mxCell id="log" value="UserActivity Log" style="shape=umlLifeline;participant=1;fontSize=25;fontStyle=1" parent="6" vertex="1">
+                    <mxGeometry x="1787.6271186440679" y="95" width="22.48587570621469" height="920" as="geometry"/>
+                </mxCell>
+                <mxCell id="m1" value="1. Login/Register (email, password)" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;html=1;fontSize=25;fontStyle=1" parent="6" source="actor_user" target="auth" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <Array as="points">
-                            <mxPoint x="170" y="120"/>
-                            <mxPoint x="170" y="120"/>
+                            <mxPoint x="505.93220338983053" y="170"/>
+                            <mxPoint x="505.93220338983053" y="170"/>
                         </Array>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="m2" value="2. Verify Credentials" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;html=1;" parent="1" edge="1">
+                <mxCell id="m2" value="2. Verify Credentials" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;html=1;fontSize=25;fontStyle=1" parent="6" edge="1">
                     <mxGeometry relative="1" as="geometry">
-                        <mxPoint x="305" y="160" as="sourcePoint"/>
-                        <mxPoint x="300" y="200" as="targetPoint"/>
+                        <mxPoint x="657.7118644067797" y="210" as="sourcePoint"/>
+                        <mxPoint x="652.090395480226" y="250" as="targetPoint"/>
                         <Array as="points">
-                            <mxPoint x="305" y="160"/>
-                            <mxPoint x="420" y="160"/>
-                            <mxPoint x="420" y="200"/>
+                            <mxPoint x="657.7118644067797" y="210"/>
+                            <mxPoint x="787.0056497175141" y="210"/>
+                            <mxPoint x="787.0056497175141" y="250"/>
                         </Array>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="m3" value="3. Auth Success (JWT Token)" style="edgeStyle=orthogonalEdgeStyle;dashed=1;endArrow=open;html=1;" parent="1" source="auth" target="actor_user" edge="1">
+                <mxCell id="m3" value="3. Auth Success (JWT Token)" style="edgeStyle=orthogonalEdgeStyle;dashed=1;endArrow=open;html=1;fontSize=25;fontStyle=1" parent="6" source="auth" target="actor_user" edge="1">
                     <mxGeometry x="0.12" relative="1" as="geometry">
                         <Array as="points">
-                            <mxPoint x="170" y="240"/>
-                            <mxPoint x="170" y="240"/>
+                            <mxPoint x="505.93220338983053" y="290"/>
+                            <mxPoint x="505.93220338983053" y="290"/>
                         </Array>
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="m4" value="4. Submit Complaint (details + image + location)" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;html=1;" parent="1" source="actor_user" target="complaint" edge="1">
+                <mxCell id="m4" value="4. Submit Complaint (details + image + location)" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;html=1;fontSize=25;fontStyle=1" parent="6" source="actor_user" target="complaint" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <Array as="points">
-                            <mxPoint x="330" y="280"/>
-                            <mxPoint x="330" y="280"/>
+                            <mxPoint x="685.819209039548" y="330"/>
+                            <mxPoint x="685.819209039548" y="330"/>
                         </Array>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="m5" value="5. Validate Data (inputs, geolocation, image)" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;html=1;" parent="1" target="complaint" edge="1">
+                <mxCell id="m5" value="5. Validate Data (inputs, geolocation, image)" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;html=1;fontSize=25;fontStyle=1" parent="6" target="complaint" edge="1">
                     <mxGeometry relative="1" as="geometry">
-                        <mxPoint x="650" y="319" as="sourcePoint"/>
-                        <mxPoint x="670" y="370" as="targetPoint"/>
+                        <mxPoint x="1045.593220338983" y="369" as="sourcePoint"/>
+                        <mxPoint x="1068.0790960451977" y="420" as="targetPoint"/>
                         <Array as="points">
-                            <mxPoint x="820" y="319"/>
-                            <mxPoint x="820" y="363"/>
+                            <mxPoint x="1236.723163841808" y="369"/>
+                            <mxPoint x="1236.723163841808" y="413"/>
                         </Array>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="m6" value="6. Store Complaint Record" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;html=1;" parent="1" source="complaint" edge="1">
+                <mxCell id="m6" value="6. Store Complaint Record" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;html=1;fontSize=25;fontStyle=1" parent="6" source="complaint" edge="1">
                     <mxGeometry relative="1" as="geometry">
-                        <mxPoint x="660" y="400" as="sourcePoint"/>
-                        <mxPoint x="650" y="442" as="targetPoint"/>
+                        <mxPoint x="1056.8361581920904" y="450" as="sourcePoint"/>
+                        <mxPoint x="1045.593220338983" y="492" as="targetPoint"/>
                         <Array as="points">
-                            <mxPoint x="810" y="400"/>
-                            <mxPoint x="810" y="442"/>
+                            <mxPoint x="1225.4802259887006" y="450"/>
+                            <mxPoint x="1225.4802259887006" y="492"/>
                         </Array>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="m7" value="7. Notify Admin (New Complaint)" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;html=1;" parent="1" source="complaint" target="admin" edge="1">
+                <mxCell id="m7" value="7. Notify Admin (New Complaint)" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;html=1;fontSize=25;fontStyle=1" parent="6" source="complaint" target="admin" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <Array as="points">
-                            <mxPoint x="800" y="480"/>
-                            <mxPoint x="800" y="480"/>
-                        </Array>
-                        <mxPoint as="offset"/>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="m8" value="8. Record Activity (Submit Action)" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;html=1;" parent="1" source="complaint" target="log" edge="1">
-                    <mxGeometry relative="1" as="geometry">
-                        <Array as="points">
-                            <mxPoint x="930" y="520"/>
-                            <mxPoint x="930" y="520"/>
-                        </Array>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="m9" value="9. Complaint Submitted Successfully" style="edgeStyle=orthogonalEdgeStyle;dashed=1;endArrow=open;html=1;" parent="1" source="complaint" target="actor_user" edge="1">
-                    <mxGeometry relative="1" as="geometry">
-                        <Array as="points">
-                            <mxPoint x="330" y="560"/>
-                            <mxPoint x="330" y="560"/>
-                        </Array>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="m10" value="10. View Complaint Status" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;html=1;" parent="1" source="actor_user" target="complaint" edge="1">
-                    <mxGeometry relative="1" as="geometry">
-                        <Array as="points">
-                            <mxPoint x="340" y="600"/>
-                            <mxPoint x="340" y="600"/>
-                        </Array>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="m11" value="11. Fetch Status from DB" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;html=1;" parent="1" target="complaint" edge="1">
-                    <mxGeometry relative="1" as="geometry">
-                        <mxPoint x="650" y="640" as="sourcePoint"/>
-                        <mxPoint x="644" y="699" as="targetPoint"/>
-                        <Array as="points">
-                            <mxPoint x="810" y="640"/>
-                            <mxPoint x="810" y="680"/>
+                            <mxPoint x="1214.2372881355932" y="530"/>
+                            <mxPoint x="1214.2372881355932" y="530"/>
                         </Array>
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="m12" value="12. Return Status and Resolution Details" style="edgeStyle=orthogonalEdgeStyle;dashed=1;endArrow=open;html=1;" parent="1" source="complaint" target="actor_user" edge="1">
+                <mxCell id="m8" value="8. Record Activity (Submit Action)" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;html=1;fontSize=25;fontStyle=1" parent="6" source="complaint" target="log" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <Array as="points">
-                            <mxPoint x="340" y="720"/>
-                            <mxPoint x="340" y="720"/>
+                            <mxPoint x="1360.3954802259886" y="570"/>
+                            <mxPoint x="1360.3954802259886" y="570"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="m9" value="9. Complaint Submitted Successfully" style="edgeStyle=orthogonalEdgeStyle;dashed=1;endArrow=open;html=1;fontSize=25;fontStyle=1" parent="6" source="complaint" target="actor_user" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="685.819209039548" y="610"/>
+                            <mxPoint x="685.819209039548" y="610"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="m10" value="10. View Complaint Status" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;html=1;fontSize=25;fontStyle=1" parent="6" source="actor_user" target="complaint" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="697.0621468926554" y="650"/>
+                            <mxPoint x="697.0621468926554" y="650"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="m11" value="11. Fetch Status from DB" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;html=1;fontSize=25;fontStyle=1" parent="6" target="complaint" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="1045.593220338983" y="690" as="sourcePoint"/>
+                        <mxPoint x="1038.8474576271187" y="749" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="1225.4802259887006" y="690"/>
+                            <mxPoint x="1225.4802259887006" y="730"/>
                         </Array>
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="m13" value="13. Admin Marks Complaint Resolved" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;html=1;" parent="1" source="admin" target="complaint" edge="1">
+                <mxCell id="m12" value="12. Return Status and Resolution Details" style="edgeStyle=orthogonalEdgeStyle;dashed=1;endArrow=open;html=1;fontSize=25;fontStyle=1" parent="6" source="complaint" target="actor_user" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <Array as="points">
-                            <mxPoint x="800" y="760"/>
-                            <mxPoint x="800" y="760"/>
+                            <mxPoint x="697.0621468926554" y="770"/>
+                            <mxPoint x="697.0621468926554" y="770"/>
                         </Array>
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="m14" value="14. Notify User (Resolution Approved)" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;html=1;" parent="1" source="complaint" target="actor_user" edge="1">
+                <mxCell id="m13" value="13. Admin Marks Complaint Resolved" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;html=1;fontSize=25;fontStyle=1" parent="6" source="admin" target="complaint" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <Array as="points">
-                            <mxPoint x="340" y="800"/>
-                            <mxPoint x="340" y="800"/>
+                            <mxPoint x="1214.2372881355932" y="810"/>
+                            <mxPoint x="1214.2372881355932" y="810"/>
                         </Array>
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="m15" value="15. Record Resolution Notification Activity" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;html=1;" parent="1" source="complaint" target="log" edge="1">
+                <mxCell id="m14" value="14. Notify User (Resolution Approved)" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;html=1;fontSize=25;fontStyle=1" parent="6" source="complaint" target="actor_user" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <Array as="points">
-                            <mxPoint x="910" y="840"/>
-                            <mxPoint x="910" y="840"/>
+                            <mxPoint x="697.0621468926554" y="850"/>
+                            <mxPoint x="697.0621468926554" y="850"/>
+                        </Array>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="m15" value="15. Record Resolution Notification Activity" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;html=1;fontSize=25;fontStyle=1" parent="6" source="complaint" target="log" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1337.909604519774" y="890"/>
+                            <mxPoint x="1337.909604519774" y="890"/>
                         </Array>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="m16" value="16. User Logs Out" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;html=1;" parent="1" source="actor_user" target="auth" edge="1">
+                <mxCell id="m16" value="16. User Logs Out" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;html=1;fontSize=25;fontStyle=1" parent="6" source="actor_user" target="auth" edge="1">
                     <mxGeometry x="-0.04" relative="1" as="geometry">
                         <Array as="points">
-                            <mxPoint x="140" y="880"/>
-                            <mxPoint x="140" y="880"/>
+                            <mxPoint x="472.20338983050846" y="930"/>
+                            <mxPoint x="472.20338983050846" y="930"/>
                         </Array>
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="m17" value="17. Invalidate Token / Session End" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;html=1;" parent="1" edge="1">
+                <mxCell id="m17" value="17. Invalidate Token / Session End" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;html=1;fontSize=25;fontStyle=1" parent="6" edge="1">
                     <mxGeometry x="0.0821" relative="1" as="geometry">
-                        <mxPoint x="330" y="920" as="sourcePoint"/>
-                        <mxPoint x="320" y="960" as="targetPoint"/>
+                        <mxPoint x="685.819209039548" y="970" as="sourcePoint"/>
+                        <mxPoint x="674.5762711864407" y="1010" as="targetPoint"/>
                         <Array as="points">
-                            <mxPoint x="308" y="920"/>
-                            <mxPoint x="490" y="920"/>
-                            <mxPoint x="490" y="960"/>
+                            <mxPoint x="661.0847457627119" y="970"/>
+                            <mxPoint x="865.7062146892655" y="970"/>
+                            <mxPoint x="865.7062146892655" y="1010"/>
                         </Array>
                         <mxPoint as="offset"/>
                     </mxGeometry>
+                </mxCell>
+                <mxCell id="5" value="User Sequence Diagram" style="text;strokeColor=none;align=center;fillColor=none;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=25;fontStyle=1;horizontal=1;" vertex="1" parent="6">
+                    <mxGeometry x="820.7344632768362" y="50" width="460.96045197740114" height="30" as="geometry"/>
                 </mxCell>
             </root>
         </mxGraphModel>
