@@ -200,14 +200,138 @@ router.post("/", upload.array("photos", 5), async (req, res) => {
 });
 
 // GET /api/complaints - fetch only logged-in user's complaints
+// router.get("/", async (req, res) => {
+//   try {
+//     const userId = req.auth?.id;
+//     if (!userId) {
+//       return res.status(401).json({ success: false, error: "Unauthorized" });
+//     }
+
+//     // Fetch complaints with type + worker + department info
+//     const complaints = await UserComplaints.find({ userId })
+//       .sort({ createdAt: -1 })
+//       .populate("type", "name subComplaints")
+//       .populate({
+//         path: "assignedTo",
+//         select: "name department",
+//         populate: { path: "department", select: "name" },
+
+//       })
+//       .populate({path:"resolutionDetails" ,select:"resolvedBy resolvedAt resolutionNotes resolutionPhotos" ,populate: {path:"resolvedBy", select:"name department"}});
+
+//     const normalizedComplaints = complaints.map((c) => {
+//       // 🔹 Subtype resolver (handles both index & name)
+//       let subtypeName = "N/A";
+//       if (typeof c.subtype === "string" && c.type?.subComplaints) {
+//         const index = parseInt(c.subtype, 10);
+//         if (!isNaN(index) && c.type.subComplaints[index]) {
+//           // Case 1: stored as index
+//           subtypeName = c.type.subComplaints[index];
+//         } else {
+//           // Case 2: stored as actual name already
+//           subtypeName = c.subtype;
+//         }
+//       }
+
+//       // 🔹 Normalize resolution photos
+//       let resolutionImages = Array.isArray(
+//         c.resolutionDetails?.resolutionPhotos
+//       )
+//         ? c.resolutionDetails.resolutionPhotos.map((url) =>
+//             url.startsWith("http")
+//               ? url
+//               : `${process.env.BASE_URL || "http://192.168.68.44:5000"}${
+//                   url.startsWith("/") ? "" : "/"
+//                 }${url}`
+//           )
+//         : [];
+
+//       // 🔹 Location handling
+//       let latitude = null;
+//       let longitude = null;
+//       if (c.location?.coordinates?.length === 2) {
+//         longitude = c.location.coordinates[0];
+//         latitude = c.location.coordinates[1];
+//       }
+
+//       // 🔹 Normalize image URLs
+//       const imageUrls = Array.isArray(c.imageUrls)
+//         ? c.imageUrls.map((url) =>
+//             url.startsWith("http")
+//               ? url
+//               : `${process.env.BASE_URL || "http://192.168.68.44:5000"}${
+//                   url.startsWith("/") ? "" : "/"
+//                 }${url}`
+//           )
+//         : [];
+
+//       // 🔹 Normalize resolution photos
+//       const resolutionImages = Array.isArray(c.resolution?.photos)
+//         ? c.resolution.photos.map((url) =>
+//             url.startsWith("http")
+//               ? url
+//               : `${process.env.BASE_URL || "http://192.168.68.44:5000"}${
+//                   url.startsWith("/") ? "" : "/"
+//                 }${url}`
+//           )
+//         : [];
+
+//       // 🔹 Worker info
+//       const assignedWorker = c.assignedTo
+//         ? {
+//             name: c.assignedTo.name,
+//             department: c.assignedTo.department?.name || "N/A",
+//           }
+//         : c.resolution?.by
+//         ? {
+//             name: c.resolution.by.name,
+//             department: c.resolution.by.department || "N/A",
+//           }
+//         : null;
+
+//       return {
+//         _id: c._id,
+//         type: c.type || { name: "N/A" },
+//         subtypeName,
+//         description: c.description || "",
+//         address:
+//           typeof c.address === "object"
+//             ? `${c.address.street || ""} ${c.address.landmark || ""}, ${
+//                 c.address.area || ""
+//               }, ${c.address.city || ""}`.trim()
+//             : c.address || "",
+//         status: c.status || "Pending",
+//         priority: c.priority || "Medium",
+//         createdAt: c.createdAt,
+//         updatedAt: c.updatedAt,
+//         userId: c.userId,
+//         latitude,
+//         longitude,
+//         imageUrls,
+//         resolutionImages,
+//         assignedWorker,
+//         resolution: c.resolution || {},
+//       };
+//     });
+
+//     res.json({ success: true, data: normalizedComplaints });
+//   } catch (err) {
+//     console.error("❌ Server error:", err);
+//     res.status(500).json({
+//       success: false,
+//       error: "Failed to fetch complaints",
+//     });
+//   }
+// });
+
 router.get("/", async (req, res) => {
   try {
     const userId = req.auth?.id;
-    if (!userId) {
+    if (!userId)
       return res.status(401).json({ success: false, error: "Unauthorized" });
-    }
 
-    // Fetch complaints with type + worker + department info
+    const baseUrl = process.env.BASE_URL || "http://192.168.68.44:5000";
+
     const complaints = await UserComplaints.find({ userId })
       .sort({ createdAt: -1 })
       .populate("type", "name subComplaints")
@@ -215,62 +339,48 @@ router.get("/", async (req, res) => {
         path: "assignedTo",
         select: "name department",
         populate: { path: "department", select: "name" },
+      })
+      .populate({
+        path: "resolutionDetails.resolvedBy",
+        select: "name department",
+        populate: { path: "department", select: "name" },
       });
 
-    const normalizedComplaints = complaints.map((c) => {
-      // 🔹 Subtype resolver (handles both index & name)
-      let subtypeName = "N/A";
-      if (typeof c.subtype === "string" && c.type?.subComplaints) {
-        const index = parseInt(c.subtype, 10);
-        if (!isNaN(index) && c.type.subComplaints[index]) {
-          // Case 1: stored as index
-          subtypeName = c.type.subComplaints[index];
-        } else {
-          // Case 2: stored as actual name already
-          subtypeName = c.subtype;
+    const normalized = complaints.map((c) => {
+      const subtypeName = (() => {
+        if (
+          typeof c.subtype === "string" &&
+          Array.isArray(c.type?.subComplaints)
+        ) {
+          const idx = parseInt(c.subtype, 10);
+          if (!isNaN(idx) && c.type.subComplaints[idx])
+            return c.type.subComplaints[idx];
+          return c.subtype;
         }
-      }
+        return "N/A";
+      })();
 
-      // 🔹 Location handling
-      let latitude = null;
-      let longitude = null;
-      if (c.location?.coordinates?.length === 2) {
-        longitude = c.location.coordinates[0];
-        latitude = c.location.coordinates[1];
-      }
+      const lat = c.location?.coordinates?.[1] ?? null;
+      const lng = c.location?.coordinates?.[0] ?? null;
 
-      // 🔹 Normalize image URLs
-      const imageUrls = Array.isArray(c.imageUrls)
-        ? c.imageUrls.map((url) =>
-            url.startsWith("http")
-              ? url
-              : `${process.env.BASE_URL || "http://192.168.68.44:5000"}${
-                  url.startsWith("/") ? "" : "/"
-                }${url}`
-          )
-        : [];
+      const normalizeUrls = (arr) =>
+        Array.isArray(arr)
+          ? arr.map((u) =>
+              u.startsWith("http")
+                ? u
+                : `${baseUrl}${u.startsWith("/") ? "" : "/"}${u}`
+            )
+          : [];
 
-      // 🔹 Normalize resolution photos
-      const resolutionImages = Array.isArray(c.resolution?.photos)
-        ? c.resolution.photos.map((url) =>
-            url.startsWith("http")
-              ? url
-              : `${process.env.BASE_URL || "http://192.168.68.44:5000"}${
-                  url.startsWith("/") ? "" : "/"
-                }${url}`
-          )
-        : [];
+      const complaintImages = normalizeUrls(c.imageUrls);
+      const resolutionImages = normalizeUrls(
+        c.resolutionDetails?.resolutionPhotos
+      );
 
-      // 🔹 Worker info
       const assignedWorker = c.assignedTo
         ? {
             name: c.assignedTo.name,
             department: c.assignedTo.department?.name || "N/A",
-          }
-        : c.resolution?.by
-        ? {
-            name: c.resolution.by.name,
-            department: c.resolution.by.department || "N/A",
           }
         : null;
 
@@ -290,22 +400,37 @@ router.get("/", async (req, res) => {
         createdAt: c.createdAt,
         updatedAt: c.updatedAt,
         userId: c.userId,
-        latitude,
-        longitude,
-        imageUrls,
+        latitude: lat,
+        longitude: lng,
+        imageUrls: complaintImages,
+
+        // ✅ flattened gallery list
         resolutionImages,
+
         assignedWorker,
-        resolution: c.resolution || {},
+
+        // ✅ structured resolution block with photos included
+        resolution: {
+          resolvedBy: c.resolutionDetails?.resolvedBy
+            ? {
+                name: c.resolutionDetails.resolvedBy.name,
+                department:
+                  c.resolutionDetails.resolvedBy.department?.name || "N/A",
+              }
+            : null,
+          resolvedAt: c.resolutionDetails?.resolvedAt || null,
+          resolutionNotes: c.resolutionDetails?.resolutionNotes || "",
+          photos: resolutionImages, // ✅ add photos here
+        },
       };
     });
 
-    res.json({ success: true, data: normalizedComplaints });
+    return res.json({ success: true, data: normalized });
   } catch (err) {
-    console.error("❌ Server error:", err);
-    res.status(500).json({
-      success: false,
-      error: "Failed to fetch complaints",
-    });
+    console.error("server error:", err);
+    return res
+      .status(500)
+      .json({ success: false, error: "Failed to fetch complaints" });
   }
 });
 
@@ -329,7 +454,5 @@ router.post("/note/:complaintId", async (req, res) => {
     data: complaint.notes,
   });
 });
-
-
 
 module.exports = router;

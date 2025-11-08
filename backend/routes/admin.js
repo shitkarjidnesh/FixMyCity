@@ -2126,4 +2126,160 @@ router.get("/activity", async (req, res) => {
   }
 });
 
+// router.get("/audit/admin", async (req, res) => {
+//   try {
+//     const {
+//       adminId,
+//       targetType,
+//       action,
+//       success,
+//       start,
+//       end,
+//       page = 1,
+//       limit = 20,
+//     } = req.query; // ✅ body, not query
+
+//     const filter = {};
+
+//     if (adminId) filter.adminId = adminId;
+//     if (targetType) filter.targetType = targetType;
+//     if (action) filter.action = action;
+//     if (success !== "") filter.success = success === "true"; // ✅ boolean convert
+//     if (start && end) {
+//       filter.createdAt = { $gte: new Date(start), $lte: new Date(end) };
+//     }
+
+//     const skip = (page - 1) * limit;
+
+//     const [data, total] = await Promise.all([
+//       AdminActivity.find(filter)
+//         .sort({ createdAt: -1 })
+//         .skip(skip)
+//         .limit(limit)
+//         .populate("adminId", "name surname email role")
+//         .populate("targetId")
+//         .lean(),
+//       AdminActivity.countDocuments(filter),
+//     ]);
+
+//     res.json({ page, limit, total, data });
+//   } catch (err) {
+//     console.log("🔥 ADMIN AUDIT ERROR:", err); // ✅ print backend real error
+//     res.status(500).json({ error: err.message });
+//   }
+// });
+router.get("/reports/admin", async (req, res) => {
+  try {
+    const { adminId, startDate, endDate } = req.query;
+
+    if (!adminId) {
+      return res.status(400).json({ message: "adminId is required" });
+    }
+    const assignedBy = adminId;
+    const filter = { assignedBy };
+
+    // Optional timeframe filtering
+    if (startDate || endDate) {
+      filter.createdAt = {};
+      if (startDate) filter.createdAt.$gte = new Date(startDate);
+      if (endDate) filter.createdAt.$lte = new Date(endDate);
+    }
+
+    // Fetch all complaints under this admin
+    const complaints = await UserComplaints.find(filter)
+      .populate({
+        path: "assignedTo",
+        select: "name department",
+        populate: { path: "department", select: "name" },
+      })
+      .populate("type", "name")
+
+      .populate("userId", "name email")
+      .populate("assignedBy", "name")
+      .sort({ createdAt: -1 });
+    console.log("Complaints fetched for report:", complaints);
+
+    // Summary metrics
+    const totalComplaints = complaints.length;
+    const pending = complaints.filter((c) => c.status === "Pending").length;
+    const inProgress = complaints.filter(
+      (c) => c.status === "In Progress"
+    ).length;
+    const resolved = complaints.filter((c) => c.status === "Resolved").length;
+
+    // Department-wise count
+    const departmentCounts = {};
+    complaints.forEach((c) => {
+      const dept = c.assignedTo?.department.name || "Unassigned";
+
+      departmentCounts[dept] = (departmentCounts[dept] || 0) + 1;
+    });
+
+    // Complaint type-wise count
+    const typeCounts = {};
+    complaints.forEach((c) => {
+      const type = c.type?.name || "Unknown Type";
+      typeCounts[type] = (typeCounts[type] || 0) + 1;
+    });
+
+    // Worker performance breakdown
+    const workerCounts = {};
+    complaints.forEach((c) => {
+      if (c.assignedTo?._id) {
+        const id = c.assignedTo._id.toString();
+        if (!workerCounts[id]) {
+          workerCounts[id] = {
+            workerId: id,
+            name: c.assignedTo.name,
+            department: c.assignedTo.department,
+            total: 0,
+            resolved: 0,
+            pending: 0,
+            inProgress: 0,
+          };
+        }
+        workerCounts[id].total += 1;
+        const key = c.status.replace(/\s/g, "").toLowerCase(); // 'pending' | 'inprogress' | 'resolved'
+        workerCounts[id][key] += 1;
+      }
+    });
+
+    // Construct response
+    const report = {
+      adminId,
+      timeFrame: { startDate, endDate },
+      summary: {
+        totalComplaints,
+        pending,
+        inProgress,
+        resolved,
+      },
+      breakdown: {
+        byDepartment: departmentCounts,
+        byComplaintType: typeCounts,
+        byWorker: Object.values(workerCounts),
+      },
+      complaints: complaints.map((c) => ({
+        id: c._id.toString(),
+        type: c.type?.name,
+        subType: c.subtype,
+        status: c.status,
+        assignedWorker: c.assignedTo?.name || "Not Assigned",
+        workerDept: c.assignedTo?.department || "N/A",
+        description: c.description,
+
+        createdAt: c.createdAt,
+        updatedAt: c.updatedAt,
+      })),
+    };
+
+    res.status(200).json(report);
+  } catch (error) {
+    console.error("Error generating admin report:", error);
+    res
+      .status(500)
+      .json({ message: "Server error while generating admin report" });
+  }
+});
+
 module.exports = router;

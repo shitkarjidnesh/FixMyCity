@@ -31,13 +31,27 @@ interface Complaint {
   address: string;
   status: "Pending" | "In Progress" | "Resolved";
   dateTime: string;
-  userImages?: string[]; // user uploaded
-  resolutionImages?: string[]; // resolved by worker
-  workerName?: string;
-  workerDepartment?: string;
-  latitude?: number | null;
-  longitude?: number | null;
+
+  userImages: string[];
+  resolutionImages: string[];
+
+  workerName: string;
+  workerDepartment: string;
+
+  latitude: number | null;
+  longitude: number | null;
+
+  resolution: {
+    notes: string;
+    photos: string[];
+    by: {
+      name: string;
+      department: string;
+    } | null;
+    dateTime: string | null;
+  };
 }
+
 
 type User = {
   token: string;
@@ -95,15 +109,12 @@ const DisplayComplaints: React.FC = () => {
         const data: Complaint[] = response.data.data.map((c: any) => {
           let latitude = null;
           let longitude = null;
-          if (
-            c.location?.coordinates &&
-            Array.isArray(c.location.coordinates)
-          ) {
-            longitude = c.location.coordinates[0];
-            latitude = c.location.coordinates[1];
+
+          if (c.latitude && c.longitude) {
+            latitude = c.latitude;
+            longitude = c.longitude;
           }
 
-          // Normalize user-uploaded and resolution images
           const userImages = Array.isArray(c.imageUrls)
             ? c.imageUrls.map((url: string) =>
                 url.startsWith("http")
@@ -112,8 +123,9 @@ const DisplayComplaints: React.FC = () => {
               )
             : [];
 
-          const resolutionImages = Array.isArray(c.resolution?.photos)
-            ? c.resolution.photos.map((url: string) =>
+          // ✅ Correct resolution image source
+          const resolutionImages = Array.isArray(c.resolutionImages)
+            ? c.resolutionImages.map((url: string) =>
                 url.startsWith("http")
                   ? url
                   : `${BASE_URL}${url.startsWith("/") ? "" : "/"}${url}`
@@ -135,16 +147,26 @@ const DisplayComplaints: React.FC = () => {
             resolutionImages,
             workerName:
               c.assignedWorker?.name ||
-              c.resolution?.by?.name ||
+              c.resolution?.resolvedBy?.name ||
               "Not Assigned",
             workerDepartment:
               c.assignedWorker?.department ||
-              c.resolution?.by?.department ||
+              c.resolution?.resolvedBy?.department ||
               "No Department",
             latitude,
             longitude,
+
+            // ✅ full structured resolution block
+            resolution: {
+              notes: c.resolution?.resolutionNotes || "",
+              photos: Array.isArray(c.resolution?.photos)
+                ? c.resolution.photos
+                : resolutionImages, // fallback
+              by: c.resolution?.resolvedBy || null,
+              dateTime: c.resolution?.resolvedAt || null,
+            },
           };
-        });
+        }); // ✅ closes .map
 
         setComplaints(data);
         setFilteredComplaints(data);
@@ -388,6 +410,18 @@ const DisplayComplaints: React.FC = () => {
                       </ScrollView>
                     </>
                   )}
+
+                  <Text style={styles.modalText}>
+                    <Text style={styles.label}>Notes By :</Text>{" "}
+                    {selectedComplaint.resolution?.by?.name ||
+                      "Not available."}
+                  </Text>
+
+                  <Text style={styles.modalText}>
+                    <Text style={styles.label}>Notes :</Text>{" "}
+                    {selectedComplaint.resolution?.notes ||
+                      "No notes available."}
+                  </Text>
 
                   {/* Note input */}
                   <TextInput
