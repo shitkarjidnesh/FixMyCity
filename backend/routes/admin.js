@@ -2086,15 +2086,25 @@ router.get("/activity", async (req, res) => {
       performedByRole,
       action,
     } = req.query;
-    const filter = {};
 
-    // Apply filters
+    const formatDate = (date) => {
+      if (!date) return null;
+      const d = new Date(date);
+      const day = String(d.getDate()).padStart(2, "0");
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const year = d.getFullYear();
+      return `${day}-${month}-${year}`; // DD-MM-YYYY
+    };
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    // ✅ restrict logs to the logged-in admin only
+    const filter = { adminId: req.auth.id };
+
+    // Additional filters
     if (success !== undefined) filter.success = success === "true";
     if (targetType) filter.targetType = targetType;
     if (performedByRole) filter.performedByRole = performedByRole;
     if (action) filter.action = { $regex: action, $options: "i" };
-
-    const skip = (parseInt(page) - 1) * parseInt(limit);
 
     const activities = await AdminActivity.find(filter)
       .populate("adminId", "name email role")
@@ -2103,12 +2113,18 @@ router.get("/activity", async (req, res) => {
       .skip(skip)
       .limit(parseInt(limit));
 
+    const formattedActivities = activities.map((a) => ({
+      ...a._doc,
+      createdAt: formatDate(a.createdAt),
+      updatedAt: a.updatedAt ? formatDate(a.updatedAt) : null,
+    }));
+
     const total = await AdminActivity.countDocuments(filter);
 
     res.status(200).json({
       success: true,
       message: "Activity logs fetched successfully",
-      data: activities,
+      data: formattedActivities,
       meta: {
         totalRecords: total,
         currentPage: parseInt(page),
@@ -2170,20 +2186,17 @@ router.get("/activity", async (req, res) => {
 // });
 router.get("/reports/admin", async (req, res) => {
   try {
-    const { adminId, startDate, endDate } = req.query;
+    console.log("Generating admin report with query:", req.auth.id);
+    let { adminId } = req.query;
 
     if (!adminId) {
-      return res.status(400).json({ message: "adminId is required" });
+      adminId = req.auth.id;
     }
+    const admininfo = await Admin.findById(adminId).select("name email");
     const assignedBy = adminId;
     const filter = { assignedBy };
 
     // Optional timeframe filtering
-    if (startDate || endDate) {
-      filter.createdAt = {};
-      if (startDate) filter.createdAt.$gte = new Date(startDate);
-      if (endDate) filter.createdAt.$lte = new Date(endDate);
-    }
 
     // Fetch all complaints under this admin
     const complaints = await UserComplaints.find(filter)
@@ -2244,10 +2257,58 @@ router.get("/reports/admin", async (req, res) => {
       }
     });
 
+    const formatDate = (date) => {
+      if (!date) return null;
+      const d = new Date(date);
+      const day = String(d.getDate()).padStart(2, "0");
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const year = d.getFullYear();
+      return `${day}-${month}-${year}`; // DD-MM-YYYY
+    };
+
+    const workerFilter = { createdBy: adminId };
+
+    // total workers registered by this admin
+    const totalWorkers = await Worker.countDocuments(workerFilter);
+
+    // department-wise worker count
+    const workersByDept = await Worker.aggregate([
+      { $match: workerFilter },
+      {
+        $group: {
+          _id: "$department",
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $lookup: {
+          from: "departments",
+          localField: "_id",
+          foreignField: "_id",
+          as: "dept",
+        },
+      },
+      { $unwind: { path: "$dept", preserveNullAndEmptyArrays: true } },
+      {
+        $project: {
+          _id: 0,
+          department: { $ifNull: ["$dept.name", "Unknown"] },
+          count: 1,
+        },
+      },
+    ]);
+
+    // table rows for workers
+    const workerTable = await Worker.find(workerFilter)
+      .populate("department", "name")
+      .select("name surname email phone department createdAt");
+
     // Construct response
     const report = {
       adminId,
-      timeFrame: { startDate, endDate },
+      adminName: admininfo.name,
+      adminEmail: admininfo.email,
+
       summary: {
         totalComplaints,
         pending,
@@ -2259,6 +2320,19 @@ router.get("/reports/admin", async (req, res) => {
         byComplaintType: typeCounts,
         byWorker: Object.values(workerCounts),
       },
+      workerRegistration: {
+        totalWorkers,
+        departmentWise: workersByDept,
+        workers: workerTable.map((w) => ({
+          id: w._id.toString(),
+          name: `${w.name} ${w.surname}`,
+          email: w.email,
+          phone: w.phone,
+          department: w.department?.name || "N/A",
+          createdAt: formatDate(w.createdAt),
+        })),
+      },
+
       complaints: complaints.map((c) => ({
         id: c._id.toString(),
         type: c.type?.name,
@@ -2267,9 +2341,20 @@ router.get("/reports/admin", async (req, res) => {
         assignedWorker: c.assignedTo?.name || "Not Assigned",
         workerDept: c.assignedTo?.department || "N/A",
         description: c.description,
+        address: [
+          c.address?.houseNo,
+          c.address?.street,
+          c.address?.area,
+          c.address?.landmark,
+          c.address?.city,
+          c.address?.state,
+          c.address?.pincode,
+        ]
+          .filter(Boolean)
+          .join(", "),
 
-        createdAt: c.createdAt,
-        updatedAt: c.updatedAt,
+        createdAt: formatDate(c.createdAt),
+        updatedAt: formatDate(c.updatedAt),
       })),
     };
 

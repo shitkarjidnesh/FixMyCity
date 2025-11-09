@@ -82,9 +82,9 @@ export default function WorkerHome() {
 
           <TouchableOpacity
             style={[styles.card, { backgroundColor: "#FF8C00" }]}
-            onPress={() => router.push("/home/workerComplaintsMap")}>
+            onPress={() => router.push("/home/about")}>
             <Text style={styles.cardEmoji}>⚙️</Text>
-            <Text style={styles.cardText}>View on Map</Text>
+            <Text style={styles.cardText}>About</Text>
           </TouchableOpacity>
         </View>
 

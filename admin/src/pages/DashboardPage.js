@@ -39,7 +39,7 @@ const Sidebar = () => {
     { to: "/addcomplaintstypes", text: "Complaint Types" },
     { to: "/departments", text: "Departments" },
     { to: "/activity", text: "Activity Logs" },
-    { to: "/adminAudit", text: "Admin Audit" },
+    // { to: "/adminAudit", text: "Admin Audit" },
     { to: "/adminreport", text: "Admin Report" },
   ];
 
@@ -116,7 +116,7 @@ const DashboardPage = () => {
           <Route path="/departments" element={<AdminDepartmentPage />} />
           <Route path="/activity" element={<ActivityLogPage />} />
           <Route path="/complaintdetails/:id" element={<ComplaintDetails />} />
-          <Route path="/adminAudit" element={<AdminAudit />} />
+          {/* <Route path="/adminAudit" element={<AdminAudit />} /> */}
           <Route path="/adminreport" element={<AdminReport />} />
         </Routes>
       </main>

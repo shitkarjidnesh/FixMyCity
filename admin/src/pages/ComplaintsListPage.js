@@ -369,12 +369,12 @@ export default function ComplaintsList() {
 
       {/* Filter and Search Controls */}
       <div className="bg-white rounded-xl shadow-md p-4 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-          {/* Status Filter */}
-          <div>
+        <div className="flex flex-col md:flex-row md:flex-wrap gap-4 items-end">
+          {/* Status */}
+          <div className="w-full md:w-48">
             <label
               htmlFor="status"
-              class="block text-sm font-medium text-gray-700">
+              className="block text-sm font-medium text-gray-700">
               Status
             </label>
             <select
@@ -382,7 +382,7 @@ export default function ComplaintsList() {
               name="status"
               value={filters.status}
               onChange={handleFilterChange}
-              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+              className="mt-1 block w-full pl-3 pr-10 py-2 border-gray-300 sm:text-sm rounded-md focus:ring-indigo-500 focus:border-indigo-500">
               <option value="">All Statuses</option>
               <option value="Pending">Pending</option>
               <option value="In Progress">In Progress</option>
@@ -390,11 +390,11 @@ export default function ComplaintsList() {
             </select>
           </div>
 
-          {/* Department Filter */}
-          <div>
+          {/* Department */}
+          <div className="w-full md:w-48">
             <label
               htmlFor="department"
-              class="block text-sm font-medium text-gray-700">
+              className="block text-sm font-medium text-gray-700">
               Department
             </label>
             <select
@@ -402,7 +402,7 @@ export default function ComplaintsList() {
               name="department"
               value={filters.department}
               onChange={handleFilterChange}
-              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+              className="mt-1 block w-full pl-3 pr-10 py-2 border-gray-300 sm:text-sm rounded-md focus:ring-indigo-500 focus:border-indigo-500">
               <option value="">All Departments</option>
               {departments.map((dept) => (
                 <option key={dept._id} value={dept._id}>
@@ -412,77 +412,43 @@ export default function ComplaintsList() {
             </select>
           </div>
 
-          {/* Start Date Filter */}
-          <div>
+          {/* Search */}
+          <div className="flex-1 w-full md:w-auto">
             <label
-              htmlFor="startDate"
-              class="block text-sm font-medium text-gray-700">
-              Start Date
+              htmlFor="search"
+              className="block text-sm font-medium text-gray-700">
+              Search
             </label>
             <input
-              type="date"
-              id="startDate"
-              name="startDate"
-              value={filters.startDate}
-              onChange={handleFilterChange}
-              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+              type="text"
+              id="search"
+              name="search"
+              value={filters.search}
+              onChange={handleSearchChange}
+              placeholder="Search by description or address..."
+              className="mt-1 block w-full pl-3 pr-10 py-2 border-gray-300 sm:text-sm rounded-md focus:ring-indigo-500 focus:border-indigo-500"
             />
           </div>
 
-          {/* End Date Filter */}
-          <div>
+          {/* Items per page */}
+          <div className="w-full md:w-auto flex items-center gap-2">
             <label
-              htmlFor="endDate"
-              class="block text-sm font-medium text-gray-700">
-              End Date
+              htmlFor="itemsPerPage"
+              className="text-sm font-medium text-gray-700">
+              Items per page:
             </label>
-            <input
-              type="date"
-              id="endDate"
-              name="endDate"
-              value={filters.endDate}
-              onChange={handleFilterChange}
-              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-            />
+            <select
+              id="itemsPerPage"
+              name="itemsPerPage"
+              value={itemsPerPage}
+              onChange={handleItemsPerPageChange}
+              className="mt-1 block w-24 pl-3 pr-10 py-2 border-gray-300 sm:text-sm rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+              <option value="5">5</option>
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+            </select>
           </div>
-        </div>
-
-        {/* Search Input */}
-        <div className="mb-4">
-          <label
-            htmlFor="search"
-            class="block text-sm font-medium text-gray-700">
-            Search
-          </label>
-          <input
-            type="text"
-            id="search"
-            name="search"
-            value={filters.search}
-            onChange={handleSearchChange}
-            placeholder="Search by description or address..."
-            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-          />
-        </div>
-
-        {/* Items per page */}
-        <div className="flex justify-end items-center gap-2">
-          <label
-            htmlFor="itemsPerPage"
-            className="text-sm font-medium text-gray-700">
-            Items per page:
-          </label>
-          <select
-            id="itemsPerPage"
-            name="itemsPerPage"
-            value={itemsPerPage}
-            onChange={handleItemsPerPageChange}
-            className="mt-1 block w-24 pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-            <option value="5">5</option>
-            <option value="10">10</option>
-            <option value="20">20</option>
-            <option value="50">50</option>
-          </select>
         </div>
       </div>
 

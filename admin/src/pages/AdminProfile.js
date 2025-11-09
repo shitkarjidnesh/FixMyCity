@@ -41,7 +41,7 @@ export default function AdminProfile() {
     );
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-100">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 py-10 px-4">
       <ToastContainer position="top-center" autoClose={2000} theme="colored" />
 
       <div className="bg-white shadow-2xl rounded-3xl p-8 w-[90%] max-w-lg transition-all duration-500 hover:shadow-blue-300 animate-fadeIn">
