@@ -119,10 +119,11 @@ export default function WorkerLogin() {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={s.f}>
         <ScrollView contentContainerStyle={s.c}>
+          <Text style={s.wc}>Welcome to FixMyCity</Text>
+          <Text style={s.ws}>Worker Access Portal</Text>
           <Text style={s.h}>
             {forgotMode ? "Worker Reset Password" : "Worker Login"}
           </Text>
-
           <TextInput
             style={s.i}
             placeholder="Email"
@@ -131,7 +132,6 @@ export default function WorkerLogin() {
             keyboardType="email-address"
             autoCapitalize="none"
           />
-
           {forgotMode ? (
             otpSent ? (
               <>
@@ -205,7 +205,6 @@ export default function WorkerLogin() {
               </TouchableOpacity>
             </>
           )}
-
           <TouchableOpacity onPress={() => setForgotMode((x) => !x)}>
             <Text style={s.l}>
               {forgotMode ? "Back to Login" : "Forgot Password?"}
@@ -253,5 +252,19 @@ const s = StyleSheet.create({
     right: 12,
     top: "50%",
     transform: [{ translateY: -11 }],
+  },
+  wc: {
+    fontSize: 26,
+    fontWeight: "800",
+    textAlign: "center",
+    marginBottom: 6,
+    color: "#1e293b",
+  },
+  ws: {
+    fontSize: 16,
+    fontWeight: "500",
+    textAlign: "center",
+    marginBottom: 18,
+    color: "#475569",
   },
 });

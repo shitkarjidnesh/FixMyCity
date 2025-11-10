@@ -1,4 +1,5 @@
 const express = require("express");
+const mongoose = require("mongoose");
 const router = express.Router();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -2364,6 +2365,91 @@ router.get("/reports/admin", async (req, res) => {
     res
       .status(500)
       .json({ message: "Server error while generating admin report" });
+  }
+});
+
+router.get("/worker-stats", async (req, res) => {
+  console.log("🔹 /worker-stats hit");
+
+  try {
+    const { workerId } = req.query;
+    if (!workerId) {
+      return res
+        .status(400)
+        .json({ success: false, error: "workerId required" });
+    }
+
+    const workerObjectId = new mongoose.Types.ObjectId(workerId);
+
+    // worker info
+    const workerInfo = await Worker.findById(workerObjectId)
+      .populate("department", "name")
+      .select("name email phone department");
+
+    if (!workerInfo) {
+      return res
+        .status(404)
+        .json({ success: false, error: "Worker not found" });
+    }
+
+    // complaint list + joins
+    const complaints = await UserComplaints.aggregate([
+      { $match: { assignedTo: workerObjectId } },
+      {
+        $lookup: {
+          from: "complainttypes",
+          localField: "type",
+          foreignField: "_id",
+          as: "complaintType",
+        },
+      },
+      { $unwind: "$complaintType" },
+      {
+        $lookup: {
+          from: "departments",
+          localField: "department",
+          foreignField: "_id",
+          as: "department",
+        },
+      },
+      { $unwind: { path: "$department", preserveNullAndEmptyArrays: true } },
+      {
+        $project: {
+          status: 1,
+          description: 1,
+          subtype: 1,
+          "complaintType.name": 1,
+          "department.name": 1,
+          createdAt: 1,
+        },
+      },
+    ]);
+
+    // status stats
+    const stats = { total: 0, "In Progress": 0, Resolved: 0 };
+    complaints.forEach((c) => {
+      if (stats[c.status] !== undefined) {
+        stats[c.status]++;
+      }
+      stats.total++;
+    });
+
+    return res.json({
+      success: true,
+      worker: {
+        name: workerInfo.name,
+        email: workerInfo.email,
+        phone: workerInfo.phone,
+        department: workerInfo.department?.name || null,
+      },
+      stats,
+      complaints,
+    });
+  } catch (err) {
+    console.error("❌ worker-stats error:", err);
+    return res
+      .status(500)
+      .json({ success: false, error: "Server error", details: err.message });
   }
 });
 
