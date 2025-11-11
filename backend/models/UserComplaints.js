@@ -71,7 +71,7 @@ const UserComplaintSchema = new mongoose.Schema(
     // Complaint status
     status: {
       type: String,
-      enum: ["Pending", "Assigned", "In Progress", "Resolved", "Rejected"],
+      enum: ["Pending", "Assigned", "In Progress", "Resolved", "Rejected","Need Verification"],
       default: "Pending",
     },
 

@@ -638,11 +638,11 @@ router.get("/complaints", async (req, res) => {
     if (status) filter.status = status;
     if (department) filter.department = department;
 
-    if (startDate || endDate) {
-      filter.createdAt = {};
-      if (startDate) filter.createdAt.$gte = new Date(startDate);
-      if (endDate) filter.createdAt.$lte = new Date(endDate);
-    }
+    // if (startDate || endDate) {
+    //   filter.createdAt = {};
+    //   if (startDate) filter.createdAt.$gte = new Date(startDate);
+    //   if (endDate) filter.createdAt.$lte = new Date(endDate);
+    // }
 
     if (search) {
       const searchRegex = new RegExp(search, "i");
@@ -654,7 +654,14 @@ router.get("/complaints", async (req, res) => {
         { "address.city": searchRegex },
       ];
     }
-
+    const formatDate = (date) => {
+      if (!date) return null;
+      const d = new Date(date);
+      const day = String(d.getDate()).padStart(2, "0");
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const year = d.getFullYear();
+      return `${day}/${month}/${year}`; // DD/MM/YYYY
+    };
     const sortQuery = {};
     sortQuery[sortBy] = sortOrder === "asc" ? 1 : -1;
 
@@ -1188,7 +1195,7 @@ router.post("/complaints/assign/:complaintId", async (req, res) => {
     // 3️⃣ Update complaint with assignment
     complaint.assignedTo = workerId;
     complaint.assignedBy = adminId;
-    complaint.status = "In Progress";
+    complaint.status = "Assigned";
     complaint.lastUpdatedBy = adminId;
     complaint.lastUpdatedRole = "Admin";
     await complaint.save();
@@ -1944,7 +1951,6 @@ router.get("/departments/all", async (req, res) => {
 
 // 🔴 POST /api/admin/departments/create — Only Super Admin can create departments
 router.post("/departments/create", async (req, res) => {
-  j;
   try {
     if (req.auth.role !== "superadmin") {
       return res.status(403).json({
@@ -2384,7 +2390,7 @@ router.get("/worker-stats", async (req, res) => {
     // worker info
     const workerInfo = await Worker.findById(workerObjectId)
       .populate("department", "name")
-      .select("name email phone department");
+      .select("name email phone department blockOrRegion");
 
     if (!workerInfo) {
       return res
@@ -2441,6 +2447,7 @@ router.get("/worker-stats", async (req, res) => {
         email: workerInfo.email,
         phone: workerInfo.phone,
         department: workerInfo.department?.name || null,
+        blockOrRegion: workerInfo.blockOrRegion,
       },
       stats,
       complaints,

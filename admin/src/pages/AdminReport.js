@@ -21,10 +21,9 @@ export default function AdminReport() {
     endDate: "",
   });
 
- 
-useEffect(() => {
-  fetchReport();
-}, []);
+  useEffect(() => {
+    fetchReport();
+  }, []);
 
   const fetchReport = async () => {
     setLoading(true);
@@ -122,7 +121,7 @@ useEffect(() => {
           </div>
           <div className="bg-white border rounded p-5 shadow-lg">
             <h4 className="font-semibold text-lg mb-2 border-b pb-1">
-              Complaints by Department
+              Assigned Complaints by Department
             </h4>
             <ul className="list-disc pl-6 text-sm space-y-1">
               {Object.entries(report.breakdown.byDepartment).map(
@@ -138,7 +137,7 @@ useEffect(() => {
           {/* Complaints Table */}
           <div className="bg-white border rounded p-5 shadow-lg">
             <h4 className="font-semibold text-lg mb-3 border-b pb-2">
-              Complaint Details
+              Assigned Complaint Details
             </h4>
             <div className="overflow-x-auto">
               <table className="min-w-full table-auto border text-sm print:text-xs">
@@ -183,7 +182,9 @@ useEffect(() => {
           {/* Charts */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white border rounded p-6 shadow-sm">
             <div className="flex flex-col items-center">
-              <h3 className="font-semibold mb-2">Complaint Status Chart</h3>
+              <h3 className="font-semibold mb-2">
+                Assigned Complaint Status Chart
+              </h3>
               <PieChart width={300} height={300}>
                 <Pie
                   data={pieData}
@@ -202,7 +203,9 @@ useEffect(() => {
             </div>
 
             <div className="flex flex-col items-center">
-              <h3 className="font-semibold mb-2">Workers by Department</h3>
+              <h3 className="font-semibold mb-2">
+                Registered Workers by Department
+              </h3>
               <BarChart width={350} height={300} data={barData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="department" />
@@ -235,7 +238,7 @@ useEffect(() => {
           {/* Worker Table */}
           <div className="bg-white border rounded p-5 shadow-lg">
             <h4 className="font-semibold mb-3 text-lg border-b pb-2">
-              Workers List
+              Registered Workers List
             </h4>
 
             <div className="overflow-x-auto">

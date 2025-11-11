@@ -44,7 +44,7 @@ export default function WorkerComplaintList() {
   // Pagination and Filter State
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [filters, setFilters] = useState({ status: "", search: "" });
+  const [filters, setFilters] = useState({ status: "Assigned", search: "" });
 
   const fetchComplaints = async (page = 1, newFilters = filters) => {
     try {
@@ -101,14 +101,10 @@ export default function WorkerComplaintList() {
   const renderItem = ({ item }: { item: Complaint }) => (
     <TouchableOpacity
       style={styles.card}
-     onPress={async () => {
-  await AsyncStorage.setItem("selectedComplaintId", item._id);
-  router.push("/home/workerComplaintDetails");
-}}
-     
-
-
-      >
+      onPress={async () => {
+        await AsyncStorage.setItem("selectedComplaintId", item._id);
+        router.push("/home/workerComplaintDetails");
+      }}>
       <Image
         source={{
           uri: item.imageUrls?.[0] || "https://via.placeholder.com/150",
@@ -167,11 +163,12 @@ export default function WorkerComplaintList() {
             <TouchableOpacity
               style={[
                 styles.statusButton,
-                filters.status === "Pending" && styles.activeStatus,
+                filters.status === "Assigned" && styles.activeStatus,
               ]}
-              onPress={() => setFilters({ ...filters, status: "Pending" })}>
-              <Text>Pending</Text>
+              onPress={() => setFilters({ ...filters, status: "Assigned" })}>
+              <Text>Assigned</Text>
             </TouchableOpacity>
+
             <TouchableOpacity
               style={[
                 styles.statusButton,
@@ -263,14 +260,19 @@ const styles = StyleSheet.create({
   },
   statusFilterContainer: {
     flexDirection: "row",
-    justifyContent: "space-around",
+    justifyContent: "space-between",
+    gap: 8,
   },
+
   statusButton: {
-    padding: 8,
+    flex: 1, // ✅ equal width
+    paddingVertical: 10,
+    alignItems: "center",
     borderRadius: 8,
     borderWidth: 1,
     borderColor: "#ccc",
   },
+
   activeStatus: {
     backgroundColor: "#1e90ff",
     borderColor: "#1e90ff",

@@ -176,7 +176,7 @@ const ComplaintCard = ({
         )}
 
         {/* Actions */}
-        <div className="flex flex-col sm:flex-row items-center gap-3 mt-4 pt-4 border-t border-gray-200">
+        {/* <div className="flex flex-col sm:flex-row items-center gap-3 mt-4 pt-4 border-t border-gray-200">
           <select
             onChange={(e) => onStatusChange(e.target.value)}
             onClick={(e) => e.stopPropagation()}
@@ -188,7 +188,7 @@ const ComplaintCard = ({
             <option value="In Progress">In Progress</option>
             <option value="Resolved">Resolved</option>
           </select>
-        </div>
+        </div> */}
       </div>
 
       {/* Image Preview Modal */}
@@ -228,7 +228,7 @@ export default function ComplaintsList() {
 
   // Filter state
   const [filters, setFilters] = useState({
-    status: "",
+    status: "Pending",
     department: "",
     startDate: "",
     endDate: "",
@@ -385,7 +385,10 @@ export default function ComplaintsList() {
               className="mt-1 block w-full pl-3 pr-10 py-2 border-gray-300 sm:text-sm rounded-md focus:ring-indigo-500 focus:border-indigo-500">
               <option value="">All Statuses</option>
               <option value="Pending">Pending</option>
+              <option value="Assigned">Assigned</option>
               <option value="In Progress">In Progress</option>
+              <option value="Need Verification">Need Verification</option>
+
               <option value="Resolved">Resolved</option>
             </select>
           </div>

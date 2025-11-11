@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net">
+  <diagram name="ER Diagram from Analysis">
+    <mxGraphModel dx="1400" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+    <!-- ENTITIES (from analysis) -->
+    
+    <mxCell id="e_user" value="User" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="50" y="150" width="160" height="40" as="geometry" />
+    </mxCell>
+    
+    <mxCell id="e_admin" value="Admin" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="350" y="50" width="160" height="40" as="geometry" />
+    </mxCell>
+    
+    <mxCell id="e_worker" value="Worker" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="650" y="150" width="160" height="40" as="geometry" />
+    </mxCell>
+    
+    <mxCell id="e_department" value="Department" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="650" y="350" width="160" height="40" as="geometry" />
+    </mxCell>
+    
+    <mxCell id="e_complaint" value="UserComplaint" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="350" y="150" width="160" height="40" as="geometry" />
+    </mxCell>
+    
+    <mxCell id="e_adminlog" value="AdminLog" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="350" y="450" width="160" height="40" as="geometry" />
+    </mxCell>
+    
+    <mxCell id="e_workerlog" value="WorkerLog" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="650" y="450" width="160" height="40" as="geometry" />
+    </mxCell>
+    
+    <mxCell id="e_userlog" value="UserLog" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="50" y="450" width="160" height="40" as="geometry" />
+    </mxCell>
+    
+    <!-- ATTRIBUTES (from analysis) -->
+    
+    <!-- User Attributes -->
+    <mxCell id="a_user_id" value="id (PK)" style="shape=ellipse;whiteSpace=wrap;html=1;fillColor=#f8f8f8;strokeColor=#000000;" vertex="1" parent="1">
+      <mxGeometry x="20" y="210" width="80" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="a_user_name" value="name" style="shape=ellipse;whiteSpace=wrap;html=1;fillColor=#f8f8f8;strokeColor=#000000;" vertex="1" parent="1">
+      <mxGeometry x="100" y="210" width="80" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="a_user_email" value="email" style="shape=ellipse;whiteSpace=wrap;html=1;fillColor=#f8f8f8;strokeColor=#000000;" vertex="1" parent="1">
+      <mxGeometry x="180" y="210" width="80" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="c_user_id" edge="1" source="e_user" target="a_user_id" style="edgeStyle=none;rounded=0;endArrow=none;startArrow=none;" />
+    <mxCell id="c_user_name" edge="1" source="e_user" target="a_user_name" style="edgeStyle=none;rounded=0;endArrow=none;startArrow=none;" />
+    <mxCell id="c_user_email" edge="1" source="e_user" target="a_user_email" style="edgeStyle=none;rounded=0;endArrow=none;startArrow=none;" />
+    
+    <!-- Admin Attributes -->
+    <mxCell id="a_admin_id" value="id (PK)" style="shape=ellipse;whiteSpace=wrap;html=1;fillColor=#f8f8f8;strokeColor=#000000;" vertex="1" parent="1">
+      <mxGeometry x="350" y="-10" width="80" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="a_admin_email" value="email" style="shape=ellipse;whiteSpace=wrap;html=1;fillColor=#f8f8f8;strokeColor=#000000;" vertex="1" parent="1">
+      <mxGeometry x="430" y="-10" width="80" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="c_admin_id" edge="1" source="e_admin" target="a_admin_id" style="edgeStyle=none;rounded=0;endArrow=none;startArrow=none;" />
+    <mxCell id="c_admin_email" edge="1" source="e_admin" target="a_admin_email" style="edgeStyle=none;rounded=0;endArrow=none;startArrow=none;" />
+    
+    <!-- Worker Attributes -->
+    <mxCell id="a_worker_id" value="id (PK)" style="shape=ellipse;whiteSpace=wrap;html=1;fillColor=#f8f8f8;strokeColor=#000000;" vertex="1" parent="1">
+      <mxGeometry x="650" y="210" width="80" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="a_worker_name" value="name" style="shape=ellipse;whiteSpace=wrap;html=1;fillColor=#f8f8f8;strokeColor=#000000;" vertex="1" parent="1">
+      <mxGeometry x="730" y="210" width="80" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="c_worker_id" edge="1" source="e_worker" target="a_worker_id" style="edgeStyle=none;rounded=0;endArrow=none;startArrow=none;" />
+    <mxCell id="c_worker_name" edge="1" source="e_worker" target="a_worker_name" style="edgeStyle=none;rounded=0;endArrow=none;startArrow=none;" />
+
+    <!-- Department Attributes -->
+    <mxCell id="a_dept_id" value="id (PK)" style="shape=ellipse;whiteSpace=wrap;html=1;fillColor=#f8f8f8;strokeColor=#000000;" vertex="1" parent="1">
+      <mxGeometry x="650" y="410" width="80" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="a_dept_name" value="name" style="shape=ellipse;whiteSpace=wrap;html=1;fillColor=#f8f8f8;strokeColor=#000000;" vertex="1" parent="1">
+      <mxGeometry x="730" y="410" width="80" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="c_dept_id" edge="1" source="e_department" target="a_dept_id" style="edgeStyle=none;rounded=0;endArrow=none;startArrow=none;" />
+    <mxCell id="c_dept_name" edge="1" source="e_department" target="a_dept_name" style="edgeStyle=none;rounded=0;endArrow=none;startArrow=none;" />
+
+    <!-- UserComplaint Attributes -->
+    <mxCell id="a_comp_id" value="id (PK)" style="shape=ellipse;whiteSpace=wrap;html=1;fillColor=#f8f8f8;strokeColor=#000000;" vertex="1" parent="1">
+      <mxGeometry x="290" y="210" width="80" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="a_comp_desc" value="description" style="shape=ellipse;whiteSpace=wrap;html=1;fillColor=#f8f8f8;strokeColor=#000000;" vertex="1" parent="1">
+      <mxGeometry x="370" y="210" width="100" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="a_comp_status" value="status" style="shape=ellipse;whiteSpace=wrap;html=1;fillColor=#f8f8f8;strokeColor=#000000;" vertex="1" parent="1">
+      <mxGeometry x="470" y="210" width="80" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="c_comp_id" edge="1" source="e_complaint" target="a_comp_id" style="edgeStyle=none;rounded=0;endArrow=none;startArrow=none;" />
+    <mxCell id="c_comp_desc" edge="1" source="e_complaint" target="a_comp_desc" style="edgeStyle=none;rounded=0;endArrow=none;startArrow=none;" />
+    <mxCell id="c_comp_status" edge="1" source="e_complaint" target="a_comp_status" style="edgeStyle=none;rounded=0;endArrow=none;startArrow=none;" />
+
+    <!-- AdminLog Attributes -->
+    <mxCell id="a_alog_id" value="id (PK)" style="shape=ellipse;whiteSpace=wrap;html=1;fillColor=#f8f8f8;strokeColor=#000000;" vertex="1" parent="1">
+      <mxGeometry x="350" y="510" width="80" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="a_alog_action" value="action" style="shape=ellipse;whiteSpace=wrap;html=1;fillColor=#f8f8f8;strokeColor=#000000;" vertex="1" parent="1">
+      <mxGeometry x="430" y="510" width="80" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="c_alog_id" edge="1" source="e_adminlog" target="a_alog_id" style="edgeStyle=none;rounded=0;endArrow=none;startArrow=none;" />
+    <mxCell id="c_alog_action" edge="1" source="e_adminlog" target="a_alog_action" style="edgeStyle=none;rounded=0;endArrow=none;startArrow=none;" />
+
+    <!-- RELATIONSHIPS (from analysis) -->
+    
+    <mxCell id="r_files" value="files" style="shape=rhombus;whiteSpace=wrap;html=1;fillColor=#fff2b2;strokeColor=#000000;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="250" y="145" width="60" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="c_user_files" edge="1" source="e_user" target="r_files" style="edgeStyle=none;rounded=0;endArrow=none;startArrow=none;" />
+    <mxCell id="c_files_comp" edge="1" source="r_files" target="e_complaint" style="edgeStyle=none;rounded=0;endArrow=none;startArrow=none;" />
+
+    <mxCell id="r_assigns" value="assigns" style="shape=rhombus;whiteSpace=wrap;html=1;fillColor=#fff2b2;strokeColor=#000000;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="400" y="100" width="60" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="c_admin_assigns" edge="1" source="e_admin" target="r_assigns" style="edgeStyle=none;rounded=0;endArrow=none;startArrow=none;" />
+    <mxCell id="c_assigns_comp" edge="1" source="r_assigns" target="e_complaint" style="edgeStyle=none;rounded=0;endArrow=none;startArrow=none;" />
+
+    <mxCell id="r_has" value="has" style="shape=rhombus;whiteSpace=wrap;html=1;fillColor=#fff2b2;strokeColor=#000000;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="700" y="260" width="60" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="c_worker_has" edge="1" source="e_worker" target="r_has" style="edgeStyle=none;rounded=0;endArrow=none;startArrow=none;" />
+    <mxCell id="c_has_dept" edge="1" source="r_has" target="e_department" style="edgeStyle=none;rounded=0;endArrow=none;startArrow=none;" />
+
+    <mxCell id="r_assigned_to" value="assigned_to" style="shape=rhombus;whiteSpace=wrap;html=1;fillColor=#fff2b2;strokeColor=#000000;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="540" y="145" width="80" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="c_comp_assigned" edge="1" source="e_complaint" target="r_assigned_to" style="edgeStyle=none;rounded=0;endArrow=none;startArrow=none;" />
+    <mxCell id="c_assigned_worker" edge="1" source="r_assigned_to" target="e_worker" style="edgeStyle=none;rounded=0;endArrow=none;startArrow=none;" />
+
+    <mxCell id="r_logs" value="logs" style="shape=rhombus;whiteSpace=wrap;html=1;fillColor=#fff2b2;strokeColor=#000000;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="400" y="350" width="60" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="c_admin_logs" edge="1" source="e_admin" target="r_logs" style="edgeStyle=none;rounded=0;endArrow=none;startArrow=none;" />
+    <mxCell id="c_logs_adminlog" edge="1" source="r_logs" target="e_adminlog" style="edgeStyle=none;rounded=0;endArrow=none;startArrow=none;" />
+
+    </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,44 +1,42 @@
 <mxfile host="65bd71144e">
     <diagram name="Admin Use Case" id="admin-usecase">
-        <mxGraphModel dx="2822" dy="1954" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+        <mxGraphModel dx="2004" dy="1663" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
-                <mxCell id="18" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-                    <mxGeometry x="-140" y="-210" width="850" height="1600" as="geometry"/>
+                <mxCell id="18" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="-140" y="-210" width="850" height="1660" as="geometry"/>
                 </mxCell>
                 <mxCell id="admin" value="Admin" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;" parent="1" vertex="1">
                     <mxGeometry x="-60" y="630" width="60" height="130" as="geometry"/>
                 </mxCell>
                 <mxCell id="sys" value="Admin Module System" style="rounded=1;whiteSpace=wrap;strokeWidth=2;container=0;" parent="1" vertex="1">
-                    <mxGeometry x="110" y="-120" width="500" height="1430" as="geometry"/>
+                    <mxGeometry x="110" y="-80" width="500" height="1500" as="geometry"/>
                 </mxCell>
                 <mxCell id="2" parent="1" source="admin" target="uc_login" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <Array as="points">
-                            <mxPoint x="150"/>
+                            <mxPoint x="180" y="90"/>
                         </Array>
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="3" parent="1" source="admin" target="uc_reg" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <Array as="points">
-                            <mxPoint x="160" y="180"/>
+                            <mxPoint x="200" y="220"/>
                         </Array>
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="4" parent="1" source="admin" target="uc_view" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <Array as="points">
-                            <mxPoint x="190" y="290"/>
+                            <mxPoint x="180" y="670"/>
                         </Array>
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="5" parent="1" source="admin" target="uc_assign" edge="1">
                     <mxGeometry relative="1" as="geometry">
-                        <Array as="points">
-                            <mxPoint x="140" y="460"/>
-                        </Array>
+                        <Array as="points"/>
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="6" parent="1" source="admin" target="uc_verify" edge="1">
@@ -54,15 +52,23 @@
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="10" parent="1" source="admin" target="uc_add_dept" edge="1">
-                    <mxGeometry relative="1" as="geometry"/>
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="210" y="290"/>
+                        </Array>
+                    </mxGeometry>
                 </mxCell>
                 <mxCell id="11" parent="1" source="admin" target="uc_up_dept" edge="1">
-                    <mxGeometry relative="1" as="geometry"/>
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="200" y="420"/>
+                        </Array>
+                    </mxGeometry>
                 </mxCell>
                 <mxCell id="12" parent="1" source="admin" target="uc_logs" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <Array as="points">
-                            <mxPoint x="150" y="980"/>
+                            <mxPoint x="180" y="1060"/>
                         </Array>
                     </mxGeometry>
                 </mxCell>
@@ -86,7 +92,7 @@
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="uc_reports" value="Generate Reports" style="ellipse" parent="1" vertex="1">
-                    <mxGeometry x="250" y="1210" width="200" height="90" as="geometry"/>
+                    <mxGeometry x="255" y="1300" width="200" height="90" as="geometry"/>
                 </mxCell>
                 <mxCell id="uc_login" value="Login" style="ellipse" parent="1" vertex="1">
                     <mxGeometry x="250" y="-63.87096774193549" width="200" height="93.54838709677418" as="geometry"/>
@@ -95,31 +101,31 @@
                     <mxGeometry x="250" y="48.38709677419351" width="200" height="93.54838709677418" as="geometry"/>
                 </mxCell>
                 <mxCell id="uc_view" value="View Complaints" style="ellipse" parent="1" vertex="1">
-                    <mxGeometry x="250" y="160.64516129032256" width="200" height="93.54838709677418" as="geometry"/>
+                    <mxGeometry x="255" y="619.9951612903226" width="200" height="93.54838709677418" as="geometry"/>
                 </mxCell>
                 <mxCell id="uc_assign" value="Assign Complaint" style="ellipse" parent="1" vertex="1">
-                    <mxGeometry x="250" y="272.9032258064516" width="200" height="93.54838709677418" as="geometry"/>
+                    <mxGeometry x="255" y="770.0032258064516" width="200" height="93.54838709677418" as="geometry"/>
                 </mxCell>
                 <mxCell id="uc_verify" value="Verify Resolution" style="ellipse" parent="1" vertex="1">
-                    <mxGeometry x="250" y="385.1612903225805" width="200" height="93.54838709677418" as="geometry"/>
+                    <mxGeometry x="255" y="900.0012903225805" width="200" height="93.54838709677418" as="geometry"/>
                 </mxCell>
                 <mxCell id="uc_close" value="Close Complaint" style="ellipse" parent="1" vertex="1">
-                    <mxGeometry x="250" y="497.41935483870964" width="200" height="93.54838709677418" as="geometry"/>
+                    <mxGeometry x="255" y="1039.9993548387097" width="200" height="93.54838709677418" as="geometry"/>
                 </mxCell>
                 <mxCell id="uc_add_worker" value="Add Worker" style="ellipse" parent="1" vertex="1">
-                    <mxGeometry x="250" y="609.6774193548385" width="200" height="93.54838709677418" as="geometry"/>
+                    <mxGeometry x="245" y="394.18741935483854" width="200" height="93.54838709677418" as="geometry"/>
                 </mxCell>
                 <mxCell id="uc_up_worker" value="Update Worker" style="ellipse" parent="1" vertex="1">
-                    <mxGeometry x="250" y="721.9354838709676" width="200" height="93.54838709677418" as="geometry"/>
+                    <mxGeometry x="245" y="506.44548387096756" width="200" height="93.54838709677418" as="geometry"/>
                 </mxCell>
                 <mxCell id="uc_add_dept" value="Add Department" style="ellipse" parent="1" vertex="1">
-                    <mxGeometry x="250" y="834.1935483870966" width="200" height="93.54838709677418" as="geometry"/>
+                    <mxGeometry x="255" y="170.00354838709654" width="200" height="93.54838709677418" as="geometry"/>
                 </mxCell>
                 <mxCell id="uc_up_dept" value="Update Department" style="ellipse" parent="1" vertex="1">
-                    <mxGeometry x="240" y="946.4516129032256" width="200" height="93.54838709677418" as="geometry"/>
+                    <mxGeometry x="245" y="282.26161290322557" width="200" height="93.54838709677418" as="geometry"/>
                 </mxCell>
                 <mxCell id="uc_logs" value="View Activity Logs" style="ellipse" parent="1" vertex="1">
-                    <mxGeometry x="250" y="1059.9965865102636" width="200" height="93.54838709677418" as="geometry"/>
+                    <mxGeometry x="255" y="1149.9965865102636" width="200" height="93.54838709677418" as="geometry"/>
                 </mxCell>
             </root>
         </mxGraphModel>

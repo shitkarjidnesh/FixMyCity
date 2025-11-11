@@ -33,7 +33,7 @@ export default function WorkerStatsPage() {
       params: { workerId },
       headers: { Authorization: `Bearer ${token}` },
     });
-
+    console.log(r.data);
     setStats(r.data.stats);
     setWorker(r.data.worker);
     setComplaints(r.data.complaints);
@@ -64,6 +64,7 @@ export default function WorkerStatsPage() {
           <div>Email: {worker.email}</div>
           <div>Phone: {worker.phone}</div>
           <div>Department: {worker.department}</div>
+          <div>Block/Region: {worker.blockOrRegion}</div> 
         </div>
       )}
 

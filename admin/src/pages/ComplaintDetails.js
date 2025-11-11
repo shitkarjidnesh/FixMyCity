@@ -80,25 +80,34 @@ export default function ComplaintDetails() {
       handleErrorToast(error, "Failed to update status.");
     }
   };
-
   const handleOpenAssignModal = async () => {
     try {
       const token = localStorage.getItem("admintoken");
       const headers = { Authorization: `Bearer ${token}` };
+
       const res = await axios.get(
         `http://localhost:5000/api/admin/eligible/${id}`,
         { headers }
       );
 
-      if (res.data?.success) {
-        handleResponseToast(res, "Eligible workers loaded.");
-        setEligibleWorkers(res.data.eligibleWorkers);
-        setSelectedWorker(complaint?.assignedTo?._id || null);
-
-        setIsModalOpen(true);
-      } else {
-        handleResponseToast(res, "No eligible workers found.");
+      if (!res.data?.success) {
+        toast.error("Failed to load workers");
+        return;
       }
+
+      const workers = res.data.eligibleWorkers || [];
+
+      // no worker available
+      if (workers.length === 0) {
+        toast.error("No eligible workers found for this complaint.");
+        return;
+      }
+
+      // workers exist
+      toast.success("Eligible workers loaded.");
+      setEligibleWorkers(workers);
+      setSelectedWorker(complaint?.assignedTo?._id || null);
+      setIsModalOpen(true);
     } catch (error) {
       handleErrorToast(error, "Failed to fetch eligible workers.");
     }
@@ -243,7 +252,7 @@ export default function ComplaintDetails() {
                 <StatusBadge status={complaint.status} />
               </div>
               <div className="mt-4 space-y-2">
-                {/* PENDING → admin can Reject or Assign */}
+                {/* PENDING */}
                 {complaint.status === "Pending" && (
                   <>
                     <button
@@ -257,56 +266,43 @@ export default function ComplaintDetails() {
                       className="w-full bg-red-600 text-white px-3 py-2 rounded-md hover:bg-red-700">
                       Reject Complaint
                     </button>
+
+                   
                   </>
                 )}
 
-                {/* ASSIGNED or IN_PROGRESS → only view / no direct resolve */}
-                {(complaint.status === "Assigned" ||
-                  complaint.status === "In Progress") && (
-                  <p className="text-gray-600 text-sm italic">
-                    Worker handling complaint…
-                  </p>
-                )}
-
-                {/* worker submitted resolution → admin must verify */}
-                {complaint.status === "Awaiting Verification" && (
+                {/* IN PROGRESS (worker uploaded proof) */}
+                {complaint.status === "Need Verification" && (
                   <>
                     <button
                       onClick={() => handleStatusChange("Resolved")}
                       className="w-full bg-green-600 text-white px-3 py-2 rounded-md hover:bg-green-700">
-                      Approve & Mark Resolved
+                      Approve Resolution
                     </button>
 
                     <button
-                      onClick={() => handleStatusChange("In Progress")}
-                      className="w-full bg-yellow-600 text-white px-3 py-2 rounded-md hover:bg-yellow-700">
-                      Reject Resolution & Send Back
-                    </button>
-                  </>
-                )}
-
-                {/* user complained after resolution */}
-                {complaint.status === "Post Resolved Review" && (
-                  <>
-                    <button
-                      onClick={handleOpenAssignModal}
-                      className="w-full bg-blue-600 text-white px-3 py-2 rounded-md hover:bg-blue-700">
+                      onClick={() => handleStatusChange("Assigned")}
+                      className="w-full bg-purple-600 text-white px-3 py-2 rounded-md hover:bg-purple-700">
                       Reassign Worker
                     </button>
-
-                    <button
-                      onClick={() => handleStatusChange("Rejected")}
-                      className="w-full bg-red-600 text-white px-3 py-2 rounded-md hover:bg-red-700">
-                      Reject User Appeal
-                    </button>
                   </>
                 )}
 
-                {/* End states */}
+                {/* ALREADY ASSIGNED */}
+                {complaint.status === "Assigned" && (
+                  <p className="text-gray-600 text-sm italic">
+                    Worker assigned and working…
+                  </p>
+                )}
+
+                {/* USER POST-RESOLUTION APPEAL */}
+               
+
+                {/* FINAL STATES */}
                 {(complaint.status === "Resolved" ||
                   complaint.status === "Rejected") && (
                   <p className="text-gray-600 text-sm italic">
-                    No further actions. Complaint closed.
+                    Complaint closed.
                   </p>
                 )}
               </div>
@@ -332,11 +328,11 @@ export default function ComplaintDetails() {
               ) : (
                 <p className="text-gray-500">Not assigned yet.</p>
               )}
-              <button
+                {complaint.status === "Need Verification" && <button
                 onClick={handleOpenAssignModal}
                 className="mt-4 w-full bg-blue-600 text-white px-4 py-2 rounded-md font-medium hover:bg-blue-700 transition-colors">
                 {complaint.assignedTo ? "Reassign Worker" : "Assign Worker"}
-              </button>
+              </button>}
             </InfoCard>
 
             {/* Resolution Details (Text) Card - MOVED HERE */}

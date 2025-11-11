@@ -23,7 +23,7 @@ function App() {
         />
       </Routes>
       <Toaster
-        position="top-right"
+        position="top-center"
         reverseOrder={false}
         toastOptions={{
           style: {

@@ -120,9 +120,12 @@ export default function Register() {
       return;
     }
     try {
-      const res = await axios.post("http://10.0.2.2:5000/api/otp/request-otp", {
-        email,
-      });
+      const res = await axios.post(
+        "http://192.168.68.44:5000/api/otp/requestuser-otp",
+        {
+          email,
+        }
+      );
       if (res.data.success) {
         Alert.alert("OTP Sent", "Check your email for the OTP");
         setOtpSent(true);
@@ -141,35 +144,48 @@ export default function Register() {
       Alert.alert("Error", "Enter OTP");
       return;
     }
+
     try {
-      const res = await axios.post("http://10.0.2.2:5000/api/otp/verify-otp", {
-        name,
-        email,
-        phone,
-        password,
-        otp,
-        gender,
-        dob: formattedDob,
-        address: {
-          houseNo,
-          street,
-          landmark,
-          area,
-          city,
-          state,
-          pincode,
-        },
-      });
+      const res = await axios.post(
+        "http://192.168.68.44:5000/api/otp/verify-otp",
+        {
+          name,
+          email,
+          phone,
+          password,
+          otp,
+          gender,
+          dob: formattedDob,
+          address: {
+            houseNo,
+            street,
+            landmark,
+            area,
+            city,
+            state,
+            pincode,
+          },
+        }
+      );
 
       if (res.data.success) {
         Alert.alert("Success", "Registration complete");
         router.replace("/login");
-      } else {
-        Alert.alert("Error", res.data.message || "OTP invalid or expired");
+        return;
       }
-    } catch (err) {
-      console.error(err);
-      Alert.alert("Error", "Registration failed");
+
+      Alert.alert("Error", res.data.message || "OTP invalid or expired");
+
+      // rollback to previous stage
+      setOtpSent(false);
+      setOtp("");
+      setTimer(300);
+    } catch (err: any) {
+      Alert.alert("Error", err.response?.data?.message);
+      setOtpSent(false);
+      setOtp("");
+      setTimer(300);
+      // rollback explicitly
     }
   };
 

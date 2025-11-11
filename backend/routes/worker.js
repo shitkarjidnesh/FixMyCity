@@ -190,7 +190,8 @@ router.get("/fetchComplaints", async (req, res) => {
 router.get("/complaint/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const complaint = await UserComplaints.findById(id)
+
+    let complaint = await UserComplaints.findById(id)
       .populate("userId", "name email phone")
       .populate("department", "name")
       .populate("assignedBy", "name email")
@@ -201,22 +202,40 @@ router.get("/complaint/:id", async (req, res) => {
       .lean();
 
     if (!complaint) {
-      return res.status(404).json({
-        success: false,
-        message: "Complaint not found",
-      });
+      return res
+        .status(404)
+        .json({ success: false, message: "Complaint not found" });
+    }
+
+    // ✅ only auto-update if current status = Assigned
+    if (complaint.status === "Assigned") {
+      await UserComplaints.updateOne(
+        { _id: id, status: "Assigned" },
+        { $set: { status: "In Progress" } }
+      );
+
+      // re-fetch updated doc
+      complaint = await UserComplaints.findById(id)
+        .populate("userId", "name email phone")
+        .populate("department", "name")
+        .populate("assignedBy", "name email")
+        .populate("assignedTo", "name email")
+        .select(
+          "type subtype description address location imageUrls status priority createdAt updatedAt resolutionDetails"
+        )
+        .lean();
     }
 
     return res.status(200).json({
       success: true,
-      message: "Complaint details fetched successfully",
+      message: "Complaint fetched",
       data: complaint,
     });
   } catch (error) {
-    console.error("❌ Worker fetch complaint details error:", error);
+    console.error("fetch complaint error:", error);
     return res.status(500).json({
       success: false,
-      message: "Failed to fetch complaint details",
+      message: "Failed to fetch complaint",
       error: error.message,
     });
   }
@@ -271,7 +290,8 @@ router.post(
         },
       };
 
-      complaint.status = "Resolved";
+      // complaint.status = "Executed"; need to change
+      complaint.status = "Need Verification"; // Set to In Progress after uploading resolution
       complaint.lastUpdatedBy = workerId;
       complaint.lastUpdatedRole = "Worker";
 

@@ -214,12 +214,17 @@ export default function WorkerDashboard() {
                   Department
                 </th>
                 <th className="px-6 py-3 text-left font-semibold text-gray-600">
+                  Block
+                </th>
+                <th className="px-6 py-3 text-left font-semibold text-gray-600">
                   ID Proof
                 </th>
                 <th className="px-6 py-3 text-left font-semibold text-gray-600">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left font-semibold text-gray-600">
+                <th
+                  className="px-6 py-3 text-left font-semibold text-gray-600"
+                  colSpan={2}>
                   Actions
                 </th>
               </tr>
@@ -249,7 +254,9 @@ export default function WorkerDashboard() {
                     <td className="px-6 py-4 text-gray-700">
                       {worker.department || "—"}
                     </td>
-
+                    <td className="px-6 py-4 text-gray-700">
+                      {worker.blockOrRegion || "—"}
+                    </td>
                     <td className="px-6 py-4">
                       {worker.idProofUrl ? (
                         <button
@@ -289,6 +296,8 @@ export default function WorkerDashboard() {
                         className="text-indigo-600 hover:underline">
                         View
                       </button>
+                    </td>
+                    <td className="px-6 py-4 space-x-3">
                       <button
                         onClick={() =>
                           handleDelete(worker._id, worker.name || "Worker")
