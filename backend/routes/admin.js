@@ -8,6 +8,7 @@ const UserComplaints = require("../models/UserComplaints");
 const Admin = require("../models/Admin");
 const Department = require("../models/Department.js");
 const Worker = require("../models/Worker.js");
+const Block = require("../models/Block");
 const adminAuth = require("../middleware/adminAuth.js");
 const upload = require("../middleware/uploadMiddleware");
 const uploadToCloudinary = require("../utils/uploadToCloudinary");
@@ -331,6 +332,7 @@ router.get("/showadmins", async (req, res) => {
       .select(
         "-password -idProof.number" // Hide sensitive fields
       )
+      .populate("blockOrRegion", "name")
       .sort(sortQuery)
       .skip(skip)
       .limit(parseInt(limit));
@@ -359,18 +361,18 @@ router.get("/getadmin/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Validate ID
-    if (!id || !id.match(/^[0-9a-fA-F]{24}$/)) {
+    // 🔹 Validate MongoDB ObjectId
+    if (!id || !/^[0-9a-fA-F]{24}$/.test(id)) {
       return res.status(400).json({
         success: false,
         message: "Invalid admin ID",
       });
     }
 
-    // Fetch full details
+    // 🔹 Fetch Admin with population
     const admin = await Admin.findById(id)
-      .select("-password") // exclude hashed password
-      // show department info
+      .populate("blockOrRegion", "name") // name only
+      .select("-password -__v") // remove sensitive fields
       .lean();
 
     if (!admin) {
@@ -379,6 +381,8 @@ router.get("/getadmin/:id", async (req, res) => {
         message: "Admin not found",
       });
     }
+
+    // 🔹 Normalise blockOrRegion
 
     res.status(200).json({
       success: true,
@@ -512,7 +516,9 @@ router.put("/showadmins/editadmin/:id", async (req, res) => {
     const updatedAdmin = await Admin.findByIdAndUpdate(id, updateFields, {
       new: true,
       runValidators: true,
-    }).select("-password");
+    })
+      .select("-password")
+      .populate("blockOrRegion", "name");
 
     if (!updatedAdmin) {
       return res.status(404).json({
@@ -1508,6 +1514,7 @@ router.get("/showWorkers", async (req, res) => {
   try {
     const workers = await Worker.find()
       .populate("department", "name")
+      .populate("blockOrRegion", "name")
       .populate("createdBy", "name email")
       .populate("updatedBy", "name email")
       .sort({ createdAt: -1 })
@@ -1536,7 +1543,7 @@ router.get("/showWorkers", async (req, res) => {
       department: worker.department?.name || null,
       experience: worker.experience,
       availability: worker.availability,
-      blockOrRegion: worker.blockOrRegion,
+      blockOrRegion: worker.blockOrRegion?.name || null,
       status: worker.status,
       profilePhotoUrl: worker.profilePhoto, // ✅ renamed for clarity
       idProofUrl: worker.idProof, // ✅ renamed for clarity
@@ -1594,6 +1601,7 @@ router.get("/getWorkerById/:id", async (req, res) => {
   try {
     const worker = await Worker.findById(req.params.id)
       .populate("department", "name")
+      .populate("blockOrRegion", "name")
       .populate("createdBy", "name email");
 
     if (!worker)
@@ -1655,7 +1663,7 @@ router.put(
       if (gender) updateData.gender = gender;
       if (dob) updateData.dob = dob;
       if (experience) updateData.experience = experience;
-      if (blockOrRegion) updateData.blockOrRegion = blockOrRegion.trim();
+      if (blockOrRegion) updateData.blockOrRegion = blockOrRegion;
       if (employeeId) updateData.employeeId = employeeId.trim();
       if (department) updateData.department = department;
       if (address) updateData.address = JSON.parse(address);
@@ -1679,7 +1687,9 @@ router.put(
         workerId,
         { $set: updateData },
         { new: true, runValidators: true }
-      ).populate("department", "name");
+      )
+        .populate("department", "name")
+        .populate("blockOrRegion", "name");
 
       res.status(200).json({
         success: true,
@@ -1816,6 +1826,152 @@ router.get("/departments", async (req, res) => {
   }
 });
 
+// 🟡 GET /api/admin/blocks — fetch list of blocks (id + name)
+router.post("/block/add", async (req, res) => {
+  try {
+    const adminId = req.auth.id;
+
+    const block = await Block.create({
+      name: req.body.name,
+      createdBy: adminId,
+      updatedBy: adminId,
+    });
+
+    await logAdminActivity({
+      req,
+      action: "CREATE_BLOCK",
+      targetType: "Block",
+      targetId: block._id,
+      remarks: `Created block: ${block.name}`,
+      success: true,
+      details: { name: block.name },
+    });
+
+    return res.json({ success: true, data: block });
+  } catch (err) {
+    await logAdminActivity({
+      req,
+      action: "CREATE_BLOCK",
+      targetType: "Block",
+      remarks: "Failed to create block",
+      success: false,
+      details: { error: err.message, body: req.body },
+    });
+    return res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+router.put("/block/update/:id", async (req, res) => {
+  try {
+    const adminId = req.auth.id;
+    const { id } = req.params;
+    const { name } = req.body;
+
+    const updated = await Block.findByIdAndUpdate(
+      id,
+      {
+        name: name,
+        updatedBy: adminId,
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!updated) {
+      await logAdminActivity({
+        req,
+        action: "UPDATE_BLOCK",
+        targetType: "Block",
+        targetId: id,
+        remarks: "Failed to update block: not found",
+        success: false,
+        details: { id },
+      });
+      return res.status(404).json({ success: false, error: "Block not found" });
+    }
+
+    await logAdminActivity({
+      req,
+      action: "UPDATE_BLOCK",
+      targetType: "Block",
+      targetId: updated._id,
+      remarks: `Updated block to: ${updated.name}`,
+      success: true,
+      details: { name: updated.name },
+    });
+
+    return res.json({ success: true, data: updated });
+  } catch (err) {
+    await logAdminActivity({
+      req,
+      action: "UPDATE_BLOCK",
+      targetType: "Block",
+      targetId: req.params.id,
+      remarks: "Failed to update block",
+      success: false,
+      details: { error: err.message, body: req.body },
+    });
+    return res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+router.get("/block/dropdown", async (req, res) => {
+  try {
+    const blocks = await Block.find()
+      .select("_id name createdAt updatedAt createdBy updatedBy")
+      .populate("createdBy", "name")
+      .populate("updatedBy", "name")
+      .sort({ name: 1 })
+      .lean();
+
+    return res.json({ success: true, data: blocks });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.delete("/block/delete/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deleted = await Block.findByIdAndDelete(id);
+
+    if (!deleted) {
+      await logAdminActivity({
+        req,
+        action: "DELETE_BLOCK",
+        targetType: "Block",
+        targetId: id,
+        remarks: "Failed to delete block: not found",
+        success: false,
+        details: { id },
+      });
+      return res.status(404).json({ success: false, error: "Block not found" });
+    }
+
+    await logAdminActivity({
+      req,
+      action: "DELETE_BLOCK",
+      targetType: "Block",
+      targetId: id,
+      remarks: `Deleted block: ${deleted.name}`,
+      success: true,
+      details: { name: deleted.name },
+    });
+
+    return res.json({ success: true });
+  } catch (err) {
+    await logAdminActivity({
+      req,
+      action: "DELETE_BLOCK",
+      targetType: "Block",
+      targetId: req.params.id,
+      remarks: "Failed to delete block",
+      success: false,
+      details: { error: err.message },
+    });
+    return res.status(400).json({ success: false, error: err.message });
+  }
+});
+
 router.post("/complaint-type/create", async (req, res) => {
   try {
     const { name, subComplaints, departmentId } = req.body;
@@ -1928,6 +2084,57 @@ router.put("/complaint-type/update/:id", async (req, res) => {
     });
 
     res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// 🔴 DELETE /api/admin/complaint-type/delete/:id
+router.delete("/complaint-type/delete/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deleted = await ComplaintType.findByIdAndDelete(id);
+
+    if (!deleted) {
+      await logAdminActivity({
+        req,
+        action: "DELETE_COMPLAINT_TYPE",
+        targetType: "ComplaintType",
+        targetId: id,
+        remarks: "Failed to delete complaint type: not found",
+        success: false,
+        details: { id },
+      });
+      return res
+        .status(404)
+        .json({ success: false, message: "Complaint type not found" });
+    }
+
+    await logAdminActivity({
+      req,
+      action: "DELETE_COMPLAINT_TYPE",
+      targetType: "ComplaintType",
+      targetId: id,
+      remarks: `Deleted complaint type: ${deleted.name}`,
+      success: true,
+      details: { name: deleted.name },
+    });
+
+    res
+      .status(200)
+      .json({ success: true, message: "Complaint type deleted successfully" });
+  } catch (error) {
+    console.error("❌ Delete Complaint Type Error:", error);
+
+    await logAdminActivity({
+      req,
+      action: "DELETE_COMPLAINT_TYPE",
+      targetType: "ComplaintType",
+      targetId: req.params.id,
+      remarks: "Failed to delete complaint type",
+      success: false,
+      details: { error: error.message },
+    });
+
+    res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
@@ -2082,6 +2289,23 @@ router.put("/departments/update/:id", async (req, res) => {
   }
 });
 
+router.get("/department/dropdown", async (req, res) => {
+  try {
+    const departments = await Department.find()
+      .select("_id name")
+      .sort({ name: 1 })
+      .lean();
+
+    return res.status(200).json(departments);
+  } catch (err) {
+    console.error("❌ Department Dropdown Error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch departments",
+      error: err.message,
+    });
+  }
+});
 // ===================== GET ACTIVITY LOGS =====================
 router.get("/activity", async (req, res) => {
   try {
@@ -2199,7 +2423,9 @@ router.get("/reports/admin", async (req, res) => {
     if (!adminId) {
       adminId = req.auth.id;
     }
-    const admininfo = await Admin.findById(adminId).select("name email");
+    const admininfo = await Admin.findById(adminId)
+      .select("name email")
+      .populate("blockOrRegion", "name");
     const assignedBy = adminId;
     const filter = { assignedBy };
 
@@ -2315,6 +2541,7 @@ router.get("/reports/admin", async (req, res) => {
       adminId,
       adminName: admininfo.name,
       adminEmail: admininfo.email,
+      adminBlock: admininfo.blockOrRegion?.name,
 
       summary: {
         totalComplaints,
@@ -2390,6 +2617,7 @@ router.get("/worker-stats", async (req, res) => {
     // worker info
     const workerInfo = await Worker.findById(workerObjectId)
       .populate("department", "name")
+      .populate("blockOrRegion", "name")
       .select("name email phone department blockOrRegion");
 
     if (!workerInfo) {
@@ -2447,7 +2675,7 @@ router.get("/worker-stats", async (req, res) => {
         email: workerInfo.email,
         phone: workerInfo.phone,
         department: workerInfo.department?.name || null,
-        blockOrRegion: workerInfo.blockOrRegion,
+        blockOrRegion: workerInfo.blockOrRegion?.name || null,
       },
       stats,
       complaints,

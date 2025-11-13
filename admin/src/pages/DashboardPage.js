@@ -24,6 +24,7 @@ import ActivityLogPage from "./ActivityLogPage";
 import ComplaintDetails from "./ComplaintDetails";
 import AdminReport from "./AdminReport";
 import WorkerStatsPage from "./WorkerStatePage";
+import AdminBlockPage from "./AdminBlockPage";
 
 const Sidebar = () => {
   const location = useLocation();
@@ -46,6 +47,7 @@ const Sidebar = () => {
     { to: "/showadmins", text: "Admins" },
     { to: "/addcomplaintstypes", text: "Complaint Types" },
     { to: "/departments", text: "Departments" },
+    { to: "/blocks", text: "Blocks" },
   ];
 
   const handleLogout = () => {
@@ -133,6 +135,7 @@ const DashboardPage = () => {
                 element={<AdminComplaintTypePage />}
               />
               <Route path="/departments" element={<AdminDepartmentPage />} />
+              <Route path="/blocks" element={<AdminBlockPage />} />
             </>
           )}
         </Routes>

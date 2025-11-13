@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
 import { Eye, EyeOff } from "lucide-react";
@@ -34,6 +34,27 @@ export default function AddAdmin() {
   const [idProofImage, setIdProofImage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [blocks, setBlocks] = useState([]);
+
+  useEffect(() => {
+    const fetchBlocks = async () => {
+      try {
+        const token = localStorage.getItem("admintoken");
+
+        const res = await axios.get(
+          "http://localhost:5000/api/admin/block/dropdown",
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        setBlocks(res.data.data || []);
+      } catch (err) {
+        console.error("❌ Failed to load blocks:", err);
+        toast.error("⚠️ Could not load blocks.");
+      }
+    };
+
+    fetchBlocks();
+  }, []);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -307,15 +328,20 @@ export default function AddAdmin() {
           {/* Block / Region */}
           <div>
             <label className="block text-gray-700 mb-1">Block / Region</label>
-            <input
+            <select
               name="blockOrRegion"
               value={form.blockOrRegion}
               onChange={handleChange}
-              placeholder="Enter assigned region"
               required
               autoComplete="off"
-              className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
-            />
+              className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500">
+              <option value="">Select Block / Region</option>
+              {blocks.map((block) => (
+                <option key={block._id} value={block._id}>
+                  {block.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Role (Admin/SuperAdmin) */}

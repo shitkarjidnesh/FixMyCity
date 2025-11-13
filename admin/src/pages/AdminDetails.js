@@ -70,8 +70,28 @@ export default function AdminDetails() {
   const [previewImage, setPreviewImage] = useState(null); // <-- Added state for preview
   const navigate = useNavigate();
   const location = useLocation();
+  const [blocks, setBlocks] = useState([]);
+
   const adminId = new URLSearchParams(location.search).get("id");
   const isEditParam = new URLSearchParams(location.search).get("edit");
+
+  useEffect(() => {
+    const fetchBlocks = async () => {
+      try {
+        const token = localStorage.getItem("admintoken");
+        const res = await axios.get(
+          "http://localhost:5000/api/admin/block/dropdown",
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setBlocks(res.data.data || []);
+      } catch (err) {
+        console.error("❌ Failed to fetch blocks:", err);
+        toast.error("Failed to load blocks");
+      }
+    };
+
+    fetchBlocks();
+  }, []);
 
   useEffect(() => {
     if (adminId) fetchAdminDetails();
@@ -119,25 +139,38 @@ export default function AdminDetails() {
     try {
       const token = localStorage.getItem("admintoken");
 
-      // Prepare data for backend
+      // Clone editable form
       const dataToSend = {
         ...editForm,
         idProofType: editForm.idProof?.type || editForm.idProofType,
         idProofNumber: editForm.idProof?.number || editForm.idProofNumber,
       };
-      // Remove nested idProof object if it exists
+
+      // 🔹 Normalise blockOrRegion to ObjectId
+      if (
+        typeof dataToSend.blockOrRegion === "object" &&
+        dataToSend.blockOrRegion?._id
+      ) {
+        dataToSend.blockOrRegion = dataToSend.blockOrRegion._id;
+      }
+
+      // 🔹 Remove nested idProof object (frontend-only field)
       delete dataToSend.idProof;
 
+      // 🔹 Send update request
       const res = await axios.put(
         `http://localhost:5000/api/admin/showadmins/editadmin/${adminId}`,
         dataToSend,
         { headers: { Authorization: `Bearer ${token}` } }
       );
+
       if (res.data.success) {
         toast.success("Admin updated successfully");
         setAdmin(res.data.admin);
         setEditMode(false);
-      } else toast.error(res.data.message);
+      } else {
+        toast.error(res.data.message);
+      }
     } catch (err) {
       toast.error("Update failed");
     }
@@ -173,7 +206,7 @@ export default function AdminDetails() {
 
   return (
     <div className="p-4 sm:p-8 max-w-7xl mx-auto">
-      <Toaster position="top-right" />
+      <Toaster position="top-center" />
       <button
         onClick={() => navigate("/showadmins")}
         className="mb-4 text-sm text-blue-600 hover:underline">
@@ -344,9 +377,25 @@ export default function AdminDetails() {
                     <EditField
                       label="Block / Region"
                       name="blockOrRegion"
-                      value={editForm.blockOrRegion}
-                      onChange={handleInputChange}
-                    />
+                      value={
+                        typeof editForm.blockOrRegion === "object"
+                          ? editForm.blockOrRegion._id
+                          : editForm.blockOrRegion || ""
+                      }
+                      onChange={(e) =>
+                        setEditForm((prev) => ({
+                          ...prev,
+                          blockOrRegion: e.target.value,
+                        }))
+                      }
+                      type="select">
+                      <option value="">Select Block / Region</option>
+                      {blocks.map((block) => (
+                        <option key={block._id} value={block._id}>
+                          {block.name}
+                        </option>
+                      ))}
+                    </EditField>
                   </div>
                   <EditField
                     label="Government Employee ID"
@@ -438,7 +487,7 @@ export default function AdminDetails() {
                   <ProfileField
                     icon={MapPin}
                     label="Block / Region"
-                    value={admin.blockOrRegion}
+                    value={admin.blockOrRegion.name || "N/A"}
                   />
                   <ProfileField
                     icon={Home}

@@ -98,6 +98,9 @@ export default function AdminReport() {
               </p>
               <p>
                 <strong>Email:</strong> {report.adminEmail}
+              </p>{" "}
+              <p>
+                <strong>Block / Region:</strong> {report.adminBlock}
               </p>
             </div>
           </div>

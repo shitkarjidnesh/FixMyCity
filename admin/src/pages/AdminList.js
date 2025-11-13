@@ -14,6 +14,8 @@ export default function AdminList() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [previewImage, setPreviewImage] = useState(null);
+  const [blocks, setBlocks] = useState([]);
+
   const [pageInfo, setPageInfo] = useState({
     page: 1,
     limit: 10,
@@ -21,6 +23,24 @@ export default function AdminList() {
     totalRecords: 0,
   });
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchBlocks = async () => {
+      try {
+        const token = localStorage.getItem("admintoken");
+        const res = await axios.get(
+          "http://localhost:5000/api/admin/block/dropdown",
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setBlocks(res.data.data || []);
+      } catch (error) {
+        console.error("❌ Failed to load blocks:", error);
+        toast.error("Failed to load block list");
+      }
+    };
+
+    fetchBlocks();
+  }, []);
 
   useEffect(() => {
     fetchAdmins(1); // Fetch page 1 when filters/search/limit change
@@ -154,11 +174,14 @@ export default function AdminList() {
               value={filters.blockOrRegion}
               onChange={handleFilterChange}
               className={inputStyle}>
-              <option value="">All Regions</option>
-              <option value="diva">Diva</option>
-              <option value="thane">Thane</option>
-              <option value="mumbai">Mumbai</option>
+              <option value="">All Blocks / Regions</option>
+              {blocks.map((b) => (
+                <option key={b._id} value={b._id}>
+                  {b.name}
+                </option>
+              ))}
             </select>
+
             {/* --- Added Role Filter --- */}
             <select
               name="role"
@@ -242,8 +265,11 @@ export default function AdminList() {
                     {a.dob ? new Date(a.dob).toLocaleDateString("en-IN") : "-"}
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap">
-                    {a.blockOrRegion || "-"}
+                    {typeof a.blockOrRegion === "object"
+                      ? a.blockOrRegion?.name
+                      : "-"}
                   </td>
+
                   {/* --- Added Role Column Data --- */}
                   <td className="px-4 py-2 whitespace-nowrap capitalize">
                     {a.role || "-"}

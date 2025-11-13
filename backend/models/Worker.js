@@ -23,7 +23,7 @@ const WorkerSchema = new mongoose.Schema(
       state: { type: String, required: true },
       pincode: { type: String, required: true },
     },
-    blockOrRegion: { type: String, required: true },
+    blockOrRegion: { type: mongoose.Schema.Types.ObjectId, ref: "Block" },
     preferredArea: { type: String }, // optional field for future use
 
     // ────────────── Employment Details ──────────────

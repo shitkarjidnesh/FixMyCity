@@ -15,6 +15,27 @@ export default function WorkerDetails() {
   const [profileFile, setProfileFile] = useState(null);
   const [idProofFile, setIdProofFile] = useState(null);
   const [departments, setDepartments] = useState([]);
+  const [blocks, setBlocks] = useState([]);
+
+  useEffect(() => {
+    const fetchBlocks = async () => {
+      try {
+        const token = localStorage.getItem("admintoken");
+
+        const res = await axios.get(
+          "http://localhost:5000/api/admin/block/dropdown",
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        setBlocks(res.data.data || []);
+      } catch (err) {
+        console.error("❌ Failed to fetch blocks:", err);
+        toast.error("Failed to load blocks.");
+      }
+    };
+
+    fetchBlocks();
+  }, []);
 
   // 🔹 Fetch departments
   useEffect(() => {
@@ -71,6 +92,9 @@ export default function WorkerDetails() {
     if (workerId) fetchWorker();
   }, [workerId]);
 
+
+  
+
   // 🔹 Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -106,6 +130,11 @@ export default function WorkerDetails() {
 
       if (typeof sanitized.createdBy === "object" && sanitized.createdBy?._id) {
         sanitized.createdBy = sanitized.createdBy._id;
+      }
+      if (sanitized.blockOrRegion) {
+        if (typeof sanitized.blockOrRegion === "object") {
+          sanitized.blockOrRegion = sanitized.blockOrRegion._id || "";
+        }
       }
 
       sanitized.address = {
@@ -152,6 +181,7 @@ export default function WorkerDetails() {
         setWorker(updatedWorker);
         setEditForm(updatedWorker);
         setEditing(false);
+
       } else {
         toast.error(res.data.message || "Update failed");
       }
@@ -283,17 +313,30 @@ export default function WorkerDetails() {
 
           {/* Block/Region */}
           <div>
-            <h3 className="font-semibold text-lg mb-2">Block/Region</h3>
+            <h3 className="font-semibold text-lg mb-2">Block / Region</h3>
+
             {editing ? (
-              <input
-                type="text"
+              <select
                 name="blockOrRegion"
-                value={editForm.blockOrRegion || ""}
-                onChange={handleChange}
-                className="border rounded p-2 w-full"
-              />
+                value={
+                  editForm.blockOrRegion?._id || editForm.blockOrRegion || ""
+                }
+                onChange={(e) =>
+                  setEditForm((prev) => ({
+                    ...prev,
+                    blockOrRegion: e.target.value,
+                  }))
+                }
+                className="border rounded p-2 w-full">
+                <option value="">Select Block</option>
+                {blocks.map((block) => (
+                  <option key={block._id} value={block._id}>
+                    {block.name}
+                  </option>
+                ))}
+              </select>
             ) : (
-              <p>{worker.blockOrRegion}</p>
+              <p>{worker.blockOrRegion?.name || worker.blockOrRegion || "—"}</p>
             )}
           </div>
 

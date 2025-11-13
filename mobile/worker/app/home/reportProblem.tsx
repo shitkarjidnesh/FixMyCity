@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import * as Location from "expo-location";
 import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
+import * as ImageManipulator from "expo-image-manipulator";
 import { Picker } from "@react-native-picker/picker";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -195,16 +196,39 @@ export default function ReportProblem(): JSX.Element {
       return;
     }
     try {
-      const photo = await cameraRef.current.takePictureAsync({ quality: 0.7 });
+      // Prevent too many photos which can cause OOM on low-memory devices
+      const MAX_PHOTOS = 3;
+      if (photos.length >= MAX_PHOTOS) {
+        Alert.alert(
+          "Limit reached",
+          `You can attach up to ${MAX_PHOTOS} photos.`
+        );
+        return;
+      }
+
+      const rawPhoto = await cameraRef.current.takePictureAsync({
+        quality: 0.9,
+      });
+
+      // Resize & compress the image to reduce memory/network usage
+      const resized = await ImageManipulator.manipulateAsync(
+        rawPhoto.uri,
+        [{ resize: { width: 1280 } }],
+        { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
+      );
+
       const loc = await Location.getCurrentPositionAsync({});
       const meta: Photo = {
-        uri: photo.uri,
+        uri: resized.uri,
         latitude: loc.coords.latitude,
         longitude: loc.coords.longitude,
         timestamp: new Date().toISOString(),
       };
+
       setPhotos((p) => [...p, meta]);
+      // close camera modal and reset ready flag
       setCameraVisible(false);
+      setIsCameraReady(false);
     } catch (err) {
       console.warn("takePhoto error:", err);
       Alert.alert("Camera", "Could not take photo.");

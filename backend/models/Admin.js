@@ -25,7 +25,7 @@ const adminSchema = new mongoose.Schema(
 
     governmentEmployeeId: { type: String, required: true },
 
-    blockOrRegion: { type: String, required: true },
+    blockOrRegion: { type: mongoose.Schema.Types.ObjectId, ref: "Block" },
     address: {
       houseNo: { type: String },
       street: { type: String },
