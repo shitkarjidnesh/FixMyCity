@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 export default function UsersList() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchUsers();
@@ -265,6 +267,13 @@ export default function UsersList() {
 
                     {/* Actions */}
                     <td className="px-5 py-3 flex gap-4">
+                      <button
+                        onClick={() =>
+                          navigate(`/userreport?userId=${user._id}`)
+                        }
+                        className="text-blue-600 font-semibold hover:text-blue-800">
+                        View Report
+                      </button>
                       <button
                         onClick={() =>
                           handleStatusChange(

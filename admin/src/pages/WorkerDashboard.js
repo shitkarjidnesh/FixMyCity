@@ -147,6 +147,7 @@ export default function WorkerDashboard() {
 
   return (
     <div className="p-6 md:p-10 bg-gray-50 min-h-screen">
+      
       <Toaster position="top-center" />
       <h1 className="text-3xl font-bold text-gray-800 mb-6">
         Worker Dashboard
@@ -224,7 +225,7 @@ export default function WorkerDashboard() {
                 </th>
                 <th
                   className="px-6 py-3 text-left font-semibold text-gray-600"
-                  colSpan={2}>
+                  colSpan={3}>
                   Actions
                 </th>
               </tr>
@@ -295,6 +296,15 @@ export default function WorkerDashboard() {
                         }
                         className="text-indigo-600 hover:underline">
                         View
+                      </button>
+                    </td>
+                    <td>
+                      <button
+                        onClick={() =>
+                          navigate(`/workerstats?workerId=${worker._id}`)
+                        }
+                        className="text-indigo-600 hover:underline">
+                        View Stats
                       </button>
                     </td>
                     <td className="px-6 py-4 space-x-3">

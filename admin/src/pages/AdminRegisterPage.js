@@ -72,15 +72,34 @@ export default function AddAdmin() {
     setLoading(true);
 
     // Age validation
+    // Age validation (18–60)
     const today = new Date();
     const birthDate = new Date(form.dob);
     let age = today.getFullYear() - birthDate.getFullYear();
     const m = today.getMonth() - birthDate.getMonth();
+
     if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
       age--;
     }
-    if (age < 18) {
-      toast.error("⚠️ Admin must be at least 18 years old.");
+
+    if (age < 18 || age > 60) {
+      toast.error("⚠️ Age must be between 18 and 60.");
+      setLoading(false);
+      return;
+    }
+
+    // ID Proof Number validation
+    if (
+      form.idProofType === "Aadhaar Card" &&
+      form.idProofNumber.length !== 12
+    ) {
+      toast.error("⚠️ Aadhaar number must be 12 digits.");
+      setLoading(false);
+      return;
+    }
+
+    if (form.idProofType === "PAN Card" && form.idProofNumber.length !== 10) {
+      toast.error("⚠️ PAN number must be 10 characters.");
       setLoading(false);
       return;
     }

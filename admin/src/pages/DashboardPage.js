@@ -25,6 +25,7 @@ import ComplaintDetails from "./ComplaintDetails";
 import AdminReport from "./AdminReport";
 import WorkerStatsPage from "./WorkerStatePage";
 import AdminBlockPage from "./AdminBlockPage";
+import UserReport from "./UserReport";
 
 const Sidebar = () => {
   const location = useLocation();
@@ -39,7 +40,7 @@ const Sidebar = () => {
     { to: "/profile", text: "Profile" },
     { to: "/activity", text: "Activity Logs" },
     { to: "/adminreport", text: "Admin Report" },
-    { to: "/workerstats", text: "Worker stats" },
+    // { to: "/workerstats", text: "Worker stats" },
   ];
 
   const superAdminLinks = [
@@ -124,6 +125,7 @@ const DashboardPage = () => {
           <Route path="/complaintdetails/:id" element={<ComplaintDetails />} />
           <Route path="/adminreport" element={<AdminReport />} />
           <Route path="/workerstats" element={<WorkerStatsPage />} />
+          <Route path="/userreport" element={<UserReport />} />
 
           {auth.role === "superadmin" && (
             <>

@@ -17,7 +17,6 @@ export default function WorkerStatsPage() {
   let workerId = sp.get("workerId");
 
   // ✅ You kept override for testing
-  workerId = "69077502abb9c0f095f8d72a";
 
   const [stats, setStats] = useState(null);
   const [worker, setWorker] = useState(null);
@@ -54,6 +53,11 @@ export default function WorkerStatsPage() {
 
   return (
     <div className="p-6">
+      <button
+        onClick={() => window.history.back()}
+        className="mb-4 px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+        ← Back
+      </button>
       <h2 className="text-xl font-bold mb-4">Worker Complaint Stats</h2>
 
       {/* Worker Info */}
@@ -64,7 +68,7 @@ export default function WorkerStatsPage() {
           <div>Email: {worker.email}</div>
           <div>Phone: {worker.phone}</div>
           <div>Department: {worker.department}</div>
-          <div>Block/Region: {worker.blockOrRegion}</div> 
+          <div>Block/Region: {worker.blockOrRegion}</div>
         </div>
       )}
 

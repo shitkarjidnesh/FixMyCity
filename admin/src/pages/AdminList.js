@@ -296,6 +296,12 @@ export default function AdminList() {
                       <Eye className="w-4 h-4" /> View
                     </button>
                     <button
+                      onClick={() => navigate(`/adminreport?adminId=${a._id}`)}
+                      className="flex items-center gap-1 bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 transition shadow-sm"
+                      title="View Report">
+                      <Eye className="w-4 h-4" /> Report
+                    </button>
+                    <button
                       onClick={() =>
                         navigate(`/showadmin?id=${a._id}&edit=true`)
                       }

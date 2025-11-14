@@ -43,7 +43,7 @@ export default function AddWorker() {
       try {
         const token = localStorage.getItem("admintoken");
         const res = await axios.get(
-          "http://localhost:5000/api/admin/block/dropdown",
+          "http://localhost:5000/api/admin/block-worker/dropdown",
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setBlocks(res.data.data || []);
@@ -107,9 +107,13 @@ export default function AddWorker() {
       const birthDate = new Date(form.dob);
       let age = today.getFullYear() - birthDate.getFullYear();
       const m = today.getMonth() - birthDate.getMonth();
-      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
-      if (age < 18) {
-        toast.error("⚠️ Worker must be at least 18 years old.");
+
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+
+      if (age < 18 || age > 60) {
+        toast.error("⚠️ Age must be between 18 and 60.");
         setLoading(false);
         return;
       }

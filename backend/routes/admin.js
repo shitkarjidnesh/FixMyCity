@@ -1929,6 +1929,39 @@ router.get("/block/dropdown", async (req, res) => {
   }
 });
 
+router.get("/block-worker/dropdown", async (req, res) => {
+  try {
+    const adminId = req.auth.id;
+    const role = req.auth.role;
+
+    let query = {};
+
+    if (role === "admin") {
+      // fetch admin info to know which block he belongs to
+      const admin = await Admin.findById(adminId).select("blockOrRegion");
+
+      if (!admin || !admin.blockOrRegion) {
+        return res.json({ success: true, data: [] });
+      }
+
+      // admin only sees HIS block
+      query = { _id: admin.blockOrRegion };
+    }
+
+    // superadmin sees all → query remains {}
+    const blocks = await Block.find(query)
+      .select("_id name createdAt updatedAt createdBy updatedBy")
+      .populate("createdBy", "name")
+      .populate("updatedBy", "name")
+      .sort({ name: 1 })
+      .lean();
+
+    return res.json({ success: true, data: blocks });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 router.delete("/block/delete/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -2289,6 +2322,23 @@ router.put("/departments/update/:id", async (req, res) => {
   }
 });
 
+router.get("/department/dropdown", async (req, res) => {
+  try {
+    const departments = await Department.find()
+      .select("_id name")
+      .sort({ name: 1 })
+      .lean();
+
+    return res.status(200).json(departments);
+  } catch (err) {
+    console.error("❌ Department Dropdown Error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch departments",
+      error: err.message,
+    });
+  }
+});
 router.get("/department/dropdown", async (req, res) => {
   try {
     const departments = await Department.find()
@@ -2685,6 +2735,108 @@ router.get("/worker-stats", async (req, res) => {
     return res
       .status(500)
       .json({ success: false, error: "Server error", details: err.message });
+  }
+});
+
+router.get("/reports/user", async (req, res) => {
+  try {
+    let { userId } = req.query;
+
+    // If no userId passed, read from JWT
+    if (!userId) {
+      userId = req.auth.id;
+    }
+
+    if (!userId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User ID missing" });
+    }
+
+    // Verify user exists
+    const user = await User.findById(userId)
+      .select("name email phoneNo")
+      .lean();
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    // Fetch complaints
+    const complaints = await UserComplaints.find({ userId })
+      .populate("type", "name")
+      .populate("assignedTo", "name department")
+      .populate({
+        path: "assignedTo",
+        populate: { path: "department", select: "name" },
+      })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // Prepare summary
+    const total = complaints.length;
+    const pending = complaints.filter((c) => c.status === "Pending").length;
+    const inProgress = complaints.filter(
+      (c) => c.status === "In Progress"
+    ).length;
+    const resolved = complaints.filter((c) => c.status === "Resolved").length;
+
+    const formatDate = (date) => {
+      if (!date) return "";
+      const d = new Date(date);
+      return `${String(d.getDate()).padStart(2, "0")}-${String(
+        d.getMonth() + 1
+      ).padStart(2, "0")}-${d.getFullYear()}`;
+    };
+
+    // Prepare detailed rows
+    const complaintDetails = complaints.map((c) => ({
+      id: c._id,
+      type: c.type?.name,
+      subType: c.subType,
+      description: c.description,
+      status: c.status,
+      assignedWorker: c.assignedTo?.name || "Not Assigned",
+      workerDept: c.assignedTo?.department?.name || "N/A",
+      address: [
+        c.address?.houseNo,
+        c.address?.street,
+        c.address?.area,
+        c.address?.landmark,
+        c.address?.city,
+        c.address?.state,
+        c.address?.pincode,
+      ]
+        .filter(Boolean)
+        .join(", "),
+      createdAt: formatDate(c.createdAt),
+      updatedAt: formatDate(c.updatedAt),
+    }));
+
+    // Final response
+    return res.status(200).json({
+      success: true,
+      user: {
+        id: userId,
+        name: user.name,
+        email: user.email,
+        phone: user.phoneNo,
+      },
+      summary: {
+        total,
+        pending,
+        inProgress,
+        resolved,
+      },
+      complaints: complaintDetails,
+    });
+  } catch (err) {
+    console.error("❌ Error generating user report:", err);
+    return res
+      .status(500)
+      .json({ success: false, message: "Server error", error: err.message });
   }
 });
 

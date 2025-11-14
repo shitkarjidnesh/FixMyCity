@@ -21,6 +21,7 @@ export default function ComplaintDetails() {
   const [eligibleWorkers, setEligibleWorkers] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedWorker, setSelectedWorker] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
 
   useEffect(() => {
     const fetchComplaint = async () => {
@@ -189,7 +190,8 @@ export default function ComplaintDetails() {
                   <img
                     src={complaint.imageUrls[0]}
                     alt="Original complaint"
-                    className="w-full h-64 object-cover rounded-lg border border-gray-200"
+                    className="w-full h-64 object-cover rounded-lg border border-gray-200 cursor-pointer hover:opacity-80"
+                    onClick={() => setPreviewImage(complaint.imageUrls[0])}
                   />
                 ) : (
                   <p className="text-gray-500 h-64 flex items-center justify-center">
@@ -207,7 +209,8 @@ export default function ComplaintDetails() {
                         key={i}
                         src={photo}
                         alt="Resolution proof"
-                        className="w-full h-64 object-cover rounded-lg border border-gray-200"
+                        className="w-full h-64 object-cover rounded-lg border border-gray-200 cursor-pointer hover:opacity-80"
+                        onClick={() => setPreviewImage(photo)}
                       />
                     ))}
                   </div>
@@ -266,8 +269,6 @@ export default function ComplaintDetails() {
                       className="w-full bg-red-600 text-white px-3 py-2 rounded-md hover:bg-red-700">
                       Reject Complaint
                     </button>
-
-                   
                   </>
                 )}
 
@@ -296,7 +297,6 @@ export default function ComplaintDetails() {
                 )}
 
                 {/* USER POST-RESOLUTION APPEAL */}
-               
 
                 {/* FINAL STATES */}
                 {(complaint.status === "Resolved" ||
@@ -328,11 +328,13 @@ export default function ComplaintDetails() {
               ) : (
                 <p className="text-gray-500">Not assigned yet.</p>
               )}
-                {complaint.status === "Need Verification" && <button
-                onClick={handleOpenAssignModal}
-                className="mt-4 w-full bg-blue-600 text-white px-4 py-2 rounded-md font-medium hover:bg-blue-700 transition-colors">
-                {complaint.assignedTo ? "Reassign Worker" : "Assign Worker"}
-              </button>}
+              {complaint.status === "Need Verification" && (
+                <button
+                  onClick={handleOpenAssignModal}
+                  className="mt-4 w-full bg-blue-600 text-white px-4 py-2 rounded-md font-medium hover:bg-blue-700 transition-colors">
+                  {complaint.assignedTo ? "Reassign Worker" : "Assign Worker"}
+                </button>
+              )}
             </InfoCard>
 
             {/* Resolution Details (Text) Card - MOVED HERE */}
@@ -407,6 +409,19 @@ export default function ComplaintDetails() {
         onSelectWorker={setSelectedWorker}
         onConfirm={confirmAssignment}
       />
+
+      {previewImage && (
+        <div
+          className="fixed inset-0 bg-black/70 flex items-center justify-center z-[3000] p-4"
+          onClick={() => setPreviewImage(null)}>
+          <img
+            src={previewImage}
+            alt="Preview"
+            className="max-w-[95vw] max-h-[90vh] rounded-xl shadow-2xl border-4 border-white object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </>
   );
 }

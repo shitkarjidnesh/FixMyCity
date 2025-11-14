@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useLocation } from "react-router-dom";
+
 import {
   PieChart,
   Pie,
@@ -20,6 +22,8 @@ export default function AdminReport() {
     startDate: "",
     endDate: "",
   });
+  const location = useLocation();
+  const adminId = new URLSearchParams(location.search).get("adminId");
 
   useEffect(() => {
     fetchReport();
@@ -29,13 +33,18 @@ export default function AdminReport() {
     setLoading(true);
     try {
       const token = localStorage.getItem("admintoken");
+
       const { data } = await axios.get(
         "http://localhost:5000/api/admin/reports/admin",
         {
-          params: filters,
+          params: {
+            adminId: adminId, // <-- this selects which admin report you want
+            ...filters,
+          },
           headers: { Authorization: `Bearer ${token}` },
         }
       );
+
       setReport(data);
     } finally {
       setLoading(false);
@@ -61,6 +70,11 @@ export default function AdminReport() {
 
   return (
     <div className="p-6 font-sans h-full w-full">
+      <button
+        onClick={() => window.history.back()}
+        className="mb-4 px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+        ← Back
+      </button>
       <h2 className="text-xl font-semibold mb-4">Admin Activity Dashboard</h2>
 
       {/* <div className="flex flex-wrap gap-3 mb-4">

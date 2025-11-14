@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
 
@@ -234,14 +234,42 @@ export default function ComplaintsList() {
     endDate: "",
     search: "",
   });
+  const { search } = useLocation();
 
   // Dropdown data
   const [departments, setDepartments] = useState([]);
   const [complaintTypes, setComplaintTypes] = useState([]);
 
+  const updateURLWithFilters = (updatedFilters) => {
+    const params = new URLSearchParams({
+      ...updatedFilters,
+      page: currentPage,
+      limit: itemsPerPage,
+    });
+    navigate(`/complaints?${params.toString()}`, { replace: true });
+  };
+
   const handleCardClick = (complaintId) => {
     navigate(`/complaintdetails/${complaintId}`);
   };
+
+  useEffect(() => {
+    const params = new URLSearchParams(search);
+
+    const urlStatus = params.get("status");
+
+    setFilters({
+      status: urlStatus !== null ? urlStatus : "Pending",
+      department: params.get("department") || "",
+      search: params.get("search") || "",
+      startDate: params.get("startDate") || "",
+      endDate: params.get("endDate") || "",
+    });
+
+    setCurrentPage(Number(params.get("page")) || 1);
+    setItemsPerPage(Number(params.get("limit")) || 10);
+  }, []);
+
 
   // Fetch complaints
   useEffect(() => {
@@ -318,14 +346,19 @@ export default function ComplaintsList() {
   // Handle filter changes
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
-    setFilters((prev) => ({ ...prev, [name]: value }));
-    setCurrentPage(1); // Reset to first page on filter change
+    const updated = { ...filters, [name]: value };
+    setFilters(updated);
+    setCurrentPage(1);
+
+    updateURLWithFilters(updated);
   };
 
-  // Handle search input change
   const handleSearchChange = (e) => {
-    setFilters((prev) => ({ ...prev, search: e.target.value }));
-    setCurrentPage(1); // Reset to first page on search change
+    const updated = { ...filters, search: e.target.value };
+    setFilters(updated);
+    setCurrentPage(1);
+
+    updateURLWithFilters(updated);
   };
 
   // Handle items per page change
