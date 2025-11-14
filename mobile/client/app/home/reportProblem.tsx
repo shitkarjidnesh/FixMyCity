@@ -11,6 +11,8 @@ import {
   Image,
   Modal,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import * as Location from "expo-location";
 import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
@@ -287,11 +289,15 @@ export default function ReportProblem() {
 
   return (
     <AuthGuard>
-      <View style={{ flex: 1 }}>
-        <TopNav />
+      <TopNav />
+
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <ScrollView
-          style={{ flex: 1, backgroundColor: "#f9f9f9" }}
-          contentContainerStyle={{ padding: 16, paddingBottom: 100 }}>
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ padding: 16, paddingBottom: 120 }}>
           <Text style={styles.heading}>Submit Complaint</Text>
 
           {/* Basic Info */}
@@ -521,8 +527,8 @@ export default function ReportProblem() {
             </View>
           </Modal>
         </ScrollView>
-        <BottomNav />
-      </View>
+      </KeyboardAvoidingView>
+      <BottomNav />
     </AuthGuard>
   );
 }

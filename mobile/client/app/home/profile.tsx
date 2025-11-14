@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  KeyboardAvoidingView,
+  Platform,
   Alert,
   Image,
 } from "react-native";
@@ -23,26 +25,64 @@ export default function Profile() {
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [updating, setUpdating] = useState(false);
+  const [houseNo, setHouseNo] = useState("");
+  const [street, setStreet] = useState("");
+  const [landmark, setLandmark] = useState("");
+  const [area, setArea] = useState("");
+  const [city, setCity] = useState("");
+  const [district, setDistrict] = useState("");
+  const [state, setState] = useState("");
+  const [pincode, setPincode] = useState("");
 
   useEffect(() => {
-    const loadUser = async () => {
-      const stored = await AsyncStorage.getItem("userData");
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        setUserData(parsed);
-        setName(parsed.name || "");
-        setEmail(parsed.email || "");
-        setPhone(parsed.phone || "");
-        setAddress(parsed.address || "");
+    const loadUserFromAPI = async () => {
+      try {
+        const stored = await AsyncStorage.getItem("userData");
+        if (!stored) return;
+
+        const parsed = JSON.parse(stored); // <-- parse JSON
+        const token = parsed.token; // <-- extract token
+
+        if (!token) return;
+
+        const res = await axios.get(
+          "http://192.168.68.44:5000/api/auth/profile",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        const user = res.data;
+        console.log("Fetched user data:", user);
+        // merge API user + saved token
+        setUserData({ ...user, token });
+
+        setName(user.name || "");
+        setEmail(user.email || "");
+        setPhone(user.phoneNo || "");
+        setHouseNo(user.address?.houseNo || "");
+        setStreet(user.address?.street || "");
+        setLandmark(user.address?.landmark || "");
+        setArea(user.address?.area || "");
+        setCity(user.address?.city || "");
+        setDistrict(user.address?.district || "");
+        setState(user.address?.state || "");
+        setPincode(user.address?.pincode || "");
+      } catch (error) {
+        Alert.alert(
+          "Error",
+          error.response?.data?.msg || "Failed to load profile"
+        );
       }
     };
-    loadUser();
+
+    loadUserFromAPI();
   }, []);
 
   const handleEditToggle = () => setEditing(!editing);
 
   const handleUpdate = async () => {
-    if (!name || !email || !phone || !address) {
+    if (!name || !email || !phone || !area || !city || !state || !pincode) {
       Alert.alert("Error", "All fields are required");
       return;
     }
@@ -50,9 +90,23 @@ export default function Profile() {
     try {
       setUpdating(true);
       const res = await axios.put(
-        "http://10.0.2.2:5000/api/users/profile",
-        { name, email, phone, address },
-        { headers: { Authorization: `Bearer ${userData?.token}` } }
+        "http://192.168.68.44:5000/api/auth/profile",
+        {
+          name,
+          email,
+          phoneNo: phone,
+          address: {
+            houseNo,
+            street,
+            landmark,
+            area,
+            city,
+            district,
+            state,
+            pincode,
+          },
+        },
+        { headers: { Authorization: `Bearer ${userData.token}` } }
       );
 
       const updatedData = { ...userData, ...res.data };
@@ -85,98 +139,169 @@ export default function Profile() {
   return (
     <AuthGuard>
       <TopNav />
-      <ScrollView contentContainerStyle={styles.container}>
-        {/* Profile Picture */}
-        <View style={styles.avatarContainer}>
-          <Image
-            source={{
-              uri:
-                userData.avatar ||
-                "https://cdn-icons-png.flaticon.com/512/149/149071.png",
-            }}
-            style={styles.avatar}
-          />
-        </View>
 
-        <Text style={styles.title}>Profile</Text>
-
-        {!editing ? (
-          <View>
-            <View style={styles.card}>
-              <Text style={styles.label}>Full Name</Text>
-              <Text style={styles.value}>{userData.name}</Text>
-
-              <Text style={styles.label}>Email</Text>
-              <Text style={styles.value}>{userData.email}</Text>
-
-              <Text style={styles.label}>Phone</Text>
-              <Text style={styles.value}>{userData.phone}</Text>
-
-              <Text style={styles.label}>Address</Text>
-              <Text style={styles.value}>{userData.address}</Text>
-            </View>
-
-            <TouchableOpacity style={styles.button} onPress={handleEditToggle}>
-              <Text style={styles.buttonText}>Edit Profile</Text>
-            </TouchableOpacity>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}>
+        <ScrollView
+          contentContainerStyle={styles.container}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}>
+          {/* Profile Picture */}
+          <View style={styles.avatarContainer}>
+            <Image
+              source={{
+                uri:
+                  userData.avatar ||
+                  "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+              }}
+              style={styles.avatar}
+            />
           </View>
-        ) : (
-          <View>
-            <View style={styles.card}>
-              <TextInput
-                style={styles.input}
-                placeholder="Full Name"
-                value={name}
-                onChangeText={setName}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Email"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Phone"
-                value={phone}
-                onChangeText={setPhone}
-                keyboardType="phone-pad"
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Address"
-                value={address}
-                onChangeText={setAddress}
-              />
+
+          <Text style={styles.title}>Profile</Text>
+
+          {!editing ? (
+            <View>
+              <View style={styles.card}>
+                <Text style={styles.label}>Full Name</Text>
+                <Text style={styles.value}>{name}</Text>
+
+                <Text style={styles.label}>Email</Text>
+                <Text style={styles.value}>{email}</Text>
+
+                <Text style={styles.label}>Phone</Text>
+                <Text style={styles.value}>{phone}</Text>
+
+                <Text style={styles.label}>Address</Text>
+                <Text style={styles.value}>
+                  {houseNo ? houseNo + ", " : ""}
+                  {street ? street + ", " : ""}
+                  {landmark ? landmark + ", " : ""}
+                  {area ? area + ", " : ""}
+                  {city ? city + ", " : ""}
+                  {district ? district + ", " : ""}
+                  {state ? state + ", " : ""}
+                  {pincode}
+                </Text>
+              </View>
+
+              <TouchableOpacity
+                style={styles.button}
+                onPress={handleEditToggle}>
+                <Text style={styles.buttonText}>Edit Profile</Text>
+              </TouchableOpacity>
             </View>
+          ) : (
+            <View>
+              <View style={styles.card}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Full Name"
+                  value={name}
+                  onChangeText={setName}
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Email"
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Phone"
+                  value={phone}
+                  onChangeText={setPhone}
+                  keyboardType="phone-pad"
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="House No"
+                  value={houseNo}
+                  onChangeText={setHouseNo}
+                />
 
-            <TouchableOpacity
-              style={[styles.button, updating && { backgroundColor: "#999" }]}
-              onPress={handleUpdate}
-              disabled={updating}>
-              <Text style={styles.buttonText}>
-                {updating ? "Updating..." : "Save Changes"}
-              </Text>
-            </TouchableOpacity>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Street"
+                  value={street}
+                  onChangeText={setStreet}
+                />
 
-            <TouchableOpacity
-              style={[styles.button, { backgroundColor: "#ccc" }]}
-              onPress={handleEditToggle}
-              disabled={updating}>
-              <Text style={[styles.buttonText, { color: "#333" }]}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+                <TextInput
+                  style={styles.input}
+                  placeholder="Landmark"
+                  value={landmark}
+                  onChangeText={setLandmark}
+                />
 
-        <View style={styles.card}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Area"
+                  value={area}
+                  onChangeText={setArea}
+                />
+
+                <TextInput
+                  style={styles.input}
+                  placeholder="City"
+                  value={city}
+                  onChangeText={setCity}
+                />
+
+                <TextInput
+                  style={styles.input}
+                  placeholder="District"
+                  value={district}
+                  onChangeText={setDistrict}
+                />
+
+                <TextInput
+                  style={styles.input}
+                  placeholder="State"
+                  value={state}
+                  onChangeText={setState}
+                />
+
+                <TextInput
+                  style={styles.input}
+                  placeholder="Pincode"
+                  value={pincode}
+                  onChangeText={setPincode}
+                  keyboardType="number-pad"
+                />
+              </View>
+
+              <TouchableOpacity
+                style={[styles.button, updating && { backgroundColor: "#999" }]}
+                onPress={handleUpdate}
+                disabled={updating}>
+                <Text style={styles.buttonText}>
+                  {updating ? "Updating..." : "Save Changes"}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.button, { backgroundColor: "#ccc" }]}
+                onPress={handleEditToggle}
+                disabled={updating}>
+                <Text style={[styles.buttonText, { color: "#333" }]}>
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {/* <View style={styles.card}>
           <Text style={styles.label}>Token</Text>
           <Text style={styles.value} numberOfLines={1} ellipsizeMode="middle">
             {userData?.token || "N/A"}
           </Text>
-        </View>
-      </ScrollView>
+        </View> */}
+        </ScrollView>
+      </KeyboardAvoidingView>
       <BottomNav />
     </AuthGuard>
   );

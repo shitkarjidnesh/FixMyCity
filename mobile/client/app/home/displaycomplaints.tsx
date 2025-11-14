@@ -52,7 +52,6 @@ interface Complaint {
   };
 }
 
-
 type User = {
   token: string;
   name: string;
@@ -413,8 +412,7 @@ const DisplayComplaints: React.FC = () => {
 
                   <Text style={styles.modalText}>
                     <Text style={styles.label}>Notes By :</Text>{" "}
-                    {selectedComplaint.resolution?.by?.name ||
-                      "Not available."}
+                    {selectedComplaint.resolution?.by?.name || "Not available."}
                   </Text>
 
                   <Text style={styles.modalText}>
@@ -466,20 +464,39 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     color: "#333",
   },
-  filterContainer: { flexDirection: "row", marginBottom: 15, flexWrap: "wrap" },
-  filterTab: {
-    marginRight: 8,
-    marginBottom: 8,
-    paddingVertical: 4,
-    paddingHorizontal: 12,
-    backgroundColor: "#e0e0e0",
-    borderRadius: 20,
-    minWidth: 70,
-    alignItems: "center",
+  filterContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginBottom: 15,
   },
-  activeFilterTab: { backgroundColor: "#007BFF" },
-  filterText: { color: "#555", fontSize: 12 },
-  activeFilterText: { color: "#fff", fontSize: 12, fontWeight: "bold" },
+
+  filterTab: {
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    backgroundColor: "#F1F3F5",
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#D0D7DD",
+  },
+
+  activeFilterTab: {
+    backgroundColor: "#007BFF",
+    borderColor: "#0063CC",
+  },
+
+  filterText: {
+    fontSize: 13,
+    color: "#333",
+    fontWeight: "600",
+  },
+
+  activeFilterText: {
+    fontSize: 13,
+    color: "#fff",
+    fontWeight: "700",
+  },
+
   card: {
     marginBottom: 12,
     padding: 15,

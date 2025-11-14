@@ -133,19 +133,56 @@ router.post("/verify-reset-otp", async (req, res) => {
 });
 
 // ===================== UPDATE PROFILE =====================
+router.get("/profile", userAuth, async (req, res) => {
+  try {
+    const userId = req.auth.id;
+
+    const user = await User.findById(userId).select("-password");
+    if (!user) return res.status(404).json({ msg: "User not found" });
+
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ msg: "Server error" });
+  }
+});
 
 router.put("/profile", userAuth, async (req, res) => {
   try {
-    const { name, email, phone } = req.body;
+    const { name, email, phoneNo, address } = req.body;
     const userId = req.auth.id;
 
-    if (!name || !email || !phone) {
+    // Basic validation
+    if (!name || !email || !phoneNo || !address) {
       return res.status(400).json({ msg: "All fields are required" });
+    }
+
+    // Validate full address structure
+    const requiredFields = ["area", "city", "state", "pincode"];
+    for (let field of requiredFields) {
+      if (!address[field]) {
+        return res.status(400).json({
+          msg: `Address field '${field}' is required`,
+        });
+      }
     }
 
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      { name, email, phone },
+      {
+        name,
+        email,
+        phoneNo,
+        address: {
+          houseNo: address.houseNo || "",
+          street: address.street || "",
+          landmark: address.landmark || "",
+          area: address.area,
+          city: address.city,
+          district: address.district || "",
+          state: address.state,
+          pincode: address.pincode,
+        },
+      },
       { new: true }
     ).select("-password");
 
@@ -153,11 +190,7 @@ router.put("/profile", userAuth, async (req, res) => {
       return res.status(404).json({ msg: "User not found" });
     }
 
-    res.json({
-      name: updatedUser.name,
-      email: updatedUser.email,
-      phone: updatedUser.phone,
-    });
+    res.json(updatedUser);
   } catch (err) {
     console.error(err);
     res.status(500).json({ msg: "Server error" });
